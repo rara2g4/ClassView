@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ClassViewで授業を検索し、詳しい内容を確認できます。">
+    <title>授業を探す | ClassView</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/course-list.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">本文へ移動</a>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="site-name" href="index.html" aria-label="ClassView 授業一覧">ClassView</a>
+        <span class="header-context" aria-current="page">授業を探す</span>
+      </div>
+    </header>
+
+    <main id="main-content" class="page-shell catalog-page">
+      <header class="catalog-header">
+        <p class="page-eyebrow">Course catalog</p>
+        <h1>授業を探す</h1>
+        <p class="catalog-intro">
+          興味のある言葉や分野から授業を絞り込み、学ぶ内容や授業の進め方を確認できます。
+        </p>
+      </header>
+
+      <section class="search-panel" aria-labelledby="search-heading">
+        <h2 id="search-heading" class="visually-hidden">授業の検索と絞り込み</h2>
+        <div class="filter-field filter-field--keyword">
+          <label for="keyword">キーワード</label>
+          <input
+            id="keyword"
+            name="keyword"
+            type="search"
+            placeholder="授業名、学習内容など"
+            autocomplete="off"
+          >
+        </div>
+        <div class="filter-field">
+          <label for="category-filter">分野</label>
+          <select id="category-filter" name="category">
+            <option value="">すべて</option>
+          </select>
+        </div>
+        <div class="filter-field">
+          <label for="style-filter">授業形式</label>
+          <select id="style-filter" name="classStyle">
+            <option value="">すべて</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="results" aria-labelledby="results-heading">
+        <div class="results-header">
+          <h2 id="results-heading">授業一覧</h2>
+          <p id="result-count" class="result-count" aria-live="polite">読み込み中です</p>
+        </div>
+        <div id="course-list" class="course-grid" aria-live="polite" aria-busy="true">
+          <p class="loading">授業情報を読み込んでいます。</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>ClassView — 授業選択のための情報サイト</p>
+    </footer>
+  </body>
+</html>
