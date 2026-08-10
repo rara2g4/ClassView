@@ -1,0 +1,10 @@
+# ClassView syllabus importer (local-only generated files)
+tools/course-importer/tmp/
+tools/course-importer/uploads/
+tools/course-importer/backups/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/

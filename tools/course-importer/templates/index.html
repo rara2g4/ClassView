@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>シラバスインポーター | ClassView</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="shell site-header__inner">
+        <p class="brand">ClassView</p>
+        <span class="local-badge">ローカル専用ツール</span>
+      </div>
+    </header>
+
+    <main class="shell main-content">
+      <header class="page-header">
+        <p class="eyebrow">Course data tools</p>
+        <h1>シラバスインポーター</h1>
+        <p>
+          既存シラバスを基礎資料としてAIが授業案内の下書きを作り、人が採用・修正・不採用を判断した内容だけを
+          <code>data/courses.json</code> へ安全に追加します。
+        </p>
+      </header>
+
+      <ol class="step-guide" aria-label="登録の流れ">
+        <li><span>1</span>シラバス準備</li>
+        <li><span>2</span>AI変換</li>
+        <li><span>3</span>JSON取込</li>
+        <li><span>4</span>内容確認・補完</li>
+        <li><span>5</span>登録</li>
+      </ol>
+
+      <section class="workflow-section" aria-labelledby="prepare-heading">
+        <div class="section-heading">
+          <span class="step-number" aria-hidden="true">1</span>
+          <div>
+            <h2 id="prepare-heading">PDFと授業IDを準備する</h2>
+            <p>登録対象が載っている1ページ、または連続したページ範囲を抽出します。</p>
+          </div>
+        </div>
+
+        <form id="prepare-form" class="form-grid" enctype="multipart/form-data">
+          <fieldset class="mode-selector field--wide">
+            <legend>変換モード</legend>
+            <label class="mode-option">
+              <input type="radio" name="conversionMode" value="support" checked>
+              <span><strong>シラバス作成支援</strong><small>不足部分に、専門知識と教育設計を使ったAI下書きを提案します。</small></span>
+            </label>
+            <label class="mode-option">
+              <input type="radio" name="conversionMode" value="strict">
+              <span><strong>厳格変換</strong><small>シラバスの記載と、同じシラバス内から直接推察できる内容だけを使います。</small></span>
+            </label>
+          </fieldset>
+          <div class="field field--wide">
+            <label for="pdf">シラバスPDF</label>
+            <input id="pdf" name="pdf" type="file" accept="application/pdf,.pdf" required>
+            <p class="field-help">PDF全体は登録されません。指定した連続ページだけを1つのPDFとして一時保存します。</p>
+          </div>
+          <div class="field">
+            <label for="page-range">掲載ページ（1ページ目を1とする）</label>
+            <input
+              id="page-range"
+              name="pageRange"
+              type="text"
+              value="1"
+              required
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="42 または 42-43"
+              pattern="[0-9]+(?:-[0-9]+)?"
+            >
+            <p class="field-help">1ページなら「42」、連続する複数ページなら「42-43」と入力します（最大20ページ）。</p>
+          </div>
+          <div class="field">
+            <label for="course-id">登録用授業ID</label>
+            <input
+              id="course-id"
+              name="courseId"
+              type="text"
+              required
+              pattern="{{ id_pattern }}"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="web-programming"
+            >
+            <p class="field-help">半角英小文字・数字・ハイフン。既存IDとの重複は登録できません。</p>
+          </div>
+          <div class="form-actions field--wide">
+            <button class="button" type="submit" id="prepare-button">抽出ページと指示文を準備</button>
+          </div>
+        </form>
+        <div id="prepare-status" class="status" role="status" aria-live="polite"></div>
+
+        <div id="prepared-result" class="prepared-result" hidden>
+          <h3>準備できました</h3>
+          <p id="prepared-summary"></p>
+          <div class="link-row">
+            <a id="view-pdf" class="text-link" href="#" target="_blank" rel="noopener">抽出PDFを開く</a>
+            <a id="download-pdf" class="text-link" href="#" download>抽出PDFをダウンロード</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="workflow-section" aria-labelledby="convert-heading">
+        <div class="section-heading">
+          <span class="step-number" aria-hidden="true">2</span>
+          <div>
+            <h2 id="convert-heading">ChatGPTでJSONへ変換する</h2>
+            <p>抽出PDFを添付し、下の指示文をそのまま送ってください。</p>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="conversion-prompt">AI用変換指示文</label>
+          <textarea id="conversion-prompt" rows="12" readonly placeholder="手順1を完了すると指示文が表示されます。"></textarea>
+        </div>
+        <div class="form-actions form-actions--split">
+          <button class="button button--secondary" type="button" id="copy-prompt" disabled>指示文をコピー</button>
+          <a class="button button--link" href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">ChatGPTを開く</a>
+        </div>
+        <p class="note">PDFの添付と送信は手動で行います。このツールがChatGPTを自動操作することはありません。</p>
+        <div id="copy-status" class="status" role="status" aria-live="polite"></div>
+      </section>
+
+      <section class="workflow-section" aria-labelledby="validate-heading">
+        <div class="section-heading">
+          <span class="step-number" aria-hidden="true">3</span>
+          <div>
+            <h2 id="validate-heading">AIのJSONをフォームへ取り込む</h2>
+            <p>ChatGPTが返したJSONを検証し、人間向け編集フォームへ展開します。</p>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="course-json">AI変換結果JSON</label>
+          <textarea id="course-json" rows="18" spellcheck="false" placeholder="{&#10;  &quot;course&quot;: { ... },&#10;  &quot;fieldMeta&quot;: { ... }&#10;}"></textarea>
+          <p class="field-help">標準形式はcourseとfieldMetaを持つ中間JSONです。従来の授業JSON単体も取り込めます。取り込み後はフォームで編集してください。</p>
+        </div>
+        <div class="form-actions">
+          <button class="button" type="button" id="validate-button" disabled>JSONを検証してフォームへ反映</button>
+        </div>
+        <div id="validation-status" class="status" role="status" aria-live="polite"></div>
+
+        <div id="validation-result" class="validation-result" hidden>
+          <h3>検証結果</h3>
+          <ul class="check-list" aria-label="検証項目">
+            <li data-check="jsonSyntax">JSONの構文</li>
+            <li data-check="metadata">情報源メタデータ</li>
+            <li data-check="schema">ClassView Schema</li>
+            <li data-check="idMatch">準備した授業IDとの一致</li>
+            <li data-check="notDuplicate">既存IDとの重複なし</li>
+          </ul>
+          <ul id="validation-errors" class="error-list"></ul>
+        </div>
+      </section>
+
+      <section id="editor-section" class="workflow-section" aria-labelledby="editor-heading" hidden>
+        <div class="section-heading">
+          <span class="step-number" aria-hidden="true">4</span>
+          <div>
+            <h2 id="editor-heading">授業情報を確認・補完する</h2>
+            <p>AIが抽出・推察・提案した内容を確認し、AI下書きは採用・修正・不採用を判断します。</p>
+          </div>
+        </div>
+
+        <div class="source-status-legend" aria-label="入力状態の説明">
+          <span class="field-state field-state--explicit">シラバスから取得</span>
+          <span class="field-state field-state--inferred">シラバスから推察</span>
+          <span class="field-state field-state--proposed">AI下書き提案・未確認</span>
+          <span class="field-state field-state--missing">未入力</span>
+          <span class="field-state field-state--manual">手動修正</span>
+        </div>
+
+        <section id="proposal-summary" class="proposal-summary" aria-labelledby="proposal-summary-heading" hidden>
+          <h3 id="proposal-summary-heading">AI下書き提案の確認状況</h3>
+          <p id="proposal-summary-count"></p>
+          <ul id="proposal-summary-list"></ul>
+          <p>各入力欄で内容と提案理由を読み、「このまま採用」「修正して採用」「使用しない」のいずれかを判断してください。一括自動採用はできません。</p>
+        </section>
+
+        <div class="editor-workspace">
+          <section class="editor-pane" aria-labelledby="editor-form-heading">
+            <h3 id="editor-form-heading">登録情報を編集</h3>
+            <p class="editor-pane__intro">任意項目は空欄のままでも登録できます。授業IDは準備時の値から変更できません。</p>
+            <form id="course-editor" novalidate>
+              <div id="editor-fields"></div>
+            </form>
+          </section>
+
+          <aside class="preview-pane" aria-labelledby="preview-heading">
+            <p class="eyebrow">Live preview</p>
+            <h3 id="preview-heading">公開時のプレビュー</h3>
+            <div id="preview-content"></div>
+          </aside>
+        </div>
+
+        <details class="advanced-json">
+          <summary>高度な確認：現在のJSONを見る</summary>
+          <div class="field">
+            <label for="generated-json">フォームから生成されるClassView用JSON</label>
+            <textarea id="generated-json" rows="18" readonly spellcheck="false"></textarea>
+          </div>
+        </details>
+
+        <div class="final-validation-area">
+          <button class="button" type="button" id="final-validate-button">編集内容を最終検証</button>
+          <p>フォームの内容をJSON Schema、授業ID、既存IDとの重複で再検証します。</p>
+        </div>
+        <div id="final-validation-status" class="status" role="status" aria-live="polite"></div>
+        <ul id="final-validation-errors" class="error-list"></ul>
+      </section>
+
+      <section id="register-section" class="workflow-section" aria-labelledby="register-heading" hidden>
+        <div class="section-heading">
+          <span class="step-number" aria-hidden="true">5</span>
+          <div>
+            <h2 id="register-heading">ClassViewへ追加する</h2>
+            <p>最終検証に合格した内容だけを、安全な追記処理へ渡します。</p>
+          </div>
+        </div>
+
+        <div id="inference-review" class="inference-review" hidden>
+          <h3>シラバスからの推察項目を確認</h3>
+          <p>次の項目には、同じシラバス内の情報から直接推察した内容が残っています。</p>
+          <ul id="inference-review-list"></ul>
+          <label class="confirmation-check">
+            <input id="inference-confirmed" type="checkbox">
+            シラバスからの推察項目とその根拠を確認しました
+          </label>
+        </div>
+
+        <div class="register-area">
+          <button class="button button--strong" type="button" id="register-button" disabled>ClassViewへ追加</button>
+          <p>追加直前にもSchema・ID・重複を再確認し、元ファイルのバックアップを作成します。</p>
+        </div>
+        <div id="register-status" class="status" role="status" aria-live="polite"></div>
+        <div id="success-result" class="success-result" hidden>
+          <h3>授業を追加しました</h3>
+          <dl>
+            <div><dt>授業名</dt><dd id="success-title"></dd></div>
+            <div><dt>授業ID</dt><dd id="success-id"></dd></div>
+            <div><dt>追加先</dt><dd><code id="success-courses-path"></code></dd></div>
+            <div><dt>バックアップ</dt><dd><code id="success-backup-path"></code></dd></div>
+          </dl>
+          <p>内容の差分はリポジトリのルートで <code>git diff -- data/courses.json</code> を実行して確認できます。</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="shell">ClassView syllabus importer — localhost only</div>
+    </footer>
+    <script src="{{ url_for('static', filename='editor-state.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+  </body>
+</html>

@@ -25,18 +25,28 @@
       header.append(element("p", "course-summary", course.summary));
     }
 
+    const academicYear = hasText(course.academicYear)
+      ? course.academicYear.trim().endsWith("年度")
+        ? course.academicYear.trim()
+        : `${course.academicYear.trim()}年度`
+      : "";
     const facts = [
-      ["分野", course.category],
-      ["対象学年", course.grade],
-      ["授業形式", course.classStyle],
-      ["区分", course.courseType],
-      ["前提知識", course.prerequisites],
-    ].filter(([, value]) => hasText(value));
+      { label: "分野", value: course.category },
+      { label: "対象学年", value: course.grade },
+      { label: "年度", value: academicYear },
+      { label: "講師", value: course.instructor },
+      { label: "授業形式", value: course.classStyle },
+      { label: "区分", value: course.courseType },
+      { label: "前提知識", value: course.prerequisites, wide: true },
+    ].filter(({ value }) => hasText(value));
 
     if (facts.length) {
       const list = element("dl", "course-facts");
-      facts.forEach(([label, value]) => {
-        const item = element("div", "course-facts__item");
+      facts.forEach(({ label, value, wide = false }) => {
+        const layoutClass = wide
+          ? "course-facts__item--wide"
+          : "course-facts__item--compact";
+        const item = element("div", `course-facts__item ${layoutClass}`);
         item.append(element("dt", "", label));
         item.append(element("dd", "", value));
         list.append(item);
@@ -49,9 +59,9 @@
 
   const createPrimaryInfo = (course) => {
     const items = [
-      ["01", "この授業で学ぶこと", course.learningGoals],
+      ["01", "授業概要・到達目標", course.learningGoals],
       ["02", "授業の進め方", course.classFlow],
-      ["03", "授業後にできるようになること", course.outcomes],
+      ["03", "身につく知識・できるようになること", course.outcomes],
     ].filter(([, , value]) => hasText(value));
 
     if (!items.length) return null;
@@ -90,6 +100,19 @@
     return section;
   };
 
+  const formatSessionLabel = (session, index) => {
+    if (!hasText(session)) return `第${index + 1}回`;
+
+    const value = session.trim();
+    if (/^第.+回$/.test(value)) return value;
+
+    const numericSession = value.match(/^(\d+)(?:\s*[〜～~-]\s*(\d+))?$/);
+    if (!numericSession) return value;
+
+    const [, start, end] = numericSession;
+    return end ? `第${start}〜${end}回` : `第${start}回`;
+  };
+
   const createScheduleSection = (schedule) => {
     const validItems = Array.isArray(schedule)
       ? schedule.filter(
@@ -100,12 +123,16 @@
 
     const section = element("section", "content-section");
     section.append(element("h3", "", "授業回ごとの内容"));
-    const list = element("ol", "schedule-list");
+    const list = element("ul", "schedule-list");
 
     validItems.forEach((item, index) => {
       const row = element("li");
       row.append(
-        element("span", "schedule-list__session", item.session || `第${index + 1}回`)
+        element(
+          "span",
+          "schedule-list__session",
+          formatSessionLabel(item.session, index)
+        )
       );
       const detail = element("p", "schedule-list__detail");
       if (hasText(item.title)) detail.append(element("strong", "", item.title));

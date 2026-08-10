@@ -1,0 +1,191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rara2g4.github.io/ClassView/data/course.schema.json",
+  "title": "ClassView course",
+  "description": "ClassViewへ追加する授業1件分のデータ仕様です。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "summary",
+    "category",
+    "grade",
+    "classStyle"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "description": "授業を識別する一意なID。半角英小文字・数字・ハイフンのみを使用します。"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "シラバスに記載された正式な授業名です。"
+    },
+    "summary": {
+      "type": "string",
+      "description": "一覧ページで授業内容を短時間で把握するため、シラバスの事実だけから授業の目的を一文程度に要約したものです。詳細な説明は含めず、詳細ページ上部にも表示します。情報がなければ空文字にします。"
+    },
+    "category": {
+      "type": "string",
+      "description": "授業の分野。空でない値は一覧の分野フィルター候補になります。情報がなければ空文字にします。"
+    },
+    "grade": {
+      "type": "string",
+      "description": "対象学年。情報がなければ空文字にします。"
+    },
+    "academicYear": {
+      "$ref": "#/$defs/nullableString",
+      "description": "この授業情報の基準となる年度です。PDFまたは管理者入力で明確な場合だけ設定します。"
+    },
+    "instructor": {
+      "$ref": "#/$defs/nullableString",
+      "description": "授業を担当する講師名、またはシラバスに記載された担当者の役割です。"
+    },
+    "courseType": {
+      "$ref": "#/$defs/nullableString",
+      "description": "必修・選択などの区分です。"
+    },
+    "classStyle": {
+      "type": "string",
+      "description": "講義・演習・グループワークなどの授業形式。空でない値は一覧の授業形式フィルター候補になります。情報がなければ空文字にします。"
+    },
+    "prerequisites": {
+      "$ref": "#/$defs/nullableString",
+      "description": "受講前に必要な知識・技能・履修条件です。"
+    },
+    "learningGoals": {
+      "$ref": "#/$defs/nullableString",
+      "description": "シラバスの「授業概要・到達目標」などに記載された内容を、重要な情報を捨てずに保持したものです。"
+    },
+    "classFlow": {
+      "$ref": "#/$defs/nullableString",
+      "description": "授業の進め方です。"
+    },
+    "outcomes": {
+      "$ref": "#/$defs/nullableString",
+      "description": "授業終了時に学生が身につけている知識・理解・技能・遂行能力です。何を学ぶかではなく、学んだ結果として何を理解・説明・使用・作成・実装・判断・分析できるかを記述します。"
+    },
+    "topics": {
+      "$ref": "#/$defs/nullableStringArray",
+      "description": "授業で扱う主要な分野・テーマを、授業回番号を原則含めず、重複なく整理した俯瞰一覧です。検索対象にもなります。"
+    },
+    "tools": {
+      "$ref": "#/$defs/nullableStringArray",
+      "description": "使用するソフトウェア、機材、教科書、教材です。"
+    },
+    "assignments": {
+      "$ref": "#/$defs/nullableStringArray",
+      "description": "課題、演習、制作物の例です。"
+    },
+    "schedule": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "description": "シラバスに記載された授業回ごとの内容を、回次と時系列を保って格納したものです。連続する完全同一内容は1つの回次範囲へまとめられます。",
+      "items": {
+        "$ref": "#/$defs/scheduleItem"
+      }
+    },
+    "suitableFor": {
+      "$ref": "#/$defs/nullableString",
+      "description": "どのような学生に向いている授業かを、シラバスの記載に基づいて示します。"
+    },
+    "images": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "description": "授業風景画像の情報です。",
+      "items": {
+        "$ref": "#/$defs/imageItem"
+      }
+    }
+  },
+  "$defs": {
+    "nullableString": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "nullableStringArray": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "scheduleItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "session": {
+          "$ref": "#/$defs/nullableString",
+          "description": "第1回、第2〜3回、前半などの回次表記です。"
+        },
+        "title": {
+          "$ref": "#/$defs/nullableString",
+          "description": "その回または期間の短い見出しです。"
+        },
+        "description": {
+          "$ref": "#/$defs/nullableString",
+          "description": "その回または期間に扱う内容です。"
+        }
+      },
+      "anyOf": [
+        {
+          "required": [
+            "title"
+          ],
+          "properties": {
+            "title": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "required": [
+            "description"
+          ],
+          "properties": {
+            "description": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "imageItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "src"
+      ],
+      "properties": {
+        "src": {
+          "type": "string",
+          "minLength": 1,
+          "description": "画像の相対パスまたはHTTPS URLです。"
+        },
+        "alt": {
+          "$ref": "#/$defs/nullableString",
+          "description": "画像の内容を伝える代替テキストです。"
+        },
+        "caption": {
+          "$ref": "#/$defs/nullableString",
+          "description": "画像下に表示する説明です。"
+        }
+      }
+    }
+  }
+}

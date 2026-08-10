@@ -1,0 +1,30 @@
+{
+  "id": "basic-information-1-example",
+  "title": "基本情報 1",
+  "summary": "基本情報技術者試験の合格を目指す授業です。",
+  "category": "",
+  "grade": "",
+  "courseType": null,
+  "classStyle": "",
+  "prerequisites": null,
+  "learningGoals": "国家資格であるIPAの基本情報技術者資格の合格を目指す授業です。ITパスポートよりかなり難しいため、合格を目指す人の受講を想定しています。問題は様々な分野から出題され、アルゴリズム・SQL・セキュリティ・プログラミング系の授業を並行して受講すると理解が深まります。",
+  "classFlow": null,
+  "outcomes": null,
+  "topics": [
+    "アルゴリズム",
+    "科目B対策",
+    "基礎理論",
+    "システム開発技術",
+    "ネットワーク技術",
+    "コンピュータ構成要素",
+    "情報セキュリティ",
+    "データベース技術",
+    "ソフトウエアとマルチメディア",
+    "システム構成要素"
+  ],
+  "tools": [],
+  "assignments": [],
+  "schedule": [],
+  "suitableFor": null,
+  "images": []
+}

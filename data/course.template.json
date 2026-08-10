@@ -1,0 +1,21 @@
+{
+  "id": "course-id",
+  "title": "授業名",
+  "summary": "",
+  "category": "",
+  "grade": "",
+  "academicYear": null,
+  "instructor": null,
+  "courseType": null,
+  "classStyle": "",
+  "prerequisites": null,
+  "learningGoals": null,
+  "classFlow": null,
+  "outcomes": null,
+  "topics": [],
+  "tools": [],
+  "assignments": [],
+  "schedule": [],
+  "suitableFor": null,
+  "images": []
+}
