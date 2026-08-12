@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>授業管理 | ClassView</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="shell site-header__inner">
+        <p class="brand">ClassView</p>
+        <span class="local-badge">ローカル専用ツール</span>
+        <a class="header-link" href="{{ url_for('index') }}">管理ホーム</a>
+        <a class="header-link" href="{{ url_for('registration_page') }}">新規授業登録へ</a>
+      </div>
+    </header>
+
+    <main class="shell main-content">
+      <header class="page-header management-page-header">
+        <p class="eyebrow">Course management</p>
+        <h1>授業管理</h1>
+        <p>公開中の授業を編集・年度引き継ぎ・アーカイブできます。年度更新では前年度版を残し、新年度版を別の授業として追加してください。</p>
+      </header>
+
+      <section class="management-browser" aria-labelledby="course-list-heading">
+        <div class="management-toolbar">
+          <div class="field management-search">
+            <label for="management-search">授業を検索</label>
+            <input id="management-search" type="search" autocomplete="off" placeholder="授業名、ID、年度、講師">
+          </div>
+          <div class="management-tabs" role="tablist" aria-label="授業の状態">
+            <button class="management-tab is-active" type="button" role="tab" aria-selected="true" data-management-tab="published">
+              公開中 <span id="published-count">0</span>
+            </button>
+            <button class="management-tab" type="button" role="tab" aria-selected="false" data-management-tab="archived">
+              アーカイブ <span id="archived-count">0</span>
+            </button>
+          </div>
+        </div>
+        <div class="management-list-heading">
+          <h2 id="course-list-heading">公開中の授業</h2>
+          <p id="management-result-count" aria-live="polite"></p>
+        </div>
+        <div id="management-status" class="status" role="status" aria-live="polite"></div>
+        <div id="management-list" class="management-list" aria-live="polite">
+          <p class="management-empty">授業情報を読み込んでいます。</p>
+        </div>
+      </section>
+
+      <section id="management-editor-section" class="workflow-section management-editor-section" aria-labelledby="management-editor-heading" hidden>
+        <div class="section-heading">
+          <span class="step-number" aria-hidden="true">✓</span>
+          <div>
+            <h2 id="management-editor-heading">授業情報を編集</h2>
+            <p id="management-editor-description"></p>
+          </div>
+        </div>
+
+        <div id="rollover-notice" class="rollover-notice" hidden>
+          <strong>前年度版は変更されません。</strong>
+          <span>新しい授業IDと年度を確認し、必要な項目だけを修正して新年度版を追加してください。</span>
+        </div>
+
+        <div class="editor-workspace">
+          <section class="editor-pane" aria-labelledby="management-form-heading">
+            <h3 id="management-form-heading">登録情報</h3>
+            <p id="management-form-intro" class="editor-pane__intro"></p>
+            <form id="management-course-editor" novalidate>
+              <div id="management-editor-fields"></div>
+            </form>
+          </section>
+
+          <aside class="preview-pane" aria-labelledby="management-preview-heading">
+            <p class="eyebrow">Live preview</p>
+            <h3 id="management-preview-heading">公開時のプレビュー</h3>
+            <div id="management-preview-content"></div>
+
+            <section id="management-diff" class="management-diff" aria-labelledby="management-diff-heading">
+              <h4 id="management-diff-heading">変更点</h4>
+              <p id="management-diff-summary"></p>
+              <ul id="management-diff-list"></ul>
+            </section>
+          </aside>
+        </div>
+
+        <div class="management-editor-actions">
+          <button class="button button--secondary" type="button" id="management-editor-cancel">一覧へ戻る</button>
+          <button class="button button--strong" type="button" id="management-save-button">変更を保存</button>
+        </div>
+        <div id="management-save-status" class="status" role="status" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <dialog id="management-confirm-dialog" class="management-dialog" aria-labelledby="management-dialog-heading">
+      <form method="dialog">
+        <p class="eyebrow">Confirm operation</p>
+        <h2 id="management-dialog-heading"></h2>
+        <p id="management-dialog-message"></p>
+        <dl id="management-dialog-course" class="management-dialog__course"></dl>
+        <p id="management-dialog-warning" class="management-dialog__warning"></p>
+        <div class="management-dialog__actions">
+          <button class="button button--secondary" value="cancel">キャンセル</button>
+          <button class="button" type="button" id="management-dialog-confirm"></button>
+        </div>
+      </form>
+    </dialog>
+
+    <footer class="site-footer">
+      <div class="shell">ClassView course management — localhost only</div>
+    </footer>
+    <script>window.CLASSVIEW_ID_PATTERN = {{ id_pattern | tojson }};</script>
+    <script src="{{ url_for('static', filename='editor-state.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='course-management.js') }}" defer></script>
+  </body>
+</html>

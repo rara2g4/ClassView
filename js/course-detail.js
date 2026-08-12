@@ -92,10 +92,13 @@
     return section;
   };
 
-  const createTextSection = (heading, body) => {
+  const createSuitableForSection = (body) => {
     if (!hasText(body)) return null;
-    const section = element("section", "content-section");
-    section.append(element("h3", "", heading));
+
+    const section = element("section", "suitable-for");
+    section.append(
+      element("h2", "suitable-for__heading", "向いている学生")
+    );
     section.append(element("p", "", body));
     return section;
   };
@@ -178,20 +181,28 @@
   };
 
   const createSupplementaryInfo = (course) => {
-    const sections = [
+    const shortSections = [
       createListSection("主な学習内容", course.topics),
       createListSection("使用するソフトウェアや教材", course.tools),
+    ].filter(Boolean);
+    const fullWidthSections = [
       createListSection("課題や制作物の例", course.assignments),
       createScheduleSection(course.schedule),
       createImageSection(course.images),
-      createTextSection("向いている学生", course.suitableFor),
     ].filter(Boolean);
 
-    if (!sections.length) return null;
+    if (!shortSections.length && !fullWidthSections.length) return null;
 
     const wrapper = element("div", "supplementary");
     wrapper.append(element("h2", "supplementary__heading", "授業について詳しく"));
-    sections.forEach((section) => wrapper.append(section));
+
+    if (shortSections.length) {
+      const grid = element("div", "supplementary__short-grid");
+      shortSections.forEach((section) => grid.append(section));
+      wrapper.append(grid);
+    }
+
+    fullWidthSections.forEach((section) => wrapper.append(section));
     return wrapper;
   };
 
@@ -201,6 +212,9 @@
 
     const primary = createPrimaryInfo(course);
     if (primary) fragment.append(primary);
+
+    const suitableFor = createSuitableForSection(course.suitableFor);
+    if (suitableFor) fragment.append(suitableFor);
 
     const supplementary = createSupplementaryInfo(course);
     if (supplementary) fragment.append(supplementary);

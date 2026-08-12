@@ -3,11 +3,13 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import os
 import shutil
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from pypdf import PdfReader, PdfWriter
 
@@ -37,10 +39,18 @@ class CourseImporterTests(unittest.TestCase):
             json.dumps({"courses": [self.existing_course]}, ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
+        self.archived_courses_path = self.fixture_root / "data" / "archived-courses.json"
+        self.archived_courses_path.write_text(
+            json.dumps({"courses": []}, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
         self.work_root = Path(self.temp_directory.name) / "work"
         self.service = CourseImporter(self.fixture_root, self.work_root)
         self.production_hash = hashlib.sha256(
             (REPO_ROOT / "data" / "courses.json").read_bytes()
+        ).hexdigest()
+        self.production_archive_hash = hashlib.sha256(
+            (REPO_ROOT / "data" / "archived-courses.json").read_bytes()
         ).hexdigest()
 
     def tearDown(self):
@@ -48,6 +58,14 @@ class CourseImporterTests(unittest.TestCase):
             (REPO_ROOT / "data" / "courses.json").read_bytes()
         ).hexdigest()
         self.assertEqual(self.production_hash, current_hash, "実運用のcourses.jsonが変更されました")
+        current_archive_hash = hashlib.sha256(
+            (REPO_ROOT / "data" / "archived-courses.json").read_bytes()
+        ).hexdigest()
+        self.assertEqual(
+            self.production_archive_hash,
+            current_archive_hash,
+            "実運用のarchived-courses.jsonが変更されました",
+        )
         self.temp_directory.cleanup()
 
     @staticmethod
@@ -650,6 +668,237 @@ class CourseImporterTests(unittest.TestCase):
         self.assertEqual(len(backups), 1)
         backup_document = json.loads(backups[0].read_text(encoding="utf-8"))
         self.assertEqual([item["id"] for item in backup_document["courses"]], ["existing-course"])
+
+    def test_management_catalog_and_existing_course_loading(self):
+        self.existing_course["academicYear"] = "2026"
+        self.existing_course["instructor"] = "本多 利恵"
+        self.courses_path.write_text(
+            json.dumps({"courses": [self.existing_course]}, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+
+        catalog = self.service.management_catalog()
+        loaded = self.service.managed_course("published", "existing-course")
+
+        self.assertEqual(catalog["published"][0]["academicYear"], "2026")
+        self.assertEqual(catalog["published"][0]["instructor"], "本多 利恵")
+        self.assertEqual(catalog["archived"], [])
+        self.assertEqual(loaded["course"], self.existing_course)
+        self.assertEqual(loaded["hash"], self.service._course_hash(self.existing_course))
+
+    def test_existing_course_update_keeps_id_and_other_courses(self):
+        other = self.course("other-course", "変更しない授業")
+        self.courses_path.write_text(
+            json.dumps(
+                {"courses": [self.existing_course, other]},
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        edited = dict(self.existing_course)
+        edited["summary"] = "管理画面で更新した概要です。"
+        result = self.service.update_managed_course(
+            "existing-course",
+            edited,
+            self.service._course_hash(self.existing_course),
+        )
+
+        saved = json.loads(self.courses_path.read_text(encoding="utf-8"))["courses"]
+        self.assertEqual(saved[0]["id"], "existing-course")
+        self.assertEqual(saved[0]["summary"], edited["summary"])
+        self.assertEqual(saved[1], other)
+        self.assertEqual(len(result["backupPaths"]), 1)
+        self.assertTrue(list((self.work_root / "backups").glob("courses-edit-existing-course-*.json")))
+
+    def test_existing_course_update_rejects_id_change_and_schema_error(self):
+        original_hash = self.service._course_hash(self.existing_course)
+        changed_id = dict(self.existing_course)
+        changed_id["id"] = "different-course"
+        with self.assertRaises(ImporterError) as id_context:
+            self.service.update_managed_course(
+                "existing-course", changed_id, original_hash
+            )
+        self.assertEqual(id_context.exception.code, "id_change_not_allowed")
+
+        invalid = dict(self.existing_course)
+        invalid["title"] = ""
+        with self.assertRaises(ImporterError) as schema_context:
+            self.service.update_managed_course(
+                "existing-course", invalid, original_hash
+            )
+        self.assertEqual(schema_context.exception.code, "schema_error")
+        self.assertEqual(
+            json.loads(self.courses_path.read_text(encoding="utf-8"))["courses"],
+            [self.existing_course],
+        )
+
+    def test_rollover_draft_increments_year_and_replaces_year_suffix(self):
+        original = self.course("basic-information-1-2026", "基本情報1")
+        original["academicYear"] = "2026"
+        original["instructor"] = "本多 利恵"
+        self.courses_path.write_text(
+            json.dumps({"courses": [original]}, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+
+        draft = self.service.rollover_draft("basic-information-1-2026")
+
+        self.assertEqual(draft["course"]["id"], "basic-information-1-2027")
+        self.assertEqual(draft["course"]["academicYear"], "2027")
+        self.assertEqual(draft["course"]["instructor"], "本多 利恵")
+        self.assertTrue(draft["yearSuggested"])
+        self.assertEqual(draft["original"], original)
+
+    def test_rollover_without_year_suffix_appends_new_year(self):
+        original = self.course("basic-information-1", "基本情報1")
+        original["academicYear"] = "2026年度"
+        self.courses_path.write_text(
+            json.dumps({"courses": [original]}, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        draft = self.service.rollover_draft("basic-information-1")
+        self.assertEqual(draft["course"]["id"], "basic-information-1-2027")
+        self.assertEqual(draft["course"]["academicYear"], "2027")
+
+    def test_rollover_preserves_previous_year_and_allows_partial_change(self):
+        original = self.course("basic-information-1-2026", "基本情報1")
+        original["academicYear"] = "2026"
+        original["instructor"] = "本多 利恵"
+        self.courses_path.write_text(
+            json.dumps({"courses": [original]}, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        draft = self.service.rollover_draft(original["id"])
+        next_course = draft["course"]
+        next_course["instructor"] = "山田 太郎"
+
+        self.service.create_next_year_course(
+            original["id"], next_course, draft["originalHash"]
+        )
+
+        saved = json.loads(self.courses_path.read_text(encoding="utf-8"))["courses"]
+        self.assertEqual(saved[0], original)
+        self.assertEqual(saved[0]["instructor"], "本多 利恵")
+        self.assertEqual(saved[1]["id"], "basic-information-1-2027")
+        self.assertEqual(saved[1]["academicYear"], "2027")
+        self.assertEqual(saved[1]["instructor"], "山田 太郎")
+        self.assertTrue(list((self.work_root / "backups").glob("courses-rollover-*.json")))
+
+    def test_rollover_can_add_same_content_with_only_id_and_year_changed(self):
+        original = self.course("database-basics-2026", "データベース基礎")
+        original["academicYear"] = "2026"
+        self.courses_path.write_text(
+            json.dumps({"courses": [original]}, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        draft = self.service.rollover_draft(original["id"])
+        self.service.create_next_year_course(
+            original["id"], draft["course"], draft["originalHash"]
+        )
+        saved = json.loads(self.courses_path.read_text(encoding="utf-8"))["courses"]
+        self.assertEqual(saved[0], original)
+        comparable = dict(saved[1])
+        comparable["id"] = original["id"]
+        comparable["academicYear"] = original["academicYear"]
+        self.assertEqual(comparable, original)
+
+    def test_rollover_rejects_duplicate_new_id(self):
+        original = self.course("basic-information-1-2026", "基本情報1")
+        original["academicYear"] = "2026"
+        duplicate = self.course("basic-information-1-2027", "基本情報1")
+        duplicate["academicYear"] = "2027"
+        self.courses_path.write_text(
+            json.dumps({"courses": [original, duplicate]}, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        attempted = dict(duplicate)
+        with self.assertRaises(ImporterError) as context:
+            self.service.create_next_year_course(
+                original["id"], attempted, self.service._course_hash(original)
+            )
+        self.assertEqual(context.exception.code, "duplicate_id")
+
+    def test_archive_restore_and_permanent_delete_flow(self):
+        course_hash = self.service._course_hash(self.existing_course)
+        archived_result = self.service.archive_managed_course(
+            "existing-course", course_hash
+        )
+        self.assertEqual(
+            json.loads(self.courses_path.read_text(encoding="utf-8"))["courses"], []
+        )
+        self.assertEqual(
+            json.loads(self.archived_courses_path.read_text(encoding="utf-8"))["courses"],
+            [self.existing_course],
+        )
+        self.assertEqual(len(archived_result["backupPaths"]), 2)
+
+        restored_result = self.service.restore_managed_course(
+            "existing-course", course_hash
+        )
+        self.assertEqual(
+            json.loads(self.courses_path.read_text(encoding="utf-8"))["courses"],
+            [self.existing_course],
+        )
+        self.assertEqual(
+            json.loads(self.archived_courses_path.read_text(encoding="utf-8"))["courses"], []
+        )
+        self.assertEqual(len(restored_result["backupPaths"]), 2)
+
+        second_hash = self.service._course_hash(self.existing_course)
+        self.service.archive_managed_course("existing-course", second_hash)
+        delete_result = self.service.permanently_delete_archived_course(
+            "existing-course", second_hash
+        )
+        self.assertEqual(
+            json.loads(self.archived_courses_path.read_text(encoding="utf-8"))["courses"], []
+        )
+        self.assertEqual(delete_result["course"]["id"], "existing-course")
+        self.assertTrue(list((self.work_root / "backups").glob("archived-courses-delete-*.json")))
+
+    def test_restore_rejects_public_id_duplicate(self):
+        self.archived_courses_path.write_text(
+            json.dumps({"courses": [self.existing_course]}, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        with self.assertRaises(ImporterError) as context:
+            self.service.restore_managed_course(
+                "existing-course", self.service._course_hash(self.existing_course)
+            )
+        self.assertEqual(context.exception.code, "duplicate_id")
+        self.assertEqual(
+            json.loads(self.archived_courses_path.read_text(encoding="utf-8"))["courses"],
+            [self.existing_course],
+        )
+
+    def test_two_file_archive_failure_rolls_back_both_documents(self):
+        original_public = self.courses_path.read_text(encoding="utf-8")
+        original_archived = self.archived_courses_path.read_text(encoding="utf-8")
+        real_replace = os.replace
+        call_count = 0
+
+        def fail_second_replace(source, destination):
+            nonlocal call_count
+            call_count += 1
+            if call_count == 2:
+                raise OSError("simulated second file failure")
+            return real_replace(source, destination)
+
+        with patch("importer.os.replace", side_effect=fail_second_replace):
+            with self.assertRaises(ImporterError) as context:
+                self.service.archive_managed_course(
+                    "existing-course", self.service._course_hash(self.existing_course)
+                )
+
+        self.assertEqual(context.exception.code, "write_failed")
+        self.assertEqual(
+            json.loads(self.courses_path.read_text(encoding="utf-8")),
+            json.loads(original_public),
+        )
+        self.assertEqual(
+            json.loads(self.archived_courses_path.read_text(encoding="utf-8")),
+            json.loads(original_archived),
+        )
 
 
 if __name__ == "__main__":

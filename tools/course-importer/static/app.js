@@ -882,11 +882,9 @@
       });
       $("#success-title").textContent = payload.title;
       $("#success-id").textContent = payload.id;
-      $("#success-courses-path").textContent = payload.coursesPath;
-      $("#success-backup-path").textContent = payload.backupPath;
       successResult.hidden = false;
       state.validationToken = "";
-      setStatus(registerStatus, "授業データの追加が完了しました。", "success");
+      setStatus(registerStatus, "保存しました。未公開の変更があります。", "success");
       successResult.scrollIntoView({ behavior: "smooth", block: "nearest" });
     } catch (error) {
       setStatus(registerStatus, error.message, "error");

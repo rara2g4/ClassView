@@ -2,6 +2,11 @@
 tools/course-importer/tmp/
 tools/course-importer/uploads/
 tools/course-importer/backups/
+tools/course-importer/logs/
+tools/course-importer/runtime/
+tools/course-importer/dist/
+tools/course-importer/build/
+tools/course-importer/*.spec
 
 # Python
 __pycache__/

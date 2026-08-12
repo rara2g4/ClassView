@@ -3,27 +3,115 @@
 from __future__ import annotations
 
 import os
+import socket
+import sys
 import threading
 import webbrowser
 from pathlib import Path
+from uuid import uuid4
 
-from flask import Flask, jsonify, render_template, request, send_file
+from flask import Flask, g, jsonify, render_template, request, send_file
 from werkzeug.exceptions import RequestEntityTooLarge
+from werkzeug.serving import BaseWSGIServer, make_server
 
 from importer import CourseImporter, ImporterError
+from publisher import ClassViewPublisher, PublicationError
+from single_instance import (
+    APP_NAME,
+    APP_VERSION,
+    InstanceState,
+    SingleInstanceGuard,
+    find_existing_instance,
+    show_existing_instance_unavailable,
+)
 
 
-TOOL_ROOT = Path(__file__).resolve().parent
+if getattr(sys, "frozen", False):
+    if sys.stdout is None:
+        sys.stdout = open(os.devnull, "w", encoding="utf-8")
+    if sys.stderr is None:
+        sys.stderr = open(os.devnull, "w", encoding="utf-8")
+
+SOURCE_TOOL_ROOT = Path(__file__).resolve().parent
+if getattr(sys, "frozen", False):
+    executable_root = Path(sys.executable).resolve().parent
+    TOOL_ROOT = executable_root.parent if executable_root.name.lower() == "dist" else executable_root
+    BUNDLE_ROOT = Path(getattr(sys, "_MEIPASS", executable_root))
+else:
+    TOOL_ROOT = SOURCE_TOOL_ROOT
+    BUNDLE_ROOT = SOURCE_TOOL_ROOT
 REPO_ROOT = TOOL_ROOT.parents[1]
 
 
-def create_app(repo_root: Path | None = None, work_root: Path | None = None) -> Flask:
-    app = Flask(__name__)
+class RequestActivity:
+    """Track requests that must finish before the application can exit."""
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self._active = 0
+
+    def begin(self) -> None:
+        with self._lock:
+            self._active += 1
+
+    def end(self) -> None:
+        with self._lock:
+            self._active = max(0, self._active - 1)
+
+    def is_busy(self) -> bool:
+        with self._lock:
+            return self._active > 0
+
+
+class ApplicationRuntime:
+    """Coordinate graceful shutdown of the embedded local web server."""
+
+    def __init__(self, instance_id: str) -> None:
+        self.instance_id = instance_id
+        self._server: BaseWSGIServer | None = None
+        self._shutdown_started = threading.Event()
+
+    def attach_server(self, server: BaseWSGIServer) -> None:
+        self._server = server
+
+    def request_shutdown(self) -> bool:
+        if self._server is None or self._shutdown_started.is_set():
+            return False
+        self._shutdown_started.set()
+        thread = threading.Thread(
+            target=self._server.shutdown,
+            daemon=True,
+            name="classview-graceful-shutdown",
+        )
+        thread.start()
+        return True
+
+
+def create_app(
+    repo_root: Path | None = None,
+    work_root: Path | None = None,
+    *,
+    runtime: ApplicationRuntime | None = None,
+    activity: RequestActivity | None = None,
+    instance_id: str = "development",
+) -> Flask:
+    app = Flask(
+        __name__,
+        template_folder=str(BUNDLE_ROOT / "templates"),
+        static_folder=str(BUNDLE_ROOT / "static"),
+    )
     app.config["MAX_CONTENT_LENGTH"] = 512 * 1024 * 1024
     environment_work_root = os.environ.get("CLASSVIEW_IMPORTER_WORK_ROOT")
     default_work_root = Path(environment_work_root) if environment_work_root else TOOL_ROOT
     service = CourseImporter(repo_root or REPO_ROOT, work_root or default_work_root)
+    publisher = ClassViewPublisher(
+        repo_root or REPO_ROOT, work_root or default_work_root, service
+    )
+    request_activity = activity or RequestActivity()
     app.config["IMPORTER_SERVICE"] = service
+    app.config["PUBLISHER_SERVICE"] = publisher
+    app.config["REQUEST_ACTIVITY"] = request_activity
+    app.config["APPLICATION_RUNTIME"] = runtime
 
     @app.before_request
     def restrict_to_localhost():
@@ -34,9 +122,38 @@ def create_app(repo_root: Path | None = None, work_root: Path | None = None) -> 
             return jsonify({"error": "localhostのURLで開いてください。"}), 403
         return None
 
+    @app.before_request
+    def track_mutating_request():
+        git_read_endpoints = {"admin_status", "publication_history"}
+        modifies_local_state = request.method in {"POST", "PUT", "PATCH", "DELETE"}
+        if (
+            (modifies_local_state or request.endpoint in git_read_endpoints)
+            and request.endpoint != "shutdown_admin_tool"
+        ):
+            request_activity.begin()
+            g.classview_activity_tracked = True
+
+    @app.teardown_request
+    def finish_tracked_request(_error):
+        if getattr(g, "classview_activity_tracked", False):
+            request_activity.end()
+
     @app.errorhandler(ImporterError)
     def handle_importer_error(error: ImporterError):
         return jsonify({"error": error.message, "code": error.code}), error.status
+
+    @app.errorhandler(PublicationError)
+    def handle_publication_error(error: PublicationError):
+        return (
+            jsonify(
+                {
+                    "error": error.message,
+                    "code": error.code,
+                    "diagnostic": error.technical or publisher.last_diagnostic,
+                }
+            ),
+            error.status,
+        )
 
     @app.errorhandler(RequestEntityTooLarge)
     def handle_too_large(_error: RequestEntityTooLarge):
@@ -44,15 +161,136 @@ def create_app(repo_root: Path | None = None, work_root: Path | None = None) -> 
 
     @app.get("/")
     def index():
+        return render_template("dashboard.html")
+
+    @app.get("/register")
+    def registration_page():
         return render_template("index.html", id_pattern=service.id_pattern())
+
+    @app.get("/manage")
+    def manage():
+        return render_template("manage.html", id_pattern=service.id_pattern())
 
     @app.get("/api/health")
     def health():
-        return jsonify({"ok": True})
+        return jsonify(
+            {
+                "ok": True,
+                "status": "ok",
+                "app": APP_NAME,
+                "version": APP_VERSION,
+                "instanceId": instance_id,
+            }
+        )
+
+    @app.get("/api/admin/status")
+    def admin_status():
+        refresh = request.args.get("refresh") == "1"
+        auto_update = request.args.get("autoUpdate") == "1"
+        return jsonify(publisher.status(refresh=refresh, auto_update=auto_update))
+
+    @app.get("/api/admin/history")
+    def publication_history():
+        return jsonify({"history": publisher.history()})
+
+    @app.post("/api/admin/publish")
+    def publish_classview():
+        return jsonify(publisher.publish())
+
+    @app.post("/api/admin/reconnect")
+    def reconnect_publication_service():
+        return jsonify({"success": True, **publisher.reconnect()})
+
+    @app.post("/api/admin/shutdown")
+    def shutdown_admin_tool():
+        publisher_busy = getattr(publisher, "is_busy", lambda: False)()
+        if request_activity.is_busy() or publisher_busy:
+            return (
+                jsonify(
+                    {
+                        "error": "ClassViewを更新中です。処理が完了するまで終了できません。",
+                        "code": "operation_in_progress",
+                    }
+                ),
+                409,
+            )
+        if runtime is None or not runtime.request_shutdown():
+            return (
+                jsonify(
+                    {
+                        "error": "管理ツールを終了できませんでした。もう一度お試しください。",
+                        "code": "shutdown_unavailable",
+                    }
+                ),
+                503,
+            )
+        publisher.record_operation("管理ツールを終了")
+        return jsonify({"success": True, "message": "管理ツールを終了します。"})
 
     @app.get("/api/editor-config")
     def editor_config():
         return jsonify(service.editor_config())
+
+    @app.get("/api/manage/courses")
+    def management_catalog():
+        return jsonify(service.management_catalog())
+
+    @app.get("/api/manage/courses/<source>/<course_id>")
+    def managed_course(source: str, course_id: str):
+        return jsonify(service.managed_course(source, course_id))
+
+    @app.post("/api/manage/courses/<course_id>/rollover-draft")
+    def rollover_draft(course_id: str):
+        return jsonify(service.rollover_draft(course_id))
+
+    @app.post("/api/manage/courses/<course_id>/update")
+    def update_managed_course(course_id: str):
+        payload = request.get_json(silent=True) or {}
+        result = service.update_managed_course(
+            course_id,
+            payload.get("course"),
+            str(payload.get("expectedHash", "")),
+        )
+        publisher.record_operation("授業を編集", course_id)
+        return jsonify({"success": True, **result, "unpublished": True})
+
+    @app.post("/api/manage/courses/<course_id>/rollover")
+    def create_next_year_course(course_id: str):
+        payload = request.get_json(silent=True) or {}
+        result = service.create_next_year_course(
+            course_id,
+            payload.get("course"),
+            str(payload.get("expectedHash", "")),
+        )
+        publisher.record_operation("次年度版を追加", result["course"].get("id", ""))
+        return jsonify({"success": True, **result, "unpublished": True})
+
+    @app.post("/api/manage/courses/<course_id>/archive")
+    def archive_managed_course(course_id: str):
+        payload = request.get_json(silent=True) or {}
+        result = service.archive_managed_course(
+            course_id, str(payload.get("expectedHash", ""))
+        )
+        publisher.record_operation("授業をアーカイブ", course_id)
+        return jsonify({"success": True, **result, "unpublished": True})
+
+    @app.post("/api/manage/archived/<course_id>/restore")
+    def restore_managed_course(course_id: str):
+        payload = request.get_json(silent=True) or {}
+        result = service.restore_managed_course(
+            course_id, str(payload.get("expectedHash", ""))
+        )
+        publisher.record_operation("授業を公開中へ復元", course_id)
+        return jsonify({"success": True, **result, "unpublished": True})
+
+    @app.post("/api/manage/archived/<course_id>/delete")
+    def permanently_delete_archived_course(course_id: str):
+        payload = request.get_json(silent=True) or {}
+        result = service.permanently_delete_archived_course(
+            course_id, str(payload.get("expectedHash", ""))
+        )
+        publisher.record_operation("アーカイブ授業を完全削除", course_id)
+        return jsonify({"success": True, **result, "unpublished": True})
 
     @app.post("/api/prepare")
     def prepare():
@@ -142,14 +380,74 @@ def create_app(repo_root: Path | None = None, work_root: Path | None = None) -> 
                 str(payload.get("validationToken", "")),
                 bool(payload.get("inferenceConfirmed", False)),
             )
-        return jsonify({"success": True, **result})
+        publisher.record_operation("新しい授業を登録", result.get("id", ""))
+        return jsonify({"success": True, **result, "unpublished": True})
 
     return app
 
 
+def select_local_port(preferred: int) -> int:
+    """Select an available localhost port without exposing the server externally."""
+    for port in range(preferred, min(preferred + 20, 65536)):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as candidate:
+            candidate.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            try:
+                candidate.bind(("127.0.0.1", port))
+            except OSError:
+                continue
+            return port
+    raise RuntimeError("ClassView管理ツールを起動できるポートが見つかりません。")
+
+
+def open_management_page(url: str) -> None:
+    webbrowser.open(url)
+
+
+def main() -> int:
+    runtime_root = Path(
+        os.environ.get("CLASSVIEW_IMPORTER_RUNTIME_ROOT", TOOL_ROOT / "runtime")
+    )
+    state_store = InstanceState(runtime_root)
+    guard = SingleInstanceGuard(runtime_root)
+    if not guard.acquire():
+        while True:
+            existing_url = find_existing_instance(state_store)
+            if existing_url:
+                if os.environ.get("CLASSVIEW_IMPORTER_NO_BROWSER") != "1":
+                    open_management_page(existing_url)
+                return 0
+            if os.environ.get("CLASSVIEW_IMPORTER_NO_BROWSER") == "1":
+                return 2
+            if not show_existing_instance_unavailable():
+                return 2
+
+    instance_id = uuid4().hex
+    state_store.clear()
+    runtime = ApplicationRuntime(instance_id)
+    try:
+        preferred_port = int(os.environ.get("CLASSVIEW_IMPORTER_PORT", "5050"))
+        port = select_local_port(preferred_port)
+        url = f"http://127.0.0.1:{port}"
+        activity = RequestActivity()
+        application = create_app(
+            runtime=runtime,
+            activity=activity,
+            instance_id=instance_id,
+        )
+        server = make_server("127.0.0.1", port, application, threaded=True)
+        runtime.attach_server(server)
+        state_store.write(pid=os.getpid(), port=port, instance_id=instance_id)
+        application.config["PUBLISHER_SERVICE"].record_operation("管理ツールを起動")
+        if os.environ.get("CLASSVIEW_IMPORTER_NO_BROWSER") != "1":
+            browser_timer = threading.Timer(0.5, open_management_page, args=(url,))
+            browser_timer.daemon = True
+            browser_timer.start()
+        server.serve_forever()
+        return 0
+    finally:
+        state_store.clear(instance_id)
+        guard.release()
+
+
 if __name__ == "__main__":
-    port = int(os.environ.get("CLASSVIEW_IMPORTER_PORT", "5050"))
-    url = f"http://localhost:{port}"
-    if os.environ.get("CLASSVIEW_IMPORTER_NO_BROWSER") != "1":
-        threading.Timer(1.0, lambda: webbrowser.open(url)).start()
-    create_app().run(host="127.0.0.1", port=port, debug=False, use_reloader=False)
+    raise SystemExit(main())

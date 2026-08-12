@@ -18,8 +18,11 @@ HTML・CSS・JavaScriptだけで構成された静的サイトです。npm、フ
 - 存在しない授業ID向けの案内
 - パソコンとスマートフォンに対応したレイアウト
 - シラバスPDFから授業JSONを準備・検証・追記するローカル専用インポーター
+- ローカル管理ツールによる既存授業編集、年度引き継ぎ、アーカイブ、復元、完全削除
+- ローカル保存した授業変更の確認と、安全なGitHub Pages公開
+- 起動時の最新状態確認、職員向けエラー表示、公開履歴
 
-ログイン、口コミ投稿、管理画面、データベースは実装していません。
+公開サイト側のログイン、口コミ投稿、管理画面、データベースは実装していません。授業管理はlocalhostで動くローカル専用ツールとして提供します。
 
 ## ファイル構成
 
@@ -34,10 +37,12 @@ ClassView/
 │  └─ course-detail.js   # 授業IDの取得と詳細表示
 ├─ data/
 │  ├─ courses.json       # 全授業の一覧・詳細データ
+│  ├─ archived-courses.json # 公開対象外のアーカイブ授業
 │  ├─ course.template.json # 授業1件分の入力テンプレート
 │  └─ course.schema.json # 授業1件分のJSON Schema
 ├─ docs/
-│  └─ syllabus-conversion-prompt.md # シラバスをJSONへ変換するAI用指示
+│  ├─ syllabus-conversion-prompt.md # シラバスをJSONへ変換するAI用指示
+│  └─ ClassView_操作マニュアル.md # 学校職員向けの操作手順
 ├─ tools/
 │  └─ course-importer/   # ローカル専用シラバスインポーター
 ├─ .gitignore            # インポーターの一時データなどを除外
@@ -57,7 +62,7 @@ python -m http.server 8000
 
 ## シラバスインポーター
 
-`tools/course-importer/` に、授業を継続登録するためのローカル専用ツールがあります。シラバスPDFから指定した単一ページまたは連続ページ範囲を抽出し、現在の変換指示・JSON Schema・テンプレートをまとめたChatGPT用プロンプトを生成します。返された授業JSONはSchema、授業ID、既存IDとの重複を検証し、プレビュー確認後にバックアップ付きで `data/courses.json` の末尾へ追加します。
+`tools/course-importer/` に、授業を継続登録・管理するためのローカル専用ツールがあります。シラバスPDFから指定した単一ページまたは連続ページ範囲を抽出し、現在の変換指示・JSON Schema・テンプレートをまとめたChatGPT用プロンプトを生成します。返された授業JSONはSchema、授業ID、既存IDとの重複を検証し、プレビュー確認後にバックアップ付きで `data/courses.json` の末尾へ追加します。授業管理画面では、既存授業の編集、前年度版を残した次年度版の作成、アーカイブ、復元、完全削除も行えます。
 
 Windowsでは次のファイルをダブルクリックして起動できます。
 
@@ -65,7 +70,9 @@ Windowsでは次のファイルをダブルクリックして起動できます�
 tools/course-importer/run-course-importer.bat
 ```
 
-手動セットアップ、詳しい操作手順、検証・バックアップ・安全な書き込みの仕組みは [`tools/course-importer/README.md`](tools/course-importer/README.md) を参照してください。インポーターは `127.0.0.1` だけで動作し、GitHub Pagesへ公開されるClassViewの一覧・詳細ページからは参照されません。Gitのcommitやpushも自動では行いません。
+起動すると職員向けの管理ホームが開きます。授業を保存した時点では「未公開の変更」としてこのPCに残り、内容確認後に「ClassViewへ公開」を押したときだけ、授業データに限定してGitHub Pagesへ送信します。Python、CSS、JavaScript、READMEなどは自動公開の対象外です。
+
+職員向けの手順は [`docs/ClassView_操作マニュアル.md`](docs/ClassView_操作マニュアル.md)、初回セットアップ、認証、Windows実行ファイル、公開処理、安全対策の詳細は [`tools/course-importer/README.md`](tools/course-importer/README.md) を参照してください。管理ツールは `127.0.0.1` だけで動作し、GitHub Pages上の公開サイトからは参照されません。
 
 ## 授業データの構造
 

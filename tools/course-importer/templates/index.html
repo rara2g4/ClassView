@@ -12,6 +12,8 @@
       <div class="shell site-header__inner">
         <p class="brand">ClassView</p>
         <span class="local-badge">ローカル専用ツール</span>
+        <a class="header-link" href="{{ url_for('index') }}">管理ホーム</a>
+        <a class="header-link" href="{{ url_for('manage') }}">授業管理</a>
       </div>
     </header>
 
@@ -21,7 +23,7 @@
         <h1>シラバスインポーター</h1>
         <p>
           既存シラバスを基礎資料としてAIが授業案内の下書きを作り、人が採用・修正・不採用を判断した内容だけを
-          <code>data/courses.json</code> へ安全に追加します。
+          ClassViewへ安全に保存します。
         </p>
       </header>
 
@@ -217,8 +219,8 @@
         <div class="section-heading">
           <span class="step-number" aria-hidden="true">5</span>
           <div>
-            <h2 id="register-heading">ClassViewへ追加する</h2>
-            <p>最終検証に合格した内容だけを、安全な追記処理へ渡します。</p>
+            <h2 id="register-heading">授業情報を保存する</h2>
+            <p>最終検証に合格した内容だけを、このPCへ安全に保存します。</p>
           </div>
         </div>
 
@@ -233,19 +235,18 @@
         </div>
 
         <div class="register-area">
-          <button class="button button--strong" type="button" id="register-button" disabled>ClassViewへ追加</button>
-          <p>追加直前にもSchema・ID・重複を再確認し、元ファイルのバックアップを作成します。</p>
+          <button class="button button--strong" type="button" id="register-button" disabled>授業を保存</button>
+          <p>保存直前にも入力内容と授業IDを再確認し、バックアップを自動作成します。</p>
         </div>
         <div id="register-status" class="status" role="status" aria-live="polite"></div>
         <div id="success-result" class="success-result" hidden>
-          <h3>授業を追加しました</h3>
+          <h3>授業を保存しました</h3>
           <dl>
             <div><dt>授業名</dt><dd id="success-title"></dd></div>
             <div><dt>授業ID</dt><dd id="success-id"></dd></div>
-            <div><dt>追加先</dt><dd><code id="success-courses-path"></code></dd></div>
-            <div><dt>バックアップ</dt><dd><code id="success-backup-path"></code></dd></div>
           </dl>
-          <p>内容の差分はリポジトリのルートで <code>git diff -- data/courses.json</code> を実行して確認できます。</p>
+          <p>未公開の変更があります。管理ホームで変更内容を確認し、「ClassViewへ公開」を押してください。</p>
+          <a class="button button--link" href="{{ url_for('index') }}">管理ホームへ戻る</a>
         </div>
       </section>
     </main>

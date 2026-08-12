@@ -36,6 +36,76 @@ class CourseDataContractTests(unittest.TestCase):
             with self.subTest(course_id=course["id"]):
                 self.assertEqual(list(self.validator.iter_errors(course)), [])
 
+    def test_archived_courses_use_the_same_schema_and_stay_out_of_public_scripts(self):
+        archived = json.loads(
+            (REPO_ROOT / "data" / "archived-courses.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(set(archived), {"courses"})
+        for course in archived["courses"]:
+            with self.subTest(course_id=course["id"]):
+                self.assertEqual(list(self.validator.iter_errors(course)), [])
+        public_scripts = "\n".join(
+            (REPO_ROOT / path).read_text(encoding="utf-8")
+            for path in ("js/course-list.js", "js/course-detail.js")
+        )
+        self.assertNotIn("archived-courses.json", public_scripts)
+
+    def test_management_ui_exposes_required_course_operations(self):
+        template = (
+            REPO_ROOT / "tools" / "course-importer" / "templates" / "manage.html"
+        ).read_text(encoding="utf-8")
+        script = (
+            REPO_ROOT / "tools" / "course-importer" / "static" / "course-management.js"
+        ).read_text(encoding="utf-8")
+        for phrase in (
+            "授業を検索",
+            "次年度へ引き継ぐ",
+            "アーカイブ済み授業",
+            "公開授業へ戻す",
+            "完全に削除",
+            "前年度版は変更されません",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, template + script)
+
+    def test_staff_dashboard_hides_git_terms_and_publication_is_file_limited(self):
+        dashboard = (
+            REPO_ROOT / "tools" / "course-importer" / "templates" / "dashboard.html"
+        ).read_text(encoding="utf-8")
+        dashboard_script = (
+            REPO_ROOT / "tools" / "course-importer" / "static" / "dashboard.js"
+        ).read_text(encoding="utf-8")
+        publisher = (
+            REPO_ROOT / "tools" / "course-importer" / "publisher.py"
+        ).read_text(encoding="utf-8")
+        for phrase in (
+            "現在の状態",
+            "新しい授業を登録",
+            "授業を管理",
+            "未公開の変更",
+            "ClassViewへ公開",
+            "公開履歴",
+            "診断情報をコピー",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, dashboard + dashboard_script)
+        for technical_term in ("git push", "git pull", "working tree", "remote origin"):
+            with self.subTest(technical_term=technical_term):
+                self.assertNotIn(technical_term, dashboard.casefold())
+        self.assertIn('"data/courses.json"', publisher)
+        self.assertIn('"data/archived-courses.json"', publisher)
+        self.assertNotIn('"add", "."', publisher)
+        self.assertNotIn("shell=True", publisher)
+        self.assertIn('kwargs["shell"] = False', publisher)
+
+        build_script = (
+            REPO_ROOT / "tools" / "course-importer" / "build_windows.bat"
+        ).read_text(encoding="utf-8")
+        self.assertIn("--noconsole", build_script)
+        self.assertIn("CREATE_NO_WINDOW", publisher)
+        self.assertNotIn("os.system(", publisher)
+        self.assertNotIn('subprocess.run(["cmd", "/c"', publisher)
+
     def test_basic_information_example_has_distinct_roles(self):
         example = json.loads(
             (REPO_ROOT / "docs" / "basic-information-1-conversion-example.json").read_text(

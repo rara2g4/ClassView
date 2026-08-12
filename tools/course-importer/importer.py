@@ -8,6 +8,7 @@ import os
 import re
 import shutil
 import tempfile
+import threading
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
@@ -84,6 +85,7 @@ class CourseImporter:
         self.repo_root = Path(repo_root).resolve()
         self.tool_root = Path(work_root or Path(__file__).resolve().parent).resolve()
         self.courses_path = self.repo_root / "data" / "courses.json"
+        self.archived_courses_path = self.repo_root / "data" / "archived-courses.json"
         self.schema_path = self.repo_root / "data" / "course.schema.json"
         self.template_path = self.repo_root / "data" / "course.template.json"
         self.conversion_prompt_path = (
@@ -94,6 +96,7 @@ class CourseImporter:
         self.tmp_root.mkdir(parents=True, exist_ok=True)
         self.backups_root.mkdir(parents=True, exist_ok=True)
         self.preparations: dict[str, Preparation] = {}
+        self.management_lock = threading.RLock()
 
     @staticmethod
     def _load_json(path: Path) -> Any:
@@ -117,10 +120,20 @@ class CourseImporter:
         return schema
 
     def load_courses_document(self) -> dict[str, Any]:
-        document = self._load_json(self.courses_path)
+        return self._load_course_document(self.courses_path, "courses.json")
+
+    def load_archived_courses_document(self) -> dict[str, Any]:
+        if not self.archived_courses_path.exists():
+            return {"courses": []}
+        return self._load_course_document(
+            self.archived_courses_path, "archived-courses.json"
+        )
+
+    def _load_course_document(self, path: Path, label: str) -> dict[str, Any]:
+        document = self._load_json(path)
         if not isinstance(document, dict) or not isinstance(document.get("courses"), list):
             raise ImporterError(
-                "courses.json は courses 配列を持つオブジェクトである必要があります。",
+                f"{label} は courses 配列を持つオブジェクトである必要があります。",
                 status=500,
             )
         return document
@@ -135,10 +148,16 @@ class CourseImporter:
     def is_valid_id(self, course_id: str) -> bool:
         return bool(re.fullmatch(self.id_pattern(), course_id or ""))
 
-    def duplicate_id(self, course_id: str) -> bool:
-        return any(
+    def duplicate_id(self, course_id: str, *, include_archived: bool = False) -> bool:
+        is_public_duplicate = any(
             isinstance(course, dict) and course.get("id") == course_id
             for course in self.load_courses_document()["courses"]
+        )
+        if is_public_duplicate or not include_archived:
+            return is_public_duplicate
+        return any(
+            isinstance(course, dict) and course.get("id") == course_id
+            for course in self.load_archived_courses_document()["courses"]
         )
 
     def validate_new_id(self, course_id: str) -> None:
@@ -148,9 +167,9 @@ class CourseImporter:
                 "先頭・末尾や連続するハイフンは使用できません。",
                 code="invalid_id",
             )
-        if self.duplicate_id(course_id):
+        if self.duplicate_id(course_id, include_archived=True):
             raise ImporterError(
-                f"授業ID「{course_id}」はすでに登録されています。",
+                f"授業ID「{course_id}」は公開中またはアーカイブに存在します。",
                 code="duplicate_id",
             )
 
@@ -795,7 +814,11 @@ class CourseImporter:
                 }
             )
 
-        if isinstance(actual_id, str) and actual_id and not self.duplicate_id(actual_id):
+        if (
+            isinstance(actual_id, str)
+            and actual_id
+            and not self.duplicate_id(actual_id, include_archived=True)
+        ):
             checklist["notDuplicate"] = True
         elif isinstance(actual_id, str) and actual_id:
             error_details.append(
@@ -896,6 +919,470 @@ class CourseImporter:
             }
         return result
 
+    @staticmethod
+    def _clone_json(value: Any) -> Any:
+        return json.loads(json.dumps(value, ensure_ascii=False))
+
+    def _validate_course_document(self, document: Any, label: str) -> None:
+        if not isinstance(document, dict) or set(document) != {"courses"}:
+            raise ImporterError(
+                f"{label} は courses 配列だけを持つオブジェクトである必要があります。",
+                status=500,
+                code="invalid_course_document",
+            )
+        courses = document.get("courses")
+        if not isinstance(courses, list):
+            raise ImporterError(
+                f"{label} の courses は配列である必要があります。",
+                status=500,
+                code="invalid_course_document",
+            )
+        seen: set[str] = set()
+        for index, course in enumerate(courses):
+            errors = self._schema_errors(course)
+            if errors:
+                raise ImporterError(
+                    f"{label} の{index + 1}件目がSchemaに適合しません: {errors[0]}",
+                    code="schema_error",
+                )
+            course_id = course.get("id")
+            if course_id in seen:
+                raise ImporterError(
+                    f"{label} 内で授業ID「{course_id}」が重複しています。",
+                    code="duplicate_id",
+                )
+            seen.add(course_id)
+
+    @staticmethod
+    def _safe_operation_name(value: str) -> str:
+        normalized = re.sub(r"[^a-z0-9-]+", "-", value.lower()).strip("-")
+        return normalized or "management"
+
+    def _next_operation_backup_path(self, path: Path, operation: str) -> Path:
+        stamp = datetime.now().strftime("%Y-%m-%d-%H%M%S")
+        operation_name = self._safe_operation_name(operation)
+        candidate = self.backups_root / f"{path.stem}-{operation_name}-{stamp}.json"
+        counter = 2
+        while candidate.exists():
+            candidate = self.backups_root / (
+                f"{path.stem}-{operation_name}-{stamp}-{counter}.json"
+            )
+            counter += 1
+        return candidate
+
+    def _serialize_document(self, path: Path, document: dict[str, Any]) -> str:
+        serialized = json.dumps(document, ensure_ascii=False, indent=2)
+        if path.exists() and path.read_text(encoding="utf-8").endswith(("\n", "\r")):
+            serialized += "\n"
+        return serialized
+
+    def _stage_document(self, path: Path, document: dict[str, Any]) -> Path:
+        descriptor, name = tempfile.mkstemp(
+            prefix=f".{path.stem}-", suffix=".tmp", dir=path.parent
+        )
+        temporary_path = Path(name)
+        try:
+            serialized = self._serialize_document(path, document)
+            with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as handle:
+                handle.write(serialized)
+                handle.flush()
+                os.fsync(handle.fileno())
+            if self._load_json(temporary_path) != document:
+                raise ImporterError("一時ファイルの検証に失敗しました。", status=500)
+            return temporary_path
+        except Exception:
+            temporary_path.unlink(missing_ok=True)
+            raise
+
+    def _backup_document(self, path: Path, operation: str) -> Path:
+        backup_path = self._next_operation_backup_path(path, operation)
+        if path.exists():
+            shutil.copy2(path, backup_path)
+        else:
+            backup_path.write_text(
+                json.dumps({"courses": []}, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+        return backup_path
+
+    @staticmethod
+    def _restore_backup(backup_path: Path, target_path: Path) -> None:
+        descriptor, name = tempfile.mkstemp(
+            prefix=f".{target_path.stem}-restore-",
+            suffix=".tmp",
+            dir=target_path.parent,
+        )
+        os.close(descriptor)
+        restore_path = Path(name)
+        try:
+            shutil.copy2(backup_path, restore_path)
+            os.replace(restore_path, target_path)
+        finally:
+            restore_path.unlink(missing_ok=True)
+
+    def _write_documents_atomically(
+        self,
+        updates: list[tuple[Path, dict[str, Any], str]],
+        operation: str,
+    ) -> list[Path]:
+        for _path, document, label in updates:
+            self._validate_course_document(document, label)
+
+        backups: list[tuple[Path, Path]] = []
+        staged: list[tuple[Path, Path]] = []
+        replaced: list[tuple[Path, Path]] = []
+        try:
+            for path, _document, _label in updates:
+                backups.append((path, self._backup_document(path, operation)))
+            for path, document, _label in updates:
+                staged.append((path, self._stage_document(path, document)))
+            for path, temporary_path in staged:
+                os.replace(temporary_path, path)
+                replaced.append((path, temporary_path))
+            for path, document, _label in updates:
+                if self._load_json(path) != document:
+                    raise ImporterError(
+                        f"{path.name} の書き込み後検証に失敗しました。",
+                        status=500,
+                    )
+            return [backup for _path, backup in backups]
+        except Exception as error:
+            rollback_errors: list[str] = []
+            backup_map = dict(backups)
+            for path, _temporary_path in reversed(replaced):
+                try:
+                    self._restore_backup(backup_map[path], path)
+                except Exception:
+                    rollback_errors.append(path.name)
+            if rollback_errors:
+                raise ImporterError(
+                    "更新に失敗し、次のファイルを自動復元できませんでした: "
+                    + ", ".join(rollback_errors),
+                    status=500,
+                    code="rollback_failed",
+                ) from error
+            if isinstance(error, ImporterError):
+                raise
+            raise ImporterError(
+                "授業管理データを更新できませんでした。元のファイルは復元されています。",
+                status=500,
+                code="write_failed",
+            ) from error
+        finally:
+            for _path, temporary_path in staged:
+                temporary_path.unlink(missing_ok=True)
+
+    @staticmethod
+    def _find_course(
+        document: dict[str, Any], course_id: str
+    ) -> tuple[int, dict[str, Any]]:
+        for index, course in enumerate(document["courses"]):
+            if isinstance(course, dict) and course.get("id") == course_id:
+                return index, course
+        raise ImporterError(
+            f"授業ID「{course_id}」が見つかりません。",
+            status=404,
+            code="course_not_found",
+        )
+
+    @staticmethod
+    def _academic_year_number(value: Any) -> int | None:
+        if not isinstance(value, str):
+            return None
+        match = re.fullmatch(r"\s*(\d{4})(?:年度)?\s*", value)
+        return int(match.group(1)) if match else None
+
+    @staticmethod
+    def _display_path(path: Path, repo_root: Path) -> str:
+        try:
+            shown = path.relative_to(repo_root)
+        except ValueError:
+            shown = path
+        return str(shown).replace("\\", "/")
+
+    def _management_source(self, source: str) -> tuple[Path, dict[str, Any], str]:
+        if source == "published":
+            return self.courses_path, self.load_courses_document(), "courses.json"
+        if source == "archived":
+            return (
+                self.archived_courses_path,
+                self.load_archived_courses_document(),
+                "archived-courses.json",
+            )
+        raise ImporterError("授業データの区分が不正です。", code="invalid_source")
+
+    def _management_summary(self, course: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "id": course.get("id"),
+            "title": course.get("title"),
+            "academicYear": course.get("academicYear"),
+            "instructor": course.get("instructor"),
+            "category": course.get("category"),
+            "hash": self._course_hash(course),
+        }
+
+    def _sort_managed_courses(
+        self, courses: list[dict[str, Any]]
+    ) -> list[dict[str, Any]]:
+        def sort_key(course: dict[str, Any]) -> tuple[str, int, str]:
+            year = self._academic_year_number(course.get("academicYear"))
+            return (
+                str(course.get("title") or "").casefold(),
+                -(year if year is not None else -1),
+                str(course.get("id") or ""),
+            )
+
+        return sorted(courses, key=sort_key)
+
+    def management_catalog(self) -> dict[str, Any]:
+        with self.management_lock:
+            published = self.load_courses_document()
+            archived = self.load_archived_courses_document()
+            self._validate_course_document(published, "courses.json")
+            self._validate_course_document(archived, "archived-courses.json")
+            return {
+                "published": [
+                    self._management_summary(course)
+                    for course in self._sort_managed_courses(published["courses"])
+                ],
+                "archived": [
+                    self._management_summary(course)
+                    for course in self._sort_managed_courses(archived["courses"])
+                ],
+            }
+
+    def managed_course(self, source: str, course_id: str) -> dict[str, Any]:
+        with self.management_lock:
+            _path, document, label = self._management_source(source)
+            self._validate_course_document(document, label)
+            _index, course = self._find_course(document, course_id)
+            return {
+                "source": source,
+                "course": self._clone_json(course),
+                "hash": self._course_hash(course),
+            }
+
+    def rollover_draft(self, course_id: str) -> dict[str, Any]:
+        with self.management_lock:
+            document = self.load_courses_document()
+            self._validate_course_document(document, "courses.json")
+            _index, original = self._find_course(document, course_id)
+            draft = self._clone_json(original)
+            old_year = self._academic_year_number(original.get("academicYear"))
+            next_year = old_year + 1 if old_year is not None else None
+            if next_year is None:
+                draft["academicYear"] = None
+                draft["id"] = ""
+            else:
+                draft["academicYear"] = str(next_year)
+                old_suffix = f"-{old_year}"
+                base_id = (
+                    course_id[: -len(old_suffix)]
+                    if course_id.endswith(old_suffix)
+                    else course_id
+                )
+                candidate = f"{base_id}-{next_year}"
+                counter = 2
+                while self.duplicate_id(candidate, include_archived=True):
+                    candidate = f"{base_id}-{next_year}-{counter}"
+                    counter += 1
+                draft["id"] = candidate
+            return {
+                "course": draft,
+                "original": self._clone_json(original),
+                "originalHash": self._course_hash(original),
+                "yearSuggested": next_year is not None,
+            }
+
+    def update_managed_course(
+        self, course_id: str, course: Any, expected_hash: str
+    ) -> dict[str, Any]:
+        with self.management_lock:
+            document = self.load_courses_document()
+            self._validate_course_document(document, "courses.json")
+            index, current = self._find_course(document, course_id)
+            if self._course_hash(current) != expected_hash:
+                raise ImporterError(
+                    "授業が読み込み後に変更されています。一覧から開き直してください。",
+                    status=409,
+                    code="course_changed",
+                )
+            if not isinstance(course, dict) or course.get("id") != course_id:
+                raise ImporterError(
+                    "既存授業のIDは変更できません。",
+                    code="id_change_not_allowed",
+                )
+            errors = self._schema_errors(course)
+            if errors:
+                raise ImporterError(
+                    f"Schema検証に失敗しました: {errors[0]}", code="schema_error"
+                )
+            document["courses"][index] = self._clone_json(course)
+            backups = self._write_documents_atomically(
+                [(self.courses_path, document, "courses.json")],
+                f"edit-{course_id}",
+            )
+            return {
+                "course": self._clone_json(course),
+                "backupPaths": [
+                    self._display_path(path, self.repo_root) for path in backups
+                ],
+            }
+
+    def create_next_year_course(
+        self, original_id: str, course: Any, expected_hash: str
+    ) -> dict[str, Any]:
+        with self.management_lock:
+            document = self.load_courses_document()
+            self._validate_course_document(document, "courses.json")
+            _index, original = self._find_course(document, original_id)
+            if self._course_hash(original) != expected_hash:
+                raise ImporterError(
+                    "前年度版が読み込み後に変更されています。引き継ぎをやり直してください。",
+                    status=409,
+                    code="course_changed",
+                )
+            if not isinstance(course, dict) or course.get("id") == original_id:
+                raise ImporterError(
+                    "新年度版には前年度版と異なる授業IDが必要です。",
+                    code="duplicate_id",
+                )
+            errors = self._schema_errors(course)
+            if errors:
+                raise ImporterError(
+                    f"Schema検証に失敗しました: {errors[0]}", code="schema_error"
+                )
+            self.validate_new_id(course.get("id"))
+            original_snapshot = self._clone_json(original)
+            document["courses"].append(self._clone_json(course))
+            if document["courses"][_index] != original_snapshot:
+                raise ImporterError(
+                    "前年度版を保護できなかったため、追加を中止しました。",
+                    status=500,
+                )
+            backups = self._write_documents_atomically(
+                [(self.courses_path, document, "courses.json")],
+                f"rollover-{original_id}-to-{course.get('id')}",
+            )
+            return {
+                "course": self._clone_json(course),
+                "original": original_snapshot,
+                "backupPaths": [
+                    self._display_path(path, self.repo_root) for path in backups
+                ],
+            }
+
+    def archive_managed_course(
+        self, course_id: str, expected_hash: str
+    ) -> dict[str, Any]:
+        with self.management_lock:
+            published = self.load_courses_document()
+            archived = self.load_archived_courses_document()
+            self._validate_course_document(published, "courses.json")
+            self._validate_course_document(archived, "archived-courses.json")
+            index, course = self._find_course(published, course_id)
+            if self._course_hash(course) != expected_hash:
+                raise ImporterError(
+                    "授業が読み込み後に変更されています。一覧を更新してください。",
+                    status=409,
+                    code="course_changed",
+                )
+            if any(item.get("id") == course_id for item in archived["courses"]):
+                raise ImporterError(
+                    "同じ授業IDがすでにアーカイブに存在します。",
+                    code="duplicate_id",
+                )
+            moved = published["courses"].pop(index)
+            archived["courses"].append(self._clone_json(moved))
+            backups = self._write_documents_atomically(
+                [
+                    (self.courses_path, published, "courses.json"),
+                    (
+                        self.archived_courses_path,
+                        archived,
+                        "archived-courses.json",
+                    ),
+                ],
+                f"archive-{course_id}",
+            )
+            return {
+                "course": self._clone_json(moved),
+                "backupPaths": [
+                    self._display_path(path, self.repo_root) for path in backups
+                ],
+            }
+
+    def restore_managed_course(
+        self, course_id: str, expected_hash: str
+    ) -> dict[str, Any]:
+        with self.management_lock:
+            published = self.load_courses_document()
+            archived = self.load_archived_courses_document()
+            self._validate_course_document(published, "courses.json")
+            self._validate_course_document(archived, "archived-courses.json")
+            index, course = self._find_course(archived, course_id)
+            if self._course_hash(course) != expected_hash:
+                raise ImporterError(
+                    "アーカイブ授業が読み込み後に変更されています。一覧を更新してください。",
+                    status=409,
+                    code="course_changed",
+                )
+            if any(item.get("id") == course_id for item in published["courses"]):
+                raise ImporterError(
+                    "公開中の授業に同じIDがあるため復元できません。",
+                    code="duplicate_id",
+                )
+            moved = archived["courses"].pop(index)
+            published["courses"].append(self._clone_json(moved))
+            backups = self._write_documents_atomically(
+                [
+                    (self.courses_path, published, "courses.json"),
+                    (
+                        self.archived_courses_path,
+                        archived,
+                        "archived-courses.json",
+                    ),
+                ],
+                f"restore-{course_id}",
+            )
+            return {
+                "course": self._clone_json(moved),
+                "backupPaths": [
+                    self._display_path(path, self.repo_root) for path in backups
+                ],
+            }
+
+    def permanently_delete_archived_course(
+        self, course_id: str, expected_hash: str
+    ) -> dict[str, Any]:
+        with self.management_lock:
+            archived = self.load_archived_courses_document()
+            self._validate_course_document(archived, "archived-courses.json")
+            index, course = self._find_course(archived, course_id)
+            if self._course_hash(course) != expected_hash:
+                raise ImporterError(
+                    "アーカイブ授業が読み込み後に変更されています。一覧を更新してください。",
+                    status=409,
+                    code="course_changed",
+                )
+            removed = archived["courses"].pop(index)
+            backups = self._write_documents_atomically(
+                [
+                    (
+                        self.archived_courses_path,
+                        archived,
+                        "archived-courses.json",
+                    )
+                ],
+                f"delete-{course_id}",
+            )
+            return {
+                "course": self._clone_json(removed),
+                "backupPaths": [
+                    self._display_path(path, self.repo_root) for path in backups
+                ],
+            }
+
     def _next_backup_path(self) -> Path:
         stamp = datetime.now().strftime("%Y-%m-%d-%H%M%S")
         candidate = self.backups_root / f"courses-{stamp}.json"
@@ -910,9 +1397,9 @@ class CourseImporter:
         if schema_errors:
             raise ImporterError("登録直前のSchema検証に失敗しました。", code="schema_error")
         course_id = course.get("id")
-        if self.duplicate_id(course_id):
+        if self.duplicate_id(course_id, include_archived=True):
             raise ImporterError(
-                f"授業ID「{course_id}」はすでに登録されています。",
+                f"授業ID「{course_id}」は公開中またはアーカイブに存在します。",
                 code="duplicate_id",
             )
 

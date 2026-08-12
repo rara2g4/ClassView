@@ -20,7 +20,7 @@ if errorlevel 1 (
   if errorlevel 1 goto :setup_error
 )
 
-echo Starting ClassView syllabus importer...
+echo Starting ClassView administration tool...
 "%IMPORTER_PYTHON%" "%IMPORTER_APP%"
 set "IMPORTER_EXIT=%ERRORLEVEL%"
 popd
