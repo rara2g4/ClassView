@@ -5,6 +5,8 @@
   // リポジトリ名付きURL（/ClassView/）でも正しい場所を参照します。
   const COURSES_DATA_URL = new URL("./data/courses.json", document.baseURI);
   const root = document.querySelector("#course");
+  const courseListUrl =
+    document.querySelector(".back-link")?.getAttribute("href") || "index.html";
 
   const hasText = (value) =>
     typeof value === "string" && value.trim().length > 0;
@@ -206,6 +208,28 @@
     return wrapper;
   };
 
+  const createReturnLink = (withArrow = false) => {
+    const link = element("a", "text-link");
+    link.href = courseListUrl;
+
+    if (withArrow) {
+      const arrow = element("span", "", "←");
+      arrow.setAttribute("aria-hidden", "true");
+      link.append(arrow, document.createTextNode("授業一覧へ戻る"));
+    } else {
+      link.textContent = "授業一覧へ戻る";
+    }
+
+    return link;
+  };
+
+  const createBottomNavigation = () => {
+    const navigation = element("nav", "course-bottom-navigation");
+    navigation.setAttribute("aria-label", "授業詳細ページの末尾");
+    navigation.append(createReturnLink(true));
+    return navigation;
+  };
+
   const renderCourse = (course) => {
     const fragment = document.createDocumentFragment();
     fragment.append(createCourseHeader(course));
@@ -219,15 +243,12 @@
     const supplementary = createSupplementaryInfo(course);
     if (supplementary) fragment.append(supplementary);
 
+    fragment.append(createBottomNavigation());
+
     root.setAttribute("aria-busy", "false");
     root.replaceChildren(fragment);
+    document.body.classList.add("course-page-ready");
     document.title = `${course.title || "授業詳細"} | ClassView`;
-  };
-
-  const createReturnLink = () => {
-    const link = element("a", "text-link", "授業一覧へ戻る");
-    link.href = "index.html";
-    return link;
   };
 
   const renderNotFound = () => {

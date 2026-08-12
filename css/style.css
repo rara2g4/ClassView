@@ -8,6 +8,9 @@
   --color-white: #ffffff;
   --content-width: 1080px;
   --reading-width: 760px;
+  --section-space: 56px;
+  --related-section-space: 40px;
+  --section-padding: 28px;
 }
 
 * {
@@ -310,7 +313,7 @@ img {
 }
 
 .course-header {
-  max-width: 900px;
+  max-width: var(--content-width);
 }
 
 .course-header__eyebrow {
@@ -388,7 +391,7 @@ img {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
   gap: 34px;
-  margin-top: 56px;
+  margin-top: var(--section-space);
   padding: 34px 0;
   border-block: 1px solid var(--color-line);
 }
@@ -425,9 +428,9 @@ img {
 }
 
 .suitable-for {
-  max-width: var(--reading-width);
-  margin-top: 42px;
-  padding-top: 24px;
+  max-width: var(--content-width);
+  margin-top: var(--related-section-space);
+  padding-top: var(--section-padding);
   border-top: 1px solid var(--color-line);
 }
 
@@ -449,17 +452,18 @@ img {
 }
 
 .suitable-for p {
+  max-width: var(--reading-width);
   margin: 0;
   color: #394449;
 }
 
 .supplementary {
-  max-width: 900px;
-  margin-top: 64px;
+  max-width: var(--content-width);
+  margin-top: var(--section-space);
 }
 
 .suitable-for + .supplementary {
-  margin-top: 54px;
+  margin-top: var(--section-space);
 }
 
 .supplementary__heading {
@@ -475,8 +479,27 @@ img {
 }
 
 .content-section {
-  padding: 28px 0;
+  padding: var(--section-padding) 0;
   border-bottom: 1px solid var(--color-line);
+}
+
+.course-bottom-navigation {
+  margin-top: var(--section-space);
+  padding-block: 20px;
+  border-block: 1px solid var(--color-line);
+}
+
+.course-bottom-navigation .text-link {
+  gap: 7px;
+  margin-top: 0;
+}
+
+.course-page-ready .page-shell {
+  padding-bottom: 0;
+}
+
+.course-page-ready .site-footer {
+  border-top: 0;
 }
 
 .content-section h3 {
@@ -601,6 +624,12 @@ img {
 }
 
 @media (max-width: 760px) {
+  :root {
+    --section-space: 42px;
+    --related-section-space: 32px;
+    --section-padding: 22px;
+  }
+
   .site-header__inner,
   .page-shell,
   .site-footer {
@@ -653,21 +682,21 @@ img {
   .primary-info {
     grid-template-columns: 1fr;
     gap: 28px;
-    margin-top: 42px;
+    margin-top: var(--section-space);
     padding-block: 28px;
   }
 
   .supplementary {
-    margin-top: 48px;
+    margin-top: var(--section-space);
   }
 
   .suitable-for {
-    margin-top: 34px;
-    padding-top: 22px;
+    margin-top: var(--related-section-space);
+    padding-top: var(--section-padding);
   }
 
   .suitable-for + .supplementary {
-    margin-top: 42px;
+    margin-top: var(--section-space);
   }
 
   .supplementary__short-grid {
