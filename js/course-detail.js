@@ -126,7 +126,10 @@
       : [];
     if (!validItems.length) return null;
 
-    const section = element("section", "content-section");
+    const section = element(
+      "section",
+      "content-section content-section--schedule"
+    );
     section.append(element("h3", "", "授業回ごとの内容"));
     const list = element("ul", "schedule-list");
 

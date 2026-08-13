@@ -483,10 +483,14 @@ img {
   border-bottom: 1px solid var(--color-line);
 }
 
+.content-section--schedule {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
 .course-bottom-navigation {
-  margin-top: var(--section-space);
-  padding-block: 20px;
-  border-block: 1px solid var(--color-line);
+  margin-top: var(--related-section-space);
+  padding-bottom: var(--related-section-space);
 }
 
 .course-bottom-navigation .text-link {
