@@ -33,7 +33,11 @@ class ClassViewPublisherTests(unittest.TestCase):
         (self.repo / "data").mkdir(parents=True)
         (self.repo / "docs").mkdir(parents=True)
         self.work.mkdir(parents=True)
-        for name in ("course.schema.json", "course.template.json"):
+        for name in (
+            "course.schema.json",
+            "course.template.json",
+            "course-works.schema.json",
+        ):
             shutil.copy2(REPO_ROOT / "data" / name, self.repo / "data" / name)
         shutil.copy2(
             REPO_ROOT / "docs" / "syllabus-conversion-prompt.md",
@@ -42,6 +46,10 @@ class ClassViewPublisherTests(unittest.TestCase):
         self.course = self.make_course("existing", "既存授業")
         self.write_courses([self.course])
         self.write_archived([])
+        (self.repo / "data" / "course-works.json").write_text(
+            json.dumps({"works": []}, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
         (self.work / "classview-admin.json").write_text(
             json.dumps(
                 {
@@ -73,6 +81,8 @@ class ClassViewPublisherTests(unittest.TestCase):
             "data/archived-courses.json",
             "data/course.schema.json",
             "data/course.template.json",
+            "data/course-works.json",
+            "data/course-works.schema.json",
             "docs/syllabus-conversion-prompt.md",
             "tools/course-importer/classview-admin.json",
             ".gitignore",
@@ -184,6 +194,62 @@ class ClassViewPublisherTests(unittest.TestCase):
         self.publisher.publish()
         committed = self.git("show", "--name-only", "--format=", "HEAD").stdout.splitlines()
         self.assertEqual(committed, ["data/course-feedback-summary.json"])
+
+    def test_course_works_publish_stages_only_json_and_safe_image_paths(self):
+        image_path = (
+            self.repo
+            / "assets"
+            / "works"
+            / "existing"
+            / "2026"
+            / "0123456789abcdef0123456789abcdef.png"
+        )
+        image_path.parent.mkdir(parents=True)
+        image_path.write_bytes(b"public image")
+        unsafe_image = image_path.with_suffix(".svg")
+        unsafe_image.write_text("<svg></svg>", encoding="utf-8")
+        (self.repo / "data" / "course-works.json").write_text(
+            json.dumps(
+                {
+                    "works": [
+                        {
+                            "id": "existing-work-0123456789ab",
+                            "courseId": "existing",
+                            "academicYear": "2026",
+                            "title": "制作物",
+                            "description": None,
+                            "image": image_path.relative_to(self.repo).as_posix(),
+                            "url": None,
+                            "linkLabel": None,
+                            "alt": "制作物画像",
+                            "order": 0,
+                        }
+                    ]
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+
+        status = self.publisher.status()
+        self.assertTrue(status["canPublish"])
+        self.assertTrue(
+            any(item["title"] == "実際の制作物" for item in status["unpublishedChanges"])
+        )
+        self.publisher.publish()
+        committed = set(
+            self.git("show", "--name-only", "--format=", "HEAD").stdout.splitlines()
+        )
+        self.assertEqual(
+            committed,
+            {
+                "data/course-works.json",
+                image_path.relative_to(self.repo).as_posix(),
+            },
+        )
+        self.assertTrue(unsafe_image.exists())
+        self.assertIn("??", self.git("status", "--short", "--", str(unsafe_image)).stdout)
 
     def test_hidden_process_uses_argument_array_and_windows_console_flags(self):
         completed = subprocess.CompletedProcess(["git", "status"], 0, "ok", "")

@@ -162,6 +162,7 @@
       [
         ["年度", formatAcademicYear(course.academicYear)],
         ["講師", hasText(course.instructor) ? course.instructor.trim() : "未設定"],
+        ["制作物", `${Number(course.workCount) || 0}件`],
         ["ID", course.id],
       ].forEach(([label, value]) => {
         const row = document.createElement("div");
@@ -175,21 +176,27 @@
       actions.className = "management-card__actions";
       const actionDefinitions = state.tab === "published"
         ? [
+          ["works", "制作物を管理", "management-action"],
           ["edit", "編集", "management-action"],
           ["rollover", "次年度へ引き継ぐ", "management-action"],
           ["archive", "アーカイブ", "management-action management-action--muted"],
         ]
         : [
+          ["works", "制作物を管理", "management-action"],
           ["view", "内容を見る", "management-action"],
           ["restore", "公開授業へ戻す", "management-action"],
           ["delete", "完全削除", "management-action management-action--danger"],
         ];
       actionDefinitions.forEach(([action, label, className]) => {
-        const button = addText(actions, "button", className, label);
-        button.type = "button";
-        button.dataset.managementAction = action;
-        button.dataset.courseId = course.id;
-        button.dataset.courseHash = course.hash;
+        const control = addText(actions, action === "works" ? "a" : "button", className, label);
+        if (action === "works") {
+          control.href = `/works/course/${encodeURIComponent(course.id)}`;
+        } else {
+          control.type = "button";
+          control.dataset.managementAction = action;
+          control.dataset.courseId = course.id;
+          control.dataset.courseHash = course.hash;
+        }
       });
       article.append(main, actions);
       list.append(article);
@@ -615,7 +622,9 @@
       delete: {
         heading: "授業を完全に削除しますか？",
         message: "この授業をClassViewの管理データから削除します。",
-        warning: "この操作は画面から元に戻せません。削除前のバックアップは自動作成されます。",
+        warning: Number(course.workCount) > 0
+          ? `この授業には制作物が${course.workCount}件あります。制作物データと画像は削除せず残します。授業を復元しない限り公開ページには表示されません。`
+          : "この操作は画面から元に戻せません。削除前のバックアップは自動作成されます。",
         button: "完全に削除",
         danger: true,
       },
@@ -644,7 +653,10 @@
       const result = await requestJson(endpoints[action], {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ expectedHash: course.hash }),
+        body: JSON.stringify({
+          expectedHash: course.hash,
+          confirmWorks: action === "delete" && Number(course.workCount) > 0,
+        }),
       });
       confirmDialog.close();
       state.pendingOperation = null;

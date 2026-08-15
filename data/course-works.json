@@ -1,0 +1,28 @@
+{
+  "works": [
+    {
+      "id": "web-programming-work-a1b2c3d4e5f6",
+      "courseId": "web-programming",
+      "academicYear": null,
+      "title": "まち歩きガイド",
+      "description": "地域の見どころを写真や地図で紹介するレスポンシブWebサイトです。機能確認用に用意した架空の制作物サンプルです。",
+      "image": "assets/works/web-programming/no-year/b3f19b92df5246e2a20fb0ddc0a7d5fa.png",
+      "url": null,
+      "linkLabel": null,
+      "alt": "地域の写真、散策コース、地図を配置した、まち歩きガイドのWebサイト画面",
+      "order": 0
+    },
+    {
+      "id": "web-programming-work-b2c3d4e5f6a7",
+      "courseId": "web-programming",
+      "academicYear": null,
+      "title": "Study Track",
+      "description": "学習時間、課題、進捗をひとつの画面で確認できる学習記録アプリです。機能確認用に用意した架空の制作物サンプルです。",
+      "image": "assets/works/web-programming/no-year/4c8f57da2d99438ca657f060125013ed.png",
+      "url": null,
+      "linkLabel": null,
+      "alt": "学習時間のグラフ、科目別進捗、タスク、カレンダーを配置した学習記録画面",
+      "order": 1
+    }
+  ]
+}

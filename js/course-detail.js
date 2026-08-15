@@ -185,13 +185,14 @@
     return section;
   };
 
-  const createSupplementaryInfo = (course) => {
+  const createSupplementaryInfo = (course, works = []) => {
     const shortSections = [
       createListSection("主な学習内容", course.topics),
       createListSection("使用するソフトウェアや教材", course.tools),
     ].filter(Boolean);
     const fullWidthSections = [
       createListSection("課題や制作物の例", course.assignments),
+      globalThis.ClassViewWorks?.createSection(works),
       createScheduleSection(course.schedule),
       createImageSection(course.images),
     ].filter(Boolean);
@@ -274,7 +275,7 @@
     return section;
   };
 
-  const renderCourse = (course) => {
+  const renderCourse = (course, works = []) => {
     const fragment = document.createDocumentFragment();
     fragment.append(createCourseHeader(course));
 
@@ -284,7 +285,7 @@
     const suitableFor = createSuitableForSection(course.suitableFor);
     if (suitableFor) fragment.append(suitableFor);
 
-    const supplementary = createSupplementaryInfo(course);
+    const supplementary = createSupplementaryInfo(course, works);
     if (supplementary) fragment.append(supplementary);
 
     const feedback = createFeedbackSection(course);
@@ -337,7 +338,10 @@
         return;
       }
 
-      renderCourse(course);
+      const works = globalThis.ClassViewWorks
+        ? await globalThis.ClassViewWorks.loadForCourse(course)
+        : [];
+      renderCourse(course, works);
     } catch (error) {
       console.error("授業情報の読み込みに失敗しました。", error);
       renderLoadError();

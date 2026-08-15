@@ -14,6 +14,8 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any, Sequence
 
+from jsonschema import Draft202012Validator
+
 
 def _hidden_process_options() -> dict[str, Any]:
     """Return Windows-only flags that prevent CLI console windows."""
@@ -109,6 +111,11 @@ class ClassViewPublisher:
         "data/courses.json",
         "data/archived-courses.json",
         "data/course-feedback-summary.json",
+        "data/course-works.json",
+    )
+    work_asset_pattern = re.compile(
+        r"^assets/works/[a-z0-9]+(?:-[a-z0-9]+)*/"
+        r"[a-z0-9]+(?:-[a-z0-9]+)*/[a-f0-9]{32}\.(?:jpg|jpeg|png|webp)$"
     )
     field_labels = {
         "title": "授業名",
@@ -501,7 +508,76 @@ class ClassViewPublisher:
                     "description": "公開用集計を更新",
                 }
             )
+        working_paths = self._working_paths()
+        if any(
+            path == "data/course-works.json" or self._is_allowed_work_asset(path)
+            for path in working_paths
+        ):
+            try:
+                works_document = json.loads(
+                    (self.repo_root / "data" / "course-works.json").read_text(
+                        encoding="utf-8"
+                    )
+                )
+                work_count = len(works_document.get("works", []))
+            except Exception:
+                work_count = 0
+            changes.append(
+                {
+                    "id": "course-works",
+                    "title": "実際の制作物",
+                    "academicYear": None,
+                    "action": "course-works",
+                    "description": f"制作物データと画像を更新（登録{work_count}件）",
+                }
+            )
         return changes
+
+    @classmethod
+    def _is_allowed_work_asset(cls, path: str) -> bool:
+        return bool(cls.work_asset_pattern.fullmatch(path.replace("\\", "/")))
+
+    @classmethod
+    def _is_allowed_public_path(cls, path: str) -> bool:
+        normalized = path.replace("\\", "/")
+        return normalized in cls.allowed_paths or cls._is_allowed_work_asset(normalized)
+
+    def _validate_course_works_data(self) -> None:
+        document_path = self.repo_root / "data" / "course-works.json"
+        schema_path = self.repo_root / "data" / "course-works.schema.json"
+        if not document_path.exists():
+            return
+        try:
+            document = json.loads(document_path.read_text(encoding="utf-8"))
+            schema = json.loads(schema_path.read_text(encoding="utf-8"))
+            if not isinstance(document, dict) or not isinstance(
+                document.get("works"), list
+            ):
+                raise ValueError("制作物データの works が配列ではありません。")
+            if not isinstance(schema, dict):
+                raise ValueError("制作物データの検証仕様を読み込めません。")
+            Draft202012Validator.check_schema(schema)
+            errors = sorted(
+                Draft202012Validator(schema).iter_errors(document),
+                key=lambda item: list(item.absolute_path),
+            )
+            if errors:
+                raise ValueError(errors[0].message)
+            for work in document.get("works", []):
+                image = work.get("image") if isinstance(work, dict) else None
+                if image is None:
+                    continue
+                if not self._is_allowed_work_asset(image):
+                    raise ValueError("制作物画像の保存先が許可範囲外です。")
+                if not (self.repo_root / image).is_file():
+                    raise ValueError(f"制作物画像が見つかりません: {image}")
+        except Exception as error:
+            raise PublicationError(
+                "制作物データまたは画像に問題があるため公開できません。制作物管理画面で確認してください。",
+                code="invalid_course_works",
+                status=409,
+                technical=str(error),
+            ) from error
 
     @staticmethod
     def _year_label(course: dict[str, Any]) -> str:
@@ -587,6 +663,7 @@ class ClassViewPublisher:
             fetch_ok = True
             try:
                 self.importer.management_catalog()
+                self._validate_course_works_data()
                 checks.extend(
                     [
                         {"label": "授業データ", "state": "ok", "message": "正常"},
@@ -719,6 +796,7 @@ class ClassViewPublisher:
             self.config = self._load_config()
             self.logger.info("公開処理を開始しました")
             self.importer.management_catalog()
+            self._validate_course_works_data()
             repository = self._repository_checks()
             fetch = self._git(
                 ["fetch", "--prune", repository["remoteName"]],
@@ -745,7 +823,7 @@ class ClassViewPublisher:
             unexpected_staged = [
                 path.replace("\\", "/")
                 for path in staged_before
-                if path.replace("\\", "/") not in self.allowed_paths
+                if not self._is_allowed_public_path(path)
             ]
             if unexpected_staged:
                 raise PublicationError(
@@ -755,7 +833,7 @@ class ClassViewPublisher:
                     technical="公開対象外: " + ", ".join(unexpected_staged),
                 )
             changed_allowed = [
-                path for path in self.allowed_paths if path in self._working_paths()
+                path for path in self._working_paths() if self._is_allowed_public_path(path)
             ]
             if changed_allowed:
                 self._git(
@@ -767,7 +845,7 @@ class ClassViewPublisher:
                         ["diff", "--cached", "--name-only"], action="公開対象の再確認"
                     ).stdout.splitlines()
                 ]
-                if any(path not in self.allowed_paths for path in staged_after):
+                if any(not self._is_allowed_public_path(path) for path in staged_after):
                     raise PublicationError(
                         "公開対象を安全に限定できませんでした。管理担当者へ確認してください。",
                         code="unsafe_stage",
@@ -812,6 +890,7 @@ class ClassViewPublisher:
                     "--pretty=format:%H%x1f%ad%x1f%s",
                     "--",
                     *self.allowed_paths,
+                    "assets/works",
                 ],
                 action="公開履歴の確認",
             )

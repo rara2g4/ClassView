@@ -17,6 +17,7 @@ from werkzeug.serving import BaseWSGIServer, make_server
 from importer import CourseImporter, ImporterError
 from feedback_service import FeedbackError, FeedbackService
 from publisher import ClassViewPublisher, PublicationError
+from works_service import CourseWorksService, WorksError
 from single_instance import (
     APP_NAME,
     APP_VERSION,
@@ -111,10 +112,14 @@ def create_app(
     feedback = FeedbackService(
         repo_root or REPO_ROOT, work_root or default_work_root, service
     )
+    course_works = CourseWorksService(
+        repo_root or REPO_ROOT, work_root or default_work_root, service
+    )
     request_activity = activity or RequestActivity()
     app.config["IMPORTER_SERVICE"] = service
     app.config["PUBLISHER_SERVICE"] = publisher
     app.config["FEEDBACK_SERVICE"] = feedback
+    app.config["COURSE_WORKS_SERVICE"] = course_works
     app.config["REQUEST_ACTIVITY"] = request_activity
     app.config["APPLICATION_RUNTIME"] = runtime
 
@@ -178,6 +183,15 @@ def create_app(
             error.status,
         )
 
+    @app.errorhandler(WorksError)
+    def handle_works_error(error: WorksError):
+        if request.path.startswith("/api/") or request.path.startswith("/works/image/"):
+            return jsonify({"error": error.message, "code": error.code}), error.status
+        return (
+            render_template("works_error.html", message=error.message),
+            error.status,
+        )
+
     @app.errorhandler(RequestEntityTooLarge)
     def handle_too_large(_error: RequestEntityTooLarge):
         return jsonify({"error": "PDFが大きすぎます（上限512MB）。"}), 413
@@ -193,6 +207,44 @@ def create_app(
     @app.get("/manage")
     def manage():
         return render_template("manage.html", id_pattern=service.id_pattern())
+
+    @app.get("/works/course/<course_id>")
+    def course_works_page(course_id: str):
+        return render_template("works.html", **course_works.page_context(course_id))
+
+    @app.get("/works/image/<work_id>")
+    def course_work_image(work_id: str):
+        return send_file(course_works.image_for(work_id), conditional=True)
+
+    @app.get("/api/works/course/<course_id>")
+    def course_works_catalog(course_id: str):
+        return jsonify(course_works.page_context(course_id))
+
+    @app.post("/api/works/course/<course_id>")
+    def add_course_work(course_id: str):
+        result = course_works.add(course_id, request.form, request.files.get("image"))
+        publisher.record_operation("制作物を追加", result["work"]["id"])
+        return jsonify({"success": True, **result, "unpublished": True})
+
+    @app.post("/api/works/<work_id>/update")
+    def update_course_work(work_id: str):
+        result = course_works.update(work_id, request.form, request.files.get("image"))
+        publisher.record_operation("制作物を編集", work_id)
+        return jsonify({"success": True, **result, "unpublished": True})
+
+    @app.post("/api/works/<work_id>/delete")
+    def delete_course_work(work_id: str):
+        result = course_works.delete(work_id)
+        publisher.record_operation("制作物を削除", work_id)
+        return jsonify({"success": True, **result, "unpublished": True})
+
+    @app.post("/api/works/<work_id>/move")
+    def move_course_work(work_id: str):
+        payload = request.get_json(silent=True) or {}
+        result = course_works.move(work_id, str(payload.get("direction", "")))
+        if result.get("moved"):
+            publisher.record_operation("制作物を並び替え", work_id)
+        return jsonify({"success": True, **result, "unpublished": True})
 
     @app.get("/feedback")
     def feedback_dashboard():
@@ -315,7 +367,12 @@ def create_app(
 
     @app.get("/api/manage/courses")
     def management_catalog():
-        return jsonify(service.management_catalog())
+        catalog = service.management_catalog()
+        work_counts = course_works.counts_by_course()
+        for source in ("published", "archived"):
+            for course in catalog[source]:
+                course["workCount"] = work_counts.get(course.get("id"), 0)
+        return jsonify(catalog)
 
     @app.get("/api/manage/courses/<source>/<course_id>")
     def managed_course(source: str, course_id: str):
@@ -368,6 +425,14 @@ def create_app(
     @app.post("/api/manage/archived/<course_id>/delete")
     def permanently_delete_archived_course(course_id: str):
         payload = request.get_json(silent=True) or {}
+        work_count = course_works.work_count(course_id)
+        if work_count and not payload.get("confirmWorks"):
+            raise ImporterError(
+                f"この授業には制作物が{work_count}件登録されています。"
+                "制作物を残したまま授業を完全削除することを確認してください。",
+                status=409,
+                code="course_has_works",
+            )
         result = service.permanently_delete_archived_course(
             course_id, str(payload.get("expectedHash", ""))
         )

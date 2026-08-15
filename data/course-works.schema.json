@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rara2g4.github.io/ClassView/data/course-works.schema.json",
+  "title": "ClassView course works",
+  "description": "授業で実際に制作された作品を公開するための独立データ仕様です。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "works"
+  ],
+  "properties": {
+    "works": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/work"
+      }
+    }
+  },
+  "$defs": {
+    "nullableString": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "work": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "courseId",
+        "academicYear",
+        "title",
+        "description",
+        "image",
+        "url",
+        "linkLabel",
+        "alt",
+        "order"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*-work-[a-f0-9]{12}$"
+        },
+        "courseId": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "academicYear": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "description": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 1000
+        },
+        "image": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "pattern": "^assets/works/[a-z0-9]+(?:-[a-z0-9]+)*/[a-z0-9]+(?:-[a-z0-9]+)*/[a-f0-9]{32}\\.(?:jpg|jpeg|png|webp)$"
+            }
+          ]
+        },
+        "url": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "pattern": "^https?://",
+              "maxLength": 2048
+            }
+          ]
+        },
+        "linkLabel": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 80
+        },
+        "alt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 250
+        },
+        "order": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "anyOf": [
+        {
+          "properties": {
+            "image": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "properties": {
+            "url": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

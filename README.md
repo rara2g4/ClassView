@@ -17,12 +17,14 @@ HTML・CSS・JavaScriptだけで構成された静的サイトです。npm、フ
 - 空の任意項目を表示しない授業詳細
 - 存在しない授業ID向けの案内
 - 授業ID・授業名・年度を事前入力した共通の受講者フィードバックフォームへの導線
+- 授業で実際に制作された画像・外部作品・画像付き外部作品の表示と画像拡大
 - パソコンとスマートフォンに対応したレイアウト
 - シラバスPDFから授業JSONを準備・検証・追記するローカル専用インポーター
 - ローカル管理ツールによる既存授業編集、年度引き継ぎ、アーカイブ、復元、完全削除
 - ローカル保存した授業変更の確認と、安全なGitHub Pages公開
 - 起動時の最新状態確認、職員向けエラー表示、公開履歴
 - Google Forms回答CSVの読込、授業・年度別集計、個別回答、要確認状態を扱う受講者フィードバック管理
+- ローカル管理ツールによる制作物の追加、編集、削除、並び替え、掲載確認、公開前プレビュー
 
 公開サイト側のログイン、口コミ投稿、管理画面、データベースは実装していません。授業管理はlocalhostで動くローカル専用ツールとして提供します。
 
@@ -37,12 +39,17 @@ ClassView/
 ├─ js/
 │  ├─ course-list.js     # 一覧表示、検索、絞り込み
 │  ├─ course-detail.js   # 授業IDの取得と詳細表示
+│  ├─ course-works.js    # 実際の制作物の取得、表示、画像拡大
 │  └─ feedback-form.js   # 共通Google Form設定と事前入力URL生成
 ├─ data/
 │  ├─ courses.json       # 全授業の一覧・詳細データ
 │  ├─ archived-courses.json # 公開対象外のアーカイブ授業
+│  ├─ course-works.json  # 授業・年度別の実際の制作物
+│  ├─ course-works.schema.json # 制作物データのJSON Schema
 │  ├─ course.template.json # 授業1件分の入力テンプレート
 │  └─ course.schema.json # 授業1件分のJSON Schema
+├─ assets/
+│  └─ works/             # 管理ツールで登録した公開用画像
 ├─ docs/
 │  ├─ syllabus-conversion-prompt.md # シラバスをJSONへ変換するAI用指示
 │  └─ ClassView_操作マニュアル.md # 学校職員向けの操作手順
@@ -73,7 +80,7 @@ Windowsでは次のファイルをダブルクリックして起動できます�
 tools/course-importer/run-course-importer.bat
 ```
 
-起動すると職員向けの管理ホームが開きます。授業を保存した時点では「未公開の変更」としてこのPCに残り、内容確認後に「ClassViewへ公開」を押したときだけ、授業データと手動生成した公開用フィードバック集計に限定してGitHub Pagesへ送信します。Python、CSS、JavaScript、README、生の回答、個別回答、職員メモなどは自動公開の対象外です。
+起動すると職員向けの管理ホームが開きます。授業や制作物を保存した時点では「未公開の変更」としてこのPCに残り、内容確認後に「ClassViewへ公開」を押したときだけ、授業データ、制作物データと管理された制作物画像、手動生成した公開用フィードバック集計に限定してGitHub Pagesへ送信します。Python、CSS、JavaScript、README、生の回答、個別回答、職員メモなどは自動公開の対象外です。
 
 Google Formsの回答はGoogle SheetsからCSVをダウンロードし、「受講者フィードバック」画面で読み込みます。CSVはそのまま保存せず、必要な回答だけを安定した内部キーへ正規化してGit管理外の `tools/course-importer/feedback-data/` に保存します。授業IDと年度ごとに、学習成果・指導・教材・授業実態・確認候補・自由記述を確認できます。総合点やランキングは作成しません。
 
@@ -148,6 +155,33 @@ Google Formsの回答はGoogle SheetsからCSVをダウンロードし、「受�
 | `caption` | 任意 | 文字列または `null` | 画像下の説明 | 空ならキャプションを表示しない |
 
 授業1件分のテンプレートは `data/course.template.json`、機械検証用のJSON Schemaは `data/course.schema.json` にあります。SchemaはJSON Schema Draft 2020-12で、授業1件分のオブジェクトを対象とします。未定義フィールドは許可しません。
+
+## 実際の制作物データ
+
+実際の制作物は、シラバスから変換する授業データと役割が異なるため、`courses.json`へ追加せず、`data/course-works.json`で独立管理します。`assignments`は「どのような課題・制作を行うか」の説明、制作物データは「実際に作られたものを見る」ための情報です。
+
+```json
+{
+  "works": [
+    {
+      "id": "web-programming-work-0123456789ab",
+      "courseId": "web-programming",
+      "academicYear": "2026",
+      "title": "学校紹介Webサイト",
+      "description": "授業内で制作したWebサイトです。",
+      "image": "assets/works/web-programming/2026/0123456789abcdef0123456789abcdef.webp",
+      "url": "https://example.com/",
+      "linkLabel": "Webサイトを見る",
+      "alt": "学校紹介Webサイトのトップページ",
+      "order": 0
+    }
+  ]
+}
+```
+
+制作物は`courseId`と`academicYear`の両方が現在の授業と一致する場合だけ表示します。年度がない授業では両方を`null`として扱い、存在しない年度は推測しません。制作物0件の場合は「実際の制作物」セクション全体を表示しません。
+
+`image`と`url`のどちらか一方、または両方を設定できます。動画、PDF、ZIP、実行ファイル等はリポジトリへ保存せず、HTTPSまたはHTTPの外部URLを使用します。管理ツールが制作物IDと安全な画像ファイル名を自動生成するため、職員がJSONや画像パスを入力する必要はありません。正式仕様は`data/course-works.schema.json`にあります。
 
 ### 要約・学習対象・授業方法・学習成果・授業回の使い分け
 
@@ -240,10 +274,12 @@ cd ClassView
 
 ```bash
 git status
-git add .
+git add -- index.html course.html css js data README.md .nojekyll
 git commit -m "Update ClassView"
 git push origin main
 ```
+
+画像を追加した場合は、確認した制作物画像の保存先（例：`assets/works/web-programming/2026/`）も明示して追加します。管理ツールの「ClassViewへ公開」は、授業データ・公開用フィードバック集計・制作物データ・管理された制作物画像だけを自動選択し、リポジトリ全体を一括追加しません。
 
 すでにclone済みの場合は、`git clone` は不要です。pushが拒否された場合は、リモート側の更新を確認してから取り込んでください。
 

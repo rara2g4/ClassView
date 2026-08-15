@@ -4,7 +4,7 @@ ClassViewへ授業データを継続的に登録するための、ローカル�
 
 AIの出力を正解として自動登録するツールではありません。シラバスの事実、シラバス内からの推察、一般的な専門知識を使ったAI下書き提案を明確に分け、未確認のAI提案が残っている間は登録できません。人が最終確認したClassView用授業データだけを `data/courses.json` へ保存します。
 
-このツールはChatGPT APIを使用しません。ChatGPTを開くリンクだけを提供し、PDFの添付、指示文の送信、返答の貼り付けは利用者が手動で行います。
+このツールはChatGPT APIを使用しません。ChatGPTを開くリンクだけを提供し、PDFの添付、指示文の送信、返答の貼り付けは利用者が手動で行います。授業登録とは別に、職員が選定・許可確認した実際の制作物も管理できます。
 
 ## 初回セットアップと起動
 
@@ -37,7 +37,7 @@ python tools/course-importer/app.py
 起動後の管理ホームでは、授業データ、公開設定、公開サービス接続、最新状態、バックアップを自動確認します。職員が行う通常操作は次の流れだけです。
 
 1. 管理ツールを起動する
-2. 「新しい授業を登録」「授業を管理」「受講者フィードバック」から作業を選ぶ
+2. 「新しい授業を登録」「授業を管理」「受講者フィードバック」から作業を選ぶ。制作物は「授業を管理」から対象授業の「制作物を管理」を開く
 3. 授業情報を保存する
 4. 管理ホームの「未公開の変更」を確認する
 5. 「ClassViewへ公開」を押す
@@ -85,21 +85,41 @@ python tools/course-importer/app.py
 1. 公開中とアーカイブの全授業をSchema検証
 2. 接続先、ブランチ、公開側との差異を再確認
 3. 公開対象を確認
-4. 許可された授業データだけを明示的に準備
+4. 許可された授業・制作物・公開用集計データだけを明示的に準備
 5. 人間が読める公開履歴を作成
 6. 通常のpushで公開先へ送信
 
-自動公開で許可するファイルは、コード内の固定リストにある次の3ファイルだけです。
+自動公開で許可するファイルは、コード内で明示した次のデータと、管理ツールが安全な名前で保存した制作物画像だけです。
 
 ```text
 data/courses.json
 data/archived-courses.json
 data/course-feedback-summary.json
+data/course-works.json
+assets/works/<授業ID>/<年度>/<自動生成ファイル名>.jpg|png|webp
 ```
 
 `git add .` は使用しません。Python、CSS、JavaScript、README、テスト、その他の作業ファイルは、職員の公開操作に含まれません。すでに別のファイルが公開準備中の場合も処理を停止します。
 
 `data/course-feedback-summary.json` は、受講者フィードバック画面で職員が「公開用データを保存」を実行した場合だけ作成・更新されます。生CSV、個別回答、自由記述、職員メモ、確認状態は公開対象になりません。
+
+## 実際の制作物
+
+制作物は「授業を管理」から対象授業の「制作物を管理」を開いて登録します。授業情報の`assignments`とは分け、`data/course-works.json`へ`courseId + academicYear`単位で保存します。新年度版を作成しても前年の制作物は自動コピーしません。授業をアーカイブまたは完全削除しても、制作物を勝手に削除せず保持します。
+
+管理画面では次の操作ができます。
+
+- 画像、外部リンク、画像＋外部リンクの追加
+- タイトル、説明、画像、URL、リンク表示名、代替テキストの編集
+- 上下ボタンによる並び替え
+- 確認画面を経由した削除
+- 公開前プレビュー
+
+画像はJPEG・PNG・WebPだけを受け付け、5MB、最大12,000px、最大6,000万画素を上限とします。拡張子、ブラウザが通知したMIME type、実際のファイルシグネチャを照合します。元のファイル名は使用せず、32桁のランダム名を生成して`assets/works/<授業ID>/<年度>/`へ保存します。今回、画像形式変換や圧縮は行いません。大きい画像は職員側で縮小してから登録してください。
+
+外部URLは`http://`または`https://`だけを許可します。動画、PDF、ZIP、実行ファイル、CAD・3Dモデル元データ等はアップロードせず、外部閲覧先へのリンクとして登録します。保存時には、掲載許可、著作権、使用素材、個人情報、人物写真を確認するチェックが必須です。この確認状態自体は公開JSONへ保存しません。
+
+制作物の保存と公開は分離されています。追加・編集・削除後はローカルの未公開変更になり、「ClassViewへ公開」を押したときだけ`course-works.json`と対象画像を明示的に準備します。`git add .`、force push、`reset --hard`、`git clean`は使用しません。
 
 ## 受講者フィードバック
 
@@ -463,7 +483,7 @@ node tools/course-importer/tests/test_editor_state.js
 - 各管理操作のバックアップと実運用データ非変更
 - リポジトリ・接続先・ブランチ・JSON破損の検出
 - 公開側だけ進んだ場合のfast-forwardと、両側変更時の公開停止
-- 授業データだけの明示的なstage、公開履歴作成、push
+- 授業・制作物・公開用集計だけの明示的なstage、公開履歴作成、push
 - `shell=False`、特殊文字を含む授業名、診断情報の認証情報マスク
 - 一時Gitリポジトリとローカルのbare remoteを使った本番GitHub非接続テスト
 
@@ -474,6 +494,7 @@ tools/course-importer/
 ├─ app.py                       Flaskの画面とAPI
 ├─ importer.py                  PDF、検証、追記の中核処理
 ├─ publisher.py                 状態確認、安全な同期・公開・履歴・診断
+├─ works_service.py             制作物データ、画像検証、バックアップ、並び順
 ├─ single_instance.py           単一起動、実行中URL、health確認、終了後処理
 ├─ classview-admin.json         接続先、ブランチ、公開URLの一元設定
 ├─ requirements.txt             必要なPythonライブラリ
@@ -485,13 +506,18 @@ tools/course-importer/
 ├─ templates/dashboard.html     職員向け管理ホーム
 ├─ templates/index.html          新規授業登録画面
 ├─ templates/manage.html         既存授業の管理画面
+├─ templates/works.html          制作物の追加・編集・プレビュー画面
+├─ templates/works_error.html    制作物管理の職員向けエラー画面
 ├─ static/style.css              管理画面のスタイル
 ├─ static/dashboard.js           状態確認、未公開変更、公開、診断UI
 ├─ static/app.js                 画面の段階制御、フォーム、ライブプレビュー
 ├─ static/course-management.js   編集、年度引き継ぎ、アーカイブ等の画面制御
+├─ static/works.js               制作物管理画面の操作
 ├─ static/editor-state.js        フォーム状態と授業JSONの相互変換
 ├─ tests/test_importer.py        実データを使わないPythonテスト
 ├─ tests/test_publisher.py       一時Git環境を使う公開・同期テスト
 ├─ tests/test_single_instance.py 単一起動と終了ライフサイクルのテスト
+├─ tests/test_works.py            制作物データ・画像・管理APIのテスト
+├─ tests/test_public_course_works.js 公開ページの年度・URL・パス検証
 └─ tests/test_editor_state.js    フォーム状態のJavaScriptテスト
 ```

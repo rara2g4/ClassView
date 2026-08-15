@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>制作物管理 | ClassView</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="shell site-header__inner">
+        <p class="brand">ClassView</p>
+        <span class="local-badge">管理ツール</span>
+      </div>
+    </header>
+    <main class="shell main-content">
+      <header class="page-header">
+        <p class="eyebrow">Course works</p>
+        <h1>制作物を表示できません</h1>
+        <p>{{ message }}</p>
+      </header>
+      <a class="button button--secondary" href="{{ url_for('manage') }}">授業管理へ戻る</a>
+    </main>
+  </body>
+</html>
