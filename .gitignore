@@ -4,6 +4,7 @@ tools/course-importer/uploads/
 tools/course-importer/backups/
 tools/course-importer/logs/
 tools/course-importer/runtime/
+tools/course-importer/feedback-data/
 tools/course-importer/dist/
 tools/course-importer/build/
 tools/course-importer/*.spec

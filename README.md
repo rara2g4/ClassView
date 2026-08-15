@@ -16,11 +16,13 @@ HTML・CSS・JavaScriptだけで構成された静的サイトです。npm、フ
 - 授業IDを使った一覧ページから詳細ページへの移動
 - 空の任意項目を表示しない授業詳細
 - 存在しない授業ID向けの案内
+- 授業ID・授業名・年度を事前入力した共通の受講者フィードバックフォームへの導線
 - パソコンとスマートフォンに対応したレイアウト
 - シラバスPDFから授業JSONを準備・検証・追記するローカル専用インポーター
 - ローカル管理ツールによる既存授業編集、年度引き継ぎ、アーカイブ、復元、完全削除
 - ローカル保存した授業変更の確認と、安全なGitHub Pages公開
 - 起動時の最新状態確認、職員向けエラー表示、公開履歴
+- Google Forms回答CSVの読込、授業・年度別集計、個別回答、要確認状態を扱う受講者フィードバック管理
 
 公開サイト側のログイン、口コミ投稿、管理画面、データベースは実装していません。授業管理はlocalhostで動くローカル専用ツールとして提供します。
 
@@ -34,7 +36,8 @@ ClassView/
 │  └─ style.css          # 一覧と詳細で共通のデザイン
 ├─ js/
 │  ├─ course-list.js     # 一覧表示、検索、絞り込み
-│  └─ course-detail.js   # 授業IDの取得と詳細表示
+│  ├─ course-detail.js   # 授業IDの取得と詳細表示
+│  └─ feedback-form.js   # 共通Google Form設定と事前入力URL生成
 ├─ data/
 │  ├─ courses.json       # 全授業の一覧・詳細データ
 │  ├─ archived-courses.json # 公開対象外のアーカイブ授業
@@ -44,7 +47,7 @@ ClassView/
 │  ├─ syllabus-conversion-prompt.md # シラバスをJSONへ変換するAI用指示
 │  └─ ClassView_操作マニュアル.md # 学校職員向けの操作手順
 ├─ tools/
-│  └─ course-importer/   # ローカル専用シラバスインポーター
+│  └─ course-importer/   # ローカル専用の授業・フィードバック管理ツール
 ├─ .gitignore            # インポーターの一時データなどを除外
 ├─ .nojekyll             # GitHub Pages用の設定
 └─ README.md
@@ -70,7 +73,9 @@ Windowsでは次のファイルをダブルクリックして起動できます�
 tools/course-importer/run-course-importer.bat
 ```
 
-起動すると職員向けの管理ホームが開きます。授業を保存した時点では「未公開の変更」としてこのPCに残り、内容確認後に「ClassViewへ公開」を押したときだけ、授業データに限定してGitHub Pagesへ送信します。Python、CSS、JavaScript、READMEなどは自動公開の対象外です。
+起動すると職員向けの管理ホームが開きます。授業を保存した時点では「未公開の変更」としてこのPCに残り、内容確認後に「ClassViewへ公開」を押したときだけ、授業データと手動生成した公開用フィードバック集計に限定してGitHub Pagesへ送信します。Python、CSS、JavaScript、README、生の回答、個別回答、職員メモなどは自動公開の対象外です。
+
+Google Formsの回答はGoogle SheetsからCSVをダウンロードし、「受講者フィードバック」画面で読み込みます。CSVはそのまま保存せず、必要な回答だけを安定した内部キーへ正規化してGit管理外の `tools/course-importer/feedback-data/` に保存します。授業IDと年度ごとに、学習成果・指導・教材・授業実態・確認候補・自由記述を確認できます。総合点やランキングは作成しません。
 
 職員向けの手順は [`docs/ClassView_操作マニュアル.md`](docs/ClassView_操作マニュアル.md)、初回セットアップ、認証、Windows実行ファイル、公開処理、安全対策の詳細は [`tools/course-importer/README.md`](tools/course-importer/README.md) を参照してください。管理ツールは `127.0.0.1` だけで動作し、GitHub Pages上の公開サイトからは参照されません。
 

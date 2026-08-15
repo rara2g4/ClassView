@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>受講者フィードバック | ClassView</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="shell site-header__inner">
+        <p class="brand">ClassView</p>
+        <span class="local-badge">管理ツール</span>
+        <a class="header-link" href="{{ url_for('index') }}">管理ホーム</a>
+        <a class="header-link" href="{{ url_for('manage') }}">授業管理</a>
+      </div>
+    </header>
+
+    <main class="shell main-content feedback-page">
+      <header class="page-header management-page-header">
+        <p class="eyebrow">Learner feedback</p>
+        <h1>受講者フィードバック</h1>
+        <p>学生の回答を、授業の良し悪しを一つの点数にせず、学習成果・指導・教材・授業実態・確認候補に分けて確認します。</p>
+      </header>
+
+      <section class="feedback-import" aria-labelledby="feedback-import-heading">
+        <div>
+          <h2 id="feedback-import-heading">回答CSVを読み込む</h2>
+          <p>Google Sheetsで「ファイル → ダウンロード → カンマ区切り形式（.csv）」を選び、そのファイルを指定してください。読み込んだだけでは公開サイトへ反映されません。</p>
+        </div>
+        <form id="feedback-import-form" class="feedback-import__form" enctype="multipart/form-data">
+          <label class="button button--secondary feedback-file-button" for="feedback-csv">CSVを選択</label>
+          <input id="feedback-csv" name="csv" type="file" accept=".csv,text/csv" required>
+          <span id="feedback-file-name" class="feedback-file-name">ファイルが選択されていません</span>
+          <button class="button" type="submit">回答CSVを読み込む</button>
+        </form>
+        <div id="feedback-import-status" class="status" role="status" aria-live="polite"></div>
+        <ul id="feedback-import-warnings" class="feedback-warning-list"></ul>
+        <details id="feedback-import-technical" class="technical-details" hidden>
+          <summary>技術情報を確認する</summary>
+          <pre id="feedback-import-technical-text"></pre>
+        </details>
+      </section>
+
+      <section class="feedback-overview" aria-labelledby="feedback-overview-heading">
+        <div class="dashboard-section-heading">
+          <div>
+            <p class="eyebrow">Overview</p>
+            <h2 id="feedback-overview-heading">登録済み回答</h2>
+          </div>
+          <strong class="feedback-total">合計 {{ total_count }}件</strong>
+        </div>
+        <div class="feedback-attention-grid" aria-label="未確認の項目">
+          <div><span>掲載情報・授業内容の確認候補</span><strong>{{ issue_counts.syllabus_alignment }}件</strong></div>
+          <div><span>専門内容の確認候補</span><strong>{{ issue_counts.content_concern }}件</strong></div>
+          <div><span>未確認の改善意見</span><strong>{{ issue_counts.improvement }}件</strong></div>
+        </div>
+      </section>
+
+      <section class="feedback-catalog" aria-labelledby="feedback-catalog-heading">
+        <div class="dashboard-section-heading">
+          <div>
+            <p class="eyebrow">By course and year</p>
+            <h2 id="feedback-catalog-heading">授業別</h2>
+          </div>
+        </div>
+        <form class="feedback-filters" method="get">
+          <div class="field">
+            <label for="feedback-course-filter">授業</label>
+            <select id="feedback-course-filter" name="course">
+              <option value="">すべて</option>
+              {% for course_id, title in courses %}<option value="{{ course_id }}"{% if filters.course_id == course_id %} selected{% endif %}>{{ title }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="feedback-year-filter">年度</label>
+            <select id="feedback-year-filter" name="year">
+              <option value="">すべて</option>
+              {% for item in years %}<option value="{{ item }}"{% if filters.year == item %} selected{% endif %}>{{ item }}年度</option>{% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="feedback-issue-filter">要確認</label>
+            <select id="feedback-issue-filter" name="issues">
+              <option value=""{% if not filters.issues %} selected{% endif %}>すべて</option>
+              <option value="yes"{% if filters.issues == 'yes' %} selected{% endif %}>要確認あり</option>
+              <option value="no"{% if filters.issues == 'no' %} selected{% endif %}>要確認なし</option>
+            </select>
+          </div>
+          <button class="button button--secondary" type="submit">表示を絞り込む</button>
+        </form>
+
+        {% if groups %}
+          <div class="feedback-course-list">
+            {% for group in groups %}
+              <article class="feedback-course-card">
+                <div>
+                  <h3>{{ group.course_title }}</h3>
+                  <p>{{ group.academic_year }}年度</p>
+                  <dl>
+                    <div><dt>回答</dt><dd>{{ group.total_count }}件</dd></div>
+                    <div><dt>集計対象</dt><dd>{{ group.eligible_count }}件</dd></div>
+                    <div><dt>未確認</dt><dd>{{ group.unresolved_count }}件</dd></div>
+                  </dl>
+                </div>
+                <a class="button button--secondary" href="{{ url_for('feedback_course', course_id=group.course_id, academic_year=group.academic_year) }}">確認する</a>
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="management-empty">条件に合う回答はありません。CSVの読み込み、または絞り込み条件を確認してください。</p>
+        {% endif %}
+      </section>
+    </main>
+    <footer class="site-footer"><div class="shell">ClassView 受講者フィードバック — このPC内だけで動作します</div></footer>
+    <script src="{{ url_for('static', filename='feedback.js') }}" defer></script>
+  </body>
+</html>

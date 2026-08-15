@@ -164,6 +164,27 @@ class ClassViewPublisherTests(unittest.TestCase):
         self.assertEqual(status["unpublishedChanges"][0]["description"], "講師名を変更")
         self.assertTrue(status["canPublish"])
 
+    def test_feedback_summary_is_the_only_additional_public_feedback_file(self):
+        summary_path = self.repo / "data" / "course-feedback-summary.json"
+        summary_path.write_text(
+            json.dumps(
+                {
+                    "version": 1,
+                    "generatedAt": "2026-08-14T00:00:00+00:00",
+                    "courses": [],
+                },
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        status = self.publisher.status()
+        self.assertEqual(status["unpublishedCount"], 1)
+        self.assertEqual(status["unpublishedChanges"][0]["title"], "受講者フィードバック集計")
+        self.publisher.publish()
+        committed = self.git("show", "--name-only", "--format=", "HEAD").stdout.splitlines()
+        self.assertEqual(committed, ["data/course-feedback-summary.json"])
+
     def test_hidden_process_uses_argument_array_and_windows_console_flags(self):
         completed = subprocess.CompletedProcess(["git", "status"], 0, "ok", "")
         with patch("publisher.subprocess.run", return_value=completed) as mocked_run:

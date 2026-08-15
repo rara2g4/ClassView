@@ -50,6 +50,37 @@ class CourseDataContractTests(unittest.TestCase):
         )
         self.assertNotIn("archived-courses.json", public_scripts)
 
+    def test_public_course_page_uses_one_shared_prefilled_feedback_form(self):
+        course_page = (REPO_ROOT / "course.html").read_text(encoding="utf-8")
+        detail_script = (REPO_ROOT / "js" / "course-detail.js").read_text(
+            encoding="utf-8"
+        )
+        feedback_script = (REPO_ROOT / "js" / "feedback-form.js").read_text(
+            encoding="utf-8"
+        )
+        courses = (REPO_ROOT / "data" / "courses.json").read_text(encoding="utf-8")
+
+        self.assertLess(
+            course_page.index("js/feedback-form.js"),
+            course_page.index("js/course-detail.js"),
+        )
+        for value in (
+            "1FAIpQLSeEjSeDZo3s8NgfSNeBCyKaSRrK5cQbooYaQuCKb3g_BRbfZQ",
+            "entry.1710189700",
+            "entry.1032820196",
+            "entry.681559836",
+            "URLSearchParams",
+        ):
+            with self.subTest(value=value):
+                if value == "URLSearchParams":
+                    self.assertIn("searchParams", feedback_script)
+                else:
+                    self.assertIn(value, feedback_script)
+        self.assertIn('link.target = "_blank"', detail_script)
+        self.assertIn('link.rel = "noopener noreferrer"', detail_script)
+        self.assertIn("この授業を受講した方へ", detail_script)
+        self.assertNotIn('"feedbackUrl"', courses)
+
     def test_management_ui_exposes_required_course_operations(self):
         template = (
             REPO_ROOT / "tools" / "course-importer" / "templates" / "manage.html"

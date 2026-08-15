@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ja">
+  <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow"><title>個別回答 | 受講者フィードバック</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+  <body>
+    <header class="site-header"><div class="shell site-header__inner"><p class="brand">ClassView</p><span class="local-badge">管理ツール</span><a class="header-link" href="{{ url_for('feedback_course', course_id=record.course_id, academic_year=record.academic_year) }}">授業別集計へ戻る</a><a class="header-link" href="{{ url_for('feedback_dashboard') }}">フィードバック一覧</a></div></header>
+    <main class="shell main-content feedback-page feedback-response-page">
+      <header class="page-header"><p class="eyebrow">Individual response</p><h1>個別回答</h1><p>{{ record.timestamp or '回答日時なし' }}　{{ record.course_title }}　{{ record.academic_year }}年度</p></header>
+      {% if not record.attended %}<p class="feedback-caution">この回答は「実際に受講していない」と回答しているため、授業品質の集計対象外です。</p>{% endif %}
+
+      <section class="feedback-response-section"><h2>受講背景・学習成果</h2><dl class="feedback-response-values">{% for key in ['prior_experience','content_understanding','independent_application','skill_growth','goal_achievement'] %}<div><dt>{{ labels[key] }}</dt><dd>{{ record[key] ~ ' / 5' if record[key] is not none else '回答なし' }}</dd></div>{% endfor %}</dl></section>
+      <section class="feedback-response-section"><h2>指導・教材・授業計画</h2><dl class="feedback-response-values">{% for key in ['explanation_clarity','practice_usefulness','question_support','material_usefulness','assignment_usefulness','syllabus_alignment'] %}<div><dt>{{ labels[key] }}</dt><dd>{% if record[key] is not none %}{{ record[key] }} / 5{% elif record[key ~ '_not_applicable'] %}{{ record[key ~ '_not_applicable'] }}{% else %}回答なし{% endif %}</dd></div>{% endfor %}</dl></section>
+      <section class="feedback-response-section"><h2>授業実態</h2><dl class="feedback-response-values">{% for key in ['pace','difficulty','workload'] %}<div><dt>{{ labels[key] }}</dt><dd>{{ record[key] or '回答なし' }}</dd></div>{% endfor %}<div><dt>授業形式</dt><dd>{% if record.class_style %}<ul>{% for item in record.class_style %}<li>{{ item }}</li>{% endfor %}</ul>{% else %}回答なし{% endif %}</dd></div></dl></section>
+      <section class="feedback-response-section"><h2>自由記述</h2>{% for key in ['gained_skills_text','helpful_points_text','improvement_text','content_concern_text','other_text'] %}<article class="feedback-free-text"><h3>{{ labels[key] }}</h3><p>{{ record[key] or '記入なし' }}</p></article>{% endfor %}</section>
+
+      {% if issues %}<section class="feedback-response-section"><h2>要確認事項の状態</h2><p>この状態と職員メモは管理用データだけに保存され、公開サイトには出ません。</p>{% for issue in issues %}<form class="feedback-issue-form" data-issue-id="{{ issue.issue_id }}"><h3>{% if issue.type == 'content_concern' %}専門内容の確認候補{% elif issue.type == 'syllabus_alignment' %}掲載情報・授業内容の確認候補{% else %}改善意見{% endif %}</h3><div class="field"><label for="status-{{ loop.index }}">確認状態</label><select id="status-{{ loop.index }}" name="status">{% for value, label in issue_statuses.items() %}<option value="{{ value }}"{% if value == issue.status %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div><div class="field"><label for="note-{{ loop.index }}">職員メモ</label><textarea id="note-{{ loop.index }}" name="note" rows="4" maxlength="2000">{{ issue.note }}</textarea></div><button class="button button--secondary" type="submit">状態とメモを保存</button><div class="status" role="status" aria-live="polite"></div></form>{% endfor %}</section>{% endif %}
+    </main>
+    <footer class="site-footer"><div class="shell">ClassView 個別回答 — localhost only</div></footer>
+    <script src="{{ url_for('static', filename='feedback.js') }}" defer></script>
+  </body>
+</html>

@@ -488,6 +488,29 @@ img {
   border-bottom: 0;
 }
 
+.course-feedback {
+  max-width: var(--reading-width);
+  margin-top: var(--section-space);
+}
+
+.course-feedback__heading {
+  margin: 0 0 8px;
+  font-size: 1.08rem;
+  line-height: 1.5;
+}
+
+.course-feedback__description {
+  max-width: 42rem;
+  margin: 0;
+  color: var(--color-subtle);
+  font-size: 0.9rem;
+}
+
+.course-feedback__link {
+  gap: 7px;
+  margin-top: 12px;
+}
+
 .course-bottom-navigation {
   margin-top: var(--related-section-space);
   padding-bottom: var(--related-section-space);
@@ -691,6 +714,10 @@ img {
   }
 
   .supplementary {
+    margin-top: var(--section-space);
+  }
+
+  .course-feedback {
     margin-top: var(--section-space);
   }
 

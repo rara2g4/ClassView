@@ -108,6 +108,7 @@ class ClassViewPublisher:
     allowed_paths = (
         "data/courses.json",
         "data/archived-courses.json",
+        "data/course-feedback-summary.json",
     )
     field_labels = {
         "title": "授業名",
@@ -489,6 +490,16 @@ class ClassViewPublisher:
         for course_id in sorted(set(base_archive) - set(current_archive) - restored_ids):
             changes.append(
                 self._change_item(base_archive[course_id], "delete", "管理データから完全削除")
+            )
+        if "data/course-feedback-summary.json" in self._working_paths():
+            changes.append(
+                {
+                    "id": "course-feedback-summary",
+                    "title": "受講者フィードバック集計",
+                    "academicYear": None,
+                    "action": "feedback-summary",
+                    "description": "公開用集計を更新",
+                }
             )
         return changes
 

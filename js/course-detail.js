@@ -233,6 +233,47 @@
     return navigation;
   };
 
+  const createFeedbackSection = (course) => {
+    const feedback = globalThis.ClassViewFeedback;
+    if (!feedback?.config?.enabled) return null;
+
+    const feedbackUrl = feedback.createFeedbackUrl(course);
+    if (!feedbackUrl) {
+      console.warn(
+        "授業IDまたは授業名を確認できないため、フィードバック導線を表示しません。"
+      );
+      return null;
+    }
+
+    const section = element("section", "course-feedback");
+    const heading = element(
+      "h2",
+      "course-feedback__heading",
+      "この授業を受講した方へ"
+    );
+    heading.id = "course-feedback-heading";
+    section.setAttribute("aria-labelledby", heading.id);
+    section.append(heading);
+    section.append(
+      element(
+        "p",
+        "course-feedback__description",
+        "今後の授業改善やClassViewの情報改善に役立てるため、実際に授業を受講した方からフィードバックを募集しています。"
+      )
+    );
+
+    const link = element("a", "text-link course-feedback__link");
+    link.href = feedbackUrl;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.append(
+      document.createTextNode("フィードバックを送る"),
+      element("span", "", "→")
+    );
+    section.append(link);
+    return section;
+  };
+
   const renderCourse = (course) => {
     const fragment = document.createDocumentFragment();
     fragment.append(createCourseHeader(course));
@@ -245,6 +286,9 @@
 
     const supplementary = createSupplementaryInfo(course);
     if (supplementary) fragment.append(supplementary);
+
+    const feedback = createFeedbackSection(course);
+    if (feedback) fragment.append(feedback);
 
     fragment.append(createBottomNavigation());
 

@@ -15,6 +15,7 @@ from werkzeug.exceptions import RequestEntityTooLarge
 from werkzeug.serving import BaseWSGIServer, make_server
 
 from importer import CourseImporter, ImporterError
+from feedback_service import FeedbackError, FeedbackService
 from publisher import ClassViewPublisher, PublicationError
 from single_instance import (
     APP_NAME,
@@ -107,9 +108,13 @@ def create_app(
     publisher = ClassViewPublisher(
         repo_root or REPO_ROOT, work_root or default_work_root, service
     )
+    feedback = FeedbackService(
+        repo_root or REPO_ROOT, work_root or default_work_root, service
+    )
     request_activity = activity or RequestActivity()
     app.config["IMPORTER_SERVICE"] = service
     app.config["PUBLISHER_SERVICE"] = publisher
+    app.config["FEEDBACK_SERVICE"] = feedback
     app.config["REQUEST_ACTIVITY"] = request_activity
     app.config["APPLICATION_RUNTIME"] = runtime
 
@@ -155,6 +160,24 @@ def create_app(
             error.status,
         )
 
+    @app.errorhandler(FeedbackError)
+    def handle_feedback_error(error: FeedbackError):
+        if request.path.startswith("/api/"):
+            return jsonify(
+                {
+                    "error": error.message,
+                    "code": error.code,
+                    "diagnostic": error.diagnostic,
+                }
+            ), error.status
+        return (
+            render_template(
+                "feedback_error.html",
+                message=error.message,
+            ),
+            error.status,
+        )
+
     @app.errorhandler(RequestEntityTooLarge)
     def handle_too_large(_error: RequestEntityTooLarge):
         return jsonify({"error": "PDFが大きすぎます（上限512MB）。"}), 413
@@ -170,6 +193,65 @@ def create_app(
     @app.get("/manage")
     def manage():
         return render_template("manage.html", id_pattern=service.id_pattern())
+
+    @app.get("/feedback")
+    def feedback_dashboard():
+        catalog = feedback.dashboard(
+            request.args.get("course", "").strip(),
+            request.args.get("year", "").strip(),
+            request.args.get("issues", "").strip(),
+        )
+        return render_template("feedback_dashboard.html", **catalog)
+
+    @app.get("/feedback/course/<course_id>/<academic_year>")
+    def feedback_course(course_id: str, academic_year: str):
+        return render_template(
+            "feedback_course.html",
+            summary=feedback.aggregate(course_id, academic_year),
+        )
+
+    @app.get("/feedback/response/<response_id>")
+    def feedback_response(response_id: str):
+        return render_template(
+            "feedback_response.html", **feedback.response_detail(response_id)
+        )
+
+    @app.post("/api/feedback/import")
+    def import_feedback_csv():
+        uploaded = request.files.get("csv")
+        if uploaded is None or not uploaded.filename:
+            raise FeedbackError("Google Formsの回答CSVを選択してください。")
+        result = feedback.import_csv(
+            uploaded.stream,
+            uploaded.filename,
+            request.content_length,
+        )
+        publisher.record_operation("受講者フィードバックCSVを読み込み", str(result["added"]))
+        return jsonify(result)
+
+    @app.post("/api/feedback/issues/<path:issue_id>")
+    def update_feedback_issue(issue_id: str):
+        payload = request.get_json(silent=True) or {}
+        return jsonify(
+            feedback.update_issue(
+                issue_id,
+                str(payload.get("status", "")),
+                str(payload.get("note", "")),
+            )
+        )
+
+    @app.post("/api/feedback/public-summary")
+    def save_feedback_public_summary():
+        payload = request.get_json(silent=True) or {}
+        result = feedback.save_public_summary(
+            str(payload.get("courseId", "")),
+            str(payload.get("academicYear", "")),
+        )
+        publisher.record_operation(
+            "公開用フィードバック集計を保存",
+            f"{payload.get('courseId', '')} {payload.get('academicYear', '')}",
+        )
+        return jsonify(result)
 
     @app.get("/api/health")
     def health():

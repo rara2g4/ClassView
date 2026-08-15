@@ -1,0 +1,85 @@
+{% macro distribution(metric, scale=false) %}
+  <div class="feedback-metric">
+    <div class="feedback-metric__heading">
+      <h3>{{ metric.label }}</h3>
+      {% if metric.average is defined and metric.average is not none %}<strong>平均 {{ '%.2f'|format(metric.average) }} / 5</strong>{% endif %}
+    </div>
+    {% set maximum = metric.distribution.values()|max if metric.distribution else 0 %}
+    <div class="feedback-bars">
+      {% for label, count in metric.distribution.items() %}
+        <div class="feedback-bar-row">
+          <span>{{ label }}</span>
+          <span class="feedback-bar-track"><span style="width: {{ (count / maximum * 100) if maximum else 0 }}%"></span></span>
+          <strong>{{ count }}件</strong>
+        </div>
+      {% endfor %}
+    </div>
+    {% if metric.not_applicable is defined %}
+      {% for label, count in metric.not_applicable.items() %}<p class="feedback-na">{{ label }}：{{ count }}件（平均の対象外）</p>{% endfor %}
+    {% endif %}
+  </div>
+{% endmacro %}
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{{ summary.course_title }} {{ summary.academic_year }}年度 | 受講者フィードバック</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <header class="site-header"><div class="shell site-header__inner"><p class="brand">ClassView</p><span class="local-badge">管理ツール</span><a class="header-link" href="{{ url_for('feedback_dashboard') }}">受講者フィードバック一覧</a><a class="header-link" href="{{ url_for('index') }}">管理ホーム</a></div></header>
+    <main class="shell main-content feedback-page feedback-detail-page">
+      <header class="page-header management-page-header">
+        <p class="eyebrow">Course feedback</p>
+        <h1>{{ summary.course_title }}</h1>
+        <p>{{ summary.academic_year }}年度　回答数 {{ summary.total_count }}件／集計対象 {{ summary.eligible_count }}件{% if summary.excluded_count %}／非受講者として除外 {{ summary.excluded_count }}件{% endif %}</p>
+      </header>
+
+      {% if not summary.summary_available %}<p class="feedback-caution">回答数が少ないため、平均と分布はまだ表示していません。集計対象が{{ summary.min_responses_for_summary }}件以上になると表示します。個別回答と要確認事項は確認できます。</p>{% endif %}
+      {% for alert in summary.alerts %}<p class="feedback-caution">{{ alert }} 数値だけで問題と断定せず、個別回答や授業内容も確認してください。</p>{% endfor %}
+
+      <nav class="feedback-jump" aria-label="ページ内メニュー">{% if summary.summary_available %}<a href="#learning">学習成果</a><a href="#instruction">指導・説明</a><a href="#materials">教材・課題</a><a href="#alignment">授業計画との一致</a><a href="#reality">授業実態</a>{% endif %}<a href="#attention">要確認</a><a href="#responses">個別回答</a></nav>
+
+      {% if summary.summary_available %}
+      <section id="learning" class="feedback-section"><p class="eyebrow">01</p><h2>学習成果</h2><div class="feedback-metric-grid">{% for metric in summary.scale_groups.learning %}{{ distribution(metric, true) }}{% endfor %}</div></section>
+      <section id="instruction" class="feedback-section"><p class="eyebrow">02</p><h2>指導・説明</h2><div class="feedback-metric-grid">{% for metric in summary.scale_groups.instruction %}{{ distribution(metric, true) }}{% endfor %}</div></section>
+      <section id="materials" class="feedback-section"><p class="eyebrow">03</p><h2>教材・課題</h2><div class="feedback-metric-grid">{% for metric in summary.scale_groups.materials %}{{ distribution(metric, true) }}{% endfor %}</div></section>
+      <section id="alignment" class="feedback-section"><p class="eyebrow">04</p><h2>授業計画との一致</h2><div class="feedback-metric-grid">{% for metric in summary.scale_groups.alignment %}{{ distribution(metric, true) }}{% endfor %}</div></section>
+      <section id="reality" class="feedback-section"><p class="eyebrow">05</p><h2>授業実態</h2><p>難易度・課題量・授業速度は品質点数に換算せず、回答の分布として確認します。</p><div class="feedback-metric-grid">{{ distribution(summary.pace) }}{{ distribution(summary.difficulty) }}{{ distribution(summary.workload) }}{{ distribution(summary.class_style) }}{% for metric in summary.scale_groups.background %}{{ distribution(metric, true) }}{% endfor %}</div></section>
+      {% endif %}
+
+      <section id="attention" class="feedback-section"><p class="eyebrow">06</p><h2>要確認</h2>
+        <p>全回答から、専門内容・掲載情報との相違・改善意見など、職員による確認が必要な可能性がある回答だけを表示します。問題があると断定するものではありません。</p>
+        <h3 class="feedback-subheading">自由記述の件数</h3>
+        <div class="feedback-text-counts">{% for key, count in summary.text_counts.items() %}<div><span>{{ {'gained_skills_text':'できるようになったこと','helpful_points_text':'特に役立ったこと','improvement_text':'改善してほしいこと','content_concern_text':'専門内容への懸念','other_text':'その他'}[key] }}</span><strong>{{ count }}件</strong></div>{% endfor %}</div>
+        {% if summary.issue_groups %}
+          <div class="feedback-issue-list">
+            {% for group in summary.issue_groups %}
+              <article class="feedback-issue{% if group.has_unreviewed %} is-unreviewed{% endif %}">
+                <div class="feedback-issue__heading"><strong>この回答の確認候補</strong><span>{{ group.issues|length }}項目</span></div>
+                <ul class="feedback-issue__types">
+                  {% for issue in group.issues %}
+                    <li><strong>{% if issue.type == 'content_concern' %}専門内容{% elif issue.type == 'syllabus_alignment' %}掲載情報・授業内容{% else %}改善意見{% endif %}</strong><span>{{ summary.issue_statuses[issue.status] }}</span></li>
+                  {% endfor %}
+                </ul>
+                <p>同じ回答内の確認候補をまとめています。詳細画面では、項目ごとに確認状態と職員メモを管理できます。</p>
+                <a class="text-link" href="{{ url_for('feedback_response', response_id=group.response_id) }}">回答を見る</a>
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}<p class="management-empty">要確認として抽出された回答はありません。</p>{% endif %}
+      </section>
+
+      <section id="responses" class="feedback-section"><p class="eyebrow">Responses</p><h2>個別回答</h2>
+        <p>読み込んだすべての回答を1件ずつ表示します。「要確認」に抽出されていない回答や、集計対象外の非受講者回答も含まれます。</p>
+        <div class="feedback-response-list">{% for record in summary.records %}<a href="{{ url_for('feedback_response', response_id=record.response_id) }}"><strong>{{ record.timestamp or '日時なし' }}</strong><span>{% if record.attended %}集計対象{% else %}非受講者・集計対象外{% endif %}</span></a>{% endfor %}</div>
+      </section>
+
+      <section class="feedback-public-save"><div><h2>公開用集計</h2><p>回答数、学習成果の集計、難易度・課題量・授業形式の件数だけを専用JSONへ保存します。自由記述、個別回答、職員メモは含みません。</p></div><button class="button button--secondary" id="feedback-summary-button" data-course-id="{{ summary.course_id }}" data-academic-year="{{ summary.academic_year }}"{% if not summary.summary_available %} disabled{% endif %}>公開用データを保存</button><div id="feedback-summary-status" class="status" role="status" aria-live="polite"></div></section>
+    </main>
+    <footer class="site-footer"><div class="shell">ClassView 受講者フィードバック — localhost only</div></footer>
+    <script src="{{ url_for('static', filename='feedback.js') }}" defer></script>
+  </body>
+</html>
