@@ -23,6 +23,78 @@
       "linkLabel": null,
       "alt": "学習時間のグラフ、科目別進捗、タスク、カレンダーを配置した学習記録画面",
       "order": 1
+    },
+    {
+      "id": "game-development-work-c3d4e5f6a7b8",
+      "courseId": "game-development",
+      "academicYear": null,
+      "title": "光の遺跡",
+      "description": "光の向きを切り替えて遺跡を進む2Dパズルゲームです。機能確認用に用意した架空の制作物サンプルです。",
+      "image": "assets/works/game-development/no-year/a3d807be14cf4a24b65019cbf788b9ed.png",
+      "url": "https://rara2g4.github.io/ClassView/samples/works/game-prototype.html",
+      "linkLabel": "ゲーム企画を見る",
+      "alt": "光の反射装置を操作して遺跡を進む2Dパズルゲーム画面",
+      "order": 0
+    },
+    {
+      "id": "network-practice-work-d4e5f6a7b8c9",
+      "courseId": "network-practice",
+      "academicYear": null,
+      "title": "校内ネットワーク改善レポート",
+      "description": "利用者、端末、共有サービスの役割を整理し、安全性と運用性を検討した架空の演習レポートです。",
+      "image": null,
+      "url": "https://rara2g4.github.io/ClassView/samples/works/network-report.html",
+      "linkLabel": "構成レポートを見る",
+      "alt": null,
+      "order": 0
+    },
+    {
+      "id": "database-basics-work-e5f6a7b8c9d0",
+      "courseId": "database-basics",
+      "academicYear": null,
+      "title": "備品貸出データベース設計",
+      "description": "貸出状況と履歴を管理できるテーブル構成を検討した、機能確認用の架空サンプルです。",
+      "image": null,
+      "url": "https://rara2g4.github.io/ClassView/samples/works/database-report.html",
+      "linkLabel": "設計資料を見る",
+      "alt": null,
+      "order": 0
+    },
+    {
+      "id": "web-design-work-f6a7b8c9d0e1",
+      "courseId": "web-design",
+      "academicYear": null,
+      "title": "CREATIVE DAY ポスター",
+      "description": "文字の強弱、配色、図形のリズムを工夫した縦長イベントポスターです。機能確認用の架空サンプルです。",
+      "image": "assets/works/web-design/no-year/cd224917583743159dbb96ce9d421f9a.png",
+      "url": null,
+      "linkLabel": null,
+      "alt": "青、赤、黒の図形と画材を組み合わせたCREATIVE DAYの縦長ポスター",
+      "order": 0
+    },
+    {
+      "id": "ai-practice-work-a7b8c9d0e1f2",
+      "courseId": "ai-practice",
+      "academicYear": null,
+      "title": "Prompt Lab",
+      "description": "指示文の違いによる回答を比較し、観点別に記録する学習支援ツールです。機能確認用の架空サンプルです。",
+      "image": "assets/works/ai-practice/no-year/e4413f7c6a654581bcd748a3269ec845.png",
+      "url": "https://rara2g4.github.io/ClassView/samples/works/prompt-lab.html",
+      "linkLabel": "ツール紹介を見る",
+      "alt": "指示文、2つの回答、評価項目を並べたPrompt Labの画面",
+      "order": 0
+    },
+    {
+      "id": "group-project-work-b8c9d0e1f2a3",
+      "courseId": "group-project",
+      "academicYear": null,
+      "title": "Campus Link",
+      "description": "校内イベントの発見、参加、運営を支援するWebサービスです。チーム制作を想定した架空サンプルです。",
+      "image": "assets/works/group-project/no-year/f58d0140a70544159926979e999d9a37.png",
+      "url": "https://rara2g4.github.io/ClassView/samples/works/campus-link.html",
+      "linkLabel": "プロジェクト紹介を見る",
+      "alt": "イベント一覧、参加状況、予定をまとめたCampus Linkの画面",
+      "order": 0
     }
   ]
 }

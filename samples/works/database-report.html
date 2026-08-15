@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>備品貸出データベース設計 | 架空制作物サンプル</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <header class="demo-header"><div class="shell demo-header__inner"><p class="demo-brand">ClassView Sample Works</p><a href="../../course.html?id=database-basics">データベース基礎へ戻る</a></div></header>
+    <main class="shell demo-main">
+      <p class="demo-label">Database design</p>
+      <h1>備品貸出データベース設計</h1>
+      <p class="demo-lead">誰が、どの備品を、いつ借りたかを管理するため、重複を減らして検索しやすいテーブル構成を設計した制作例です。</p>
+      <p class="demo-notice">これはリンクのみの制作物表示を確認するための架空サンプルです。</p>
+      <div class="entity-layout" aria-label="テーブル構成例">
+        <section class="entity"><h2>利用者</h2><ul><li>利用者ID</li><li>所属</li><li>表示名</li></ul></section>
+        <section class="entity"><h2>備品</h2><ul><li>備品ID</li><li>分類</li><li>状態</li></ul></section>
+        <section class="entity"><h2>貸出記録</h2><ul><li>利用者ID</li><li>備品ID</li><li>貸出・返却日時</li></ul></section>
+      </div>
+      <div class="demo-grid">
+        <section class="demo-section"><h2>設計意図</h2><p>利用者と備品を分け、履歴を失わず管理できる形にしました。</p></section>
+        <section class="demo-section"><h2>検索例</h2><p>貸出中一覧、期限超過、分類別利用回数を取得できます。</p></section>
+        <section class="demo-section"><h2>確認方法</h2><p>サンプルデータを使い、登録・更新・集計を検証しました。</p></section>
+      </div>
+    </main>
+    <footer class="demo-footer"><div class="shell">ClassView 架空制作物サンプル</div></footer>
+  </body>
+</html>

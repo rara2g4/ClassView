@@ -613,6 +613,7 @@ img {
 }
 
 .course-work__media {
+  position: relative;
   display: grid;
   width: 100%;
   aspect-ratio: 16 / 10;
@@ -622,6 +623,8 @@ img {
 }
 
 .course-work__image {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: contain;
