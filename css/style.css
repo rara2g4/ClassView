@@ -491,6 +491,8 @@ img {
 .course-feedback {
   max-width: var(--reading-width);
   margin-top: var(--section-space);
+  padding-left: 20px;
+  border-left: 3px solid var(--color-accent);
 }
 
 .course-feedback__heading {
@@ -509,11 +511,17 @@ img {
 .course-feedback__link {
   gap: 7px;
   margin-top: 12px;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.35em;
 }
 
 .course-bottom-navigation {
   margin-top: var(--related-section-space);
   padding-bottom: var(--related-section-space);
+}
+
+.course-feedback + .course-bottom-navigation {
+  margin-top: 28px;
 }
 
 .course-bottom-navigation .text-link {
@@ -719,6 +727,11 @@ img {
 
   .course-feedback {
     margin-top: var(--section-space);
+    padding-left: 16px;
+  }
+
+  .course-feedback + .course-bottom-navigation {
+    margin-top: 26px;
   }
 
   .suitable-for {
