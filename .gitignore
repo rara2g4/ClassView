@@ -5,7 +5,9 @@ tools/course-importer/backups/
 tools/course-importer/logs/
 tools/course-importer/runtime/
 tools/course-importer/feedback-data/
-tools/course-importer/dist/
+# Keep only the current staff-facing executable. Previous builds remain local.
+tools/course-importer/dist/*
+!tools/course-importer/dist/ClassView管理ツール.exe
 tools/course-importer/build/
 tools/course-importer/*.spec
 

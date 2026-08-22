@@ -42,7 +42,7 @@ class WindowsBuildContractTests(unittest.TestCase):
 
     def test_generated_and_private_files_remain_ignored(self):
         for pattern in (
-            "tools/course-importer/dist/",
+            "tools/course-importer/dist/*",
             "tools/course-importer/build/",
             "tools/course-importer/*.spec",
             "*.xlsx",
@@ -50,6 +50,10 @@ class WindowsBuildContractTests(unittest.TestCase):
             "*.xls",
         ):
             self.assertIn(pattern, self.ignore)
+        self.assertIn(
+            "!tools/course-importer/dist/ClassView管理ツール.exe",
+            self.ignore,
+        )
 
     def test_guide_documents_clone_build_output_and_verification(self):
         for text in (
