@@ -112,6 +112,9 @@ class ClassViewPublisher:
         "data/archived-courses.json",
         "data/course-feedback-summary.json",
         "data/course-works.json",
+        "data/timetable-month.schema.json",
+        "data/timetable-manifest.schema.json",
+        "data/timetable-periods.schema.json",
     )
     work_asset_pattern = re.compile(
         r"^assets/works/[a-z0-9]+(?:-[a-z0-9]+)*/"
@@ -531,16 +534,67 @@ class ClassViewPublisher:
                     "description": f"制作物データと画像を更新（登録{work_count}件）",
                 }
             )
+        timetable_paths = [path for path in working_paths if self._is_allowed_timetable_path(path)]
+        if timetable_paths:
+            changes.append(
+                {
+                    "id": "timetable",
+                    "title": "時間割",
+                    "academicYear": None,
+                    "action": "timetable",
+                    "description": f"公開用時間割を更新（{len(timetable_paths)}ファイル）",
+                }
+            )
         return changes
 
     @classmethod
     def _is_allowed_work_asset(cls, path: str) -> bool:
         return bool(cls.work_asset_pattern.fullmatch(path.replace("\\", "/")))
 
+    @staticmethod
+    def _is_allowed_timetable_path(path: str) -> bool:
+        normalized = path.replace("\\", "/")
+        return bool(re.fullmatch(r"data/timetable/(?:manifest|periods|20\d{2}-(?:0[1-9]|1[0-2]))\.json", normalized))
+
     @classmethod
     def _is_allowed_public_path(cls, path: str) -> bool:
         normalized = path.replace("\\", "/")
-        return normalized in cls.allowed_paths or cls._is_allowed_work_asset(normalized)
+        return (
+            normalized in cls.allowed_paths
+            or cls._is_allowed_work_asset(normalized)
+            or cls._is_allowed_timetable_path(normalized)
+        )
+
+    def _validate_timetable_data(self) -> None:
+        timetable_root = self.repo_root / "data" / "timetable"
+        manifest_path = timetable_root / "manifest.json"
+        if not manifest_path.exists():
+            return
+        try:
+            schemas = {
+                "manifest.json": json.loads((self.repo_root / "data" / "timetable-manifest.schema.json").read_text(encoding="utf-8")),
+                "periods.json": json.loads((self.repo_root / "data" / "timetable-periods.schema.json").read_text(encoding="utf-8")),
+                "month": json.loads((self.repo_root / "data" / "timetable-month.schema.json").read_text(encoding="utf-8")),
+            }
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            periods_path = timetable_root / "periods.json"
+            periods = json.loads(periods_path.read_text(encoding="utf-8"))
+            documents = [("manifest.json", manifest, schemas["manifest.json"]), ("periods.json", periods, schemas["periods.json"])]
+            for month in manifest.get("months", []):
+                month_path = timetable_root / f"{month}.json"
+                documents.append((month_path.name, json.loads(month_path.read_text(encoding="utf-8")), schemas["month"]))
+            for filename, document, schema in documents:
+                Draft202012Validator.check_schema(schema)
+                errors = sorted(Draft202012Validator(schema).iter_errors(document), key=lambda item: list(item.absolute_path))
+                if errors:
+                    raise ValueError(f"{filename}: {errors[0].message}")
+        except Exception as error:
+            raise PublicationError(
+                "時間割データに問題があるため公開できません。時間割管理画面で確認してください。",
+                code="invalid_timetable",
+                status=409,
+                technical=str(error),
+            ) from error
 
     def _validate_course_works_data(self) -> None:
         document_path = self.repo_root / "data" / "course-works.json"
@@ -797,6 +851,7 @@ class ClassViewPublisher:
             self.logger.info("公開処理を開始しました")
             self.importer.management_catalog()
             self._validate_course_works_data()
+            self._validate_timetable_data()
             repository = self._repository_checks()
             fetch = self._git(
                 ["fetch", "--prune", repository["remoteName"]],
@@ -891,6 +946,7 @@ class ClassViewPublisher:
                     "--",
                     *self.allowed_paths,
                     "assets/works",
+                    "data/timetable",
                 ],
                 action="公開履歴の確認",
             )

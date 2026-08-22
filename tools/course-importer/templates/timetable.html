@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>時間割管理 | ClassView</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="shell site-header__inner">
+        <p class="brand">ClassView</p>
+        <span class="local-badge">管理ツール</span>
+        <a class="header-link" href="{{ url_for('index') }}">管理ホーム</a>
+        <a class="header-link" href="{{ url_for('manage') }}">授業管理</a>
+      </div>
+    </header>
+
+    <main class="shell main-content timetable-page">
+      <header class="page-header">
+        <p class="eyebrow">Timetable</p>
+        <h1>時間割管理</h1>
+        <p>学校の時間割Excelを読み込み、変更と確認事項を確かめてからClassView用の時間割を保存します。Excel原本は変更されません。</p>
+      </header>
+
+      <section class="timetable-section" aria-labelledby="source-heading">
+        <div class="dashboard-section-heading">
+          <div>
+            <p class="eyebrow">Source</p>
+            <h2 id="source-heading">時間割Excelを読み込む</h2>
+          </div>
+        </div>
+        <div id="last-import" class="timetable-last-import">前回の取込状況を確認しています…</div>
+        <form id="timetable-form" class="timetable-form" enctype="multipart/form-data">
+          <div class="field field--wide">
+            <label for="timetable-excel">時間割Excel</label>
+            <input id="timetable-excel" name="excel" type="file" accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
+            <p class="field-help">ファイルは解析中だけ使用し、ClassViewの公開データには含めません。</p>
+          </div>
+          <div class="field">
+            <label for="timetable-sheet">シート名</label>
+            <input id="timetable-sheet" name="sheetName" type="text" required>
+          </div>
+          <div class="field">
+            <label for="timetable-start">今回反映する開始日</label>
+            <input id="timetable-start" name="startDate" type="date" required>
+          </div>
+          <div class="field">
+            <label for="timetable-end">今回反映する終了日</label>
+            <input id="timetable-end" name="endDate" type="date" required>
+          </div>
+          <div class="field timetable-form__action">
+            <button class="button button--strong" type="submit" id="analyze-button">変更を確認</button>
+          </div>
+        </form>
+        <div id="analyze-status" class="status" role="status" aria-live="polite"></div>
+      </section>
+
+      <section id="review-section" class="timetable-section" aria-labelledby="review-heading" hidden>
+        <div class="dashboard-section-heading">
+          <div>
+            <p class="eyebrow">Review</p>
+            <h2 id="review-heading">変更内容を確認する</h2>
+          </div>
+          <div id="review-counts" class="timetable-counts"></div>
+        </div>
+        <p id="review-summary" class="dashboard-status-summary"></p>
+        <div id="issue-overview" class="timetable-issue-overview" aria-label="解析結果の分類">
+          <section class="timetable-overview-card timetable-overview-card--blocking">
+            <h3>解決が必要</h3>
+            <p>保存する前に対応してください。</p>
+            <div id="blocking-overview"></div>
+          </section>
+          <section class="timetable-overview-card timetable-overview-card--warning">
+            <h3>確認推奨</h3>
+            <p>内容を確認すれば保存できます。</p>
+            <div id="warning-overview"></div>
+          </section>
+          <section class="timetable-overview-card timetable-overview-card--reference">
+            <h3>参考情報</h3>
+            <p>通常は対応不要です。必要なときだけ確認してください。</p>
+            <div id="reference-overview"></div>
+          </section>
+        </div>
+
+        <div id="mapping-section" class="timetable-mappings" hidden>
+          <h3>対応を登録する</h3>
+          <p>時間割上の名称が、シラバスを持つ通常授業か、単発の予定かを職員が確認します。似た名前や「講座」などの語だけで自動判断しません。</p>
+          <section id="subject-mapping-section">
+            <h4>ClassViewに対応する授業がない科目</h4>
+            <div id="subject-mappings"></div>
+          </section>
+          <section id="group-mapping-section">
+            <h4>未登録の受講グループ表記</h4>
+            <p>全角・半角の丸括弧は同じaliasとして扱います。角括弧の授業区分や講師表記とは混同しません。</p>
+            <div id="group-mappings"></div>
+          </section>
+        </div>
+
+        <section id="mapping-settings-section" class="timetable-mapping-settings" aria-labelledby="mapping-settings-heading" hidden>
+          <h3 id="mapping-settings-heading">時間割項目の分類</h3>
+          <p>登録済みの扱いを確認し、学校での位置づけが変わった項目だけを個別に変更できます。変更は現在の解析結果へすぐ反映されます。</p>
+          <div id="mapping-settings"></div>
+        </section>
+
+        <section id="token-summary-section" class="timetable-token-summary" aria-labelledby="token-summary-heading" hidden>
+          <h3 id="token-summary-heading">記号の分類結果</h3>
+          <p>対応登録の対象ではない授業区分と講師表記を、元のExcel表記を保ったまま確認できます。</p>
+          <div class="timetable-token-grid">
+            <section>
+              <h4>授業の段階・区分</h4>
+              <div id="variant-summary"></div>
+            </section>
+            <section>
+              <h4>講師情報・講師表記</h4>
+              <div id="instructor-summary"></div>
+            </section>
+          </div>
+        </section>
+
+        <div class="timetable-review-grid">
+          <section aria-labelledby="issues-heading">
+            <div class="timetable-subheading">
+              <h3 id="issues-heading">対応・確認する項目</h3>
+              <select id="issue-filter" aria-label="確認事項の絞り込み">
+                <option value="all">解決必須と確認推奨</option>
+                <option value="blocking">解決が必要</option>
+                <option value="warning">確認推奨</option>
+              </select>
+            </div>
+            <div id="issue-list" class="timetable-list"></div>
+          </section>
+          <section aria-labelledby="changes-heading">
+            <div class="timetable-subheading">
+              <h3 id="changes-heading">時間割の変更</h3>
+              <select id="change-filter" aria-label="変更の絞り込み">
+                <option value="all">すべて</option>
+                <option value="added">新しく追加</option>
+                <option value="removed">削除される予定</option>
+                <option value="changed">変更</option>
+              </select>
+            </div>
+            <div id="change-list" class="timetable-list"></div>
+          </section>
+        </div>
+
+        <details id="reference-section" class="timetable-reference" hidden>
+          <summary><span id="reference-summary">参考情報を表示</span></summary>
+          <p>Excelの補足欄から保持した情報です。公開JSONには含まれません。</p>
+          <div id="reference-groups"></div>
+        </details>
+
+        <div class="timetable-save">
+          <label id="warning-confirm-row">
+            <input id="warnings-confirmed" type="checkbox">
+            <span>「確認が必要」の内容を確認しました</span>
+          </label>
+          <button class="button button--strong" id="save-timetable" type="button">時間割を保存</button>
+          <p>保存後も自動公開はされません。管理ホームの「ClassViewへ公開」から公開します。</p>
+          <div id="save-status" class="status" role="status" aria-live="polite"></div>
+        </div>
+      </section>
+    </main>
+    <script src="{{ url_for('static', filename='timetable.js') }}" defer></script>
+  </body>
+</html>

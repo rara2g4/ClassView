@@ -37,6 +37,9 @@ class ClassViewPublisherTests(unittest.TestCase):
             "course.schema.json",
             "course.template.json",
             "course-works.schema.json",
+            "timetable-month.schema.json",
+            "timetable-manifest.schema.json",
+            "timetable-periods.schema.json",
         ):
             shutil.copy2(REPO_ROOT / "data" / name, self.repo / "data" / name)
         shutil.copy2(
@@ -83,6 +86,9 @@ class ClassViewPublisherTests(unittest.TestCase):
             "data/course.template.json",
             "data/course-works.json",
             "data/course-works.schema.json",
+            "data/timetable-month.schema.json",
+            "data/timetable-manifest.schema.json",
+            "data/timetable-periods.schema.json",
             "docs/syllabus-conversion-prompt.md",
             "tools/course-importer/classview-admin.json",
             ".gitignore",
@@ -381,6 +387,71 @@ class ClassViewPublisherTests(unittest.TestCase):
         self.assertEqual(committed, ["data/courses.json"])
         self.assertTrue((self.repo / "developer-note.txt").exists())
         self.assertIn("developer-note.txt", self.git("status", "--porcelain").stdout)
+
+    def test_timetable_publish_stages_only_valid_public_json_and_never_excel(self):
+        timetable = self.repo / "data" / "timetable"
+        timetable.mkdir()
+        (timetable / "manifest.json").write_text(
+            json.dumps({
+                "schemaVersion": 1,
+                "academicYear": "2025",
+                "updatedAt": "2025-04-21T00:00:00Z",
+                "version": "0123456789ab",
+                "months": ["2025-04"],
+            }),
+            encoding="utf-8",
+        )
+        (timetable / "periods.json").write_text(
+            json.dumps({
+                "schemaVersion": 1,
+                "periods": {
+                    "1": {"start": "09:20", "end": "10:50"},
+                    "2": {"start": "11:00", "end": "12:30"},
+                    "3": {"start": "13:30", "end": "15:00"},
+                    "4": {"start": "15:10", "end": "16:40"},
+                },
+            }),
+            encoding="utf-8",
+        )
+        (timetable / "2025-04.json").write_text(
+            json.dumps({
+                "schemaVersion": 1,
+                "yearMonth": "2025-04",
+                "days": {
+                    "2025-04-21": [{
+                        "entryId": "tt-0123456789abcdef",
+                        "period": 1,
+                        "courseId": "existing",
+                        "subjectRaw": "既存授業",
+                        "subjectName": "既存授業",
+                        "subjectBaseName": "既存授業",
+                        "courseVariantTags": [],
+                        "grades": [1],
+                        "gradeRaw": "1",
+                        "groupTags": [],
+                        "instructors": [],
+                        "rooms": ["721"],
+                        "kind": "class",
+                        "status": "confirmed",
+                    }]
+                },
+            }, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        (timetable / "時間割原本.xlsx").write_bytes(b"not a public file")
+
+        result = self.publisher.publish()
+
+        self.assertTrue(result["success"])
+        committed = set(self.git("show", "--name-only", "--pretty=format:", "HEAD").stdout.splitlines())
+        self.assertEqual(committed, {
+            "data/timetable/2025-04.json",
+            "data/timetable/manifest.json",
+            "data/timetable/periods.json",
+        })
+        remaining = self.git("status", "--porcelain").stdout
+        self.assertIn("??", remaining)
+        self.assertIn(".xlsx", remaining)
 
     def test_publish_handles_special_characters_without_shell_execution(self):
         unsafe_title = '授業" & echo dangerous'

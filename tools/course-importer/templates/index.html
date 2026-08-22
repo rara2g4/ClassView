@@ -28,6 +28,14 @@
         </p>
       </header>
 
+      <aside id="timetable-course-context" class="timetable-course-context" hidden>
+        <div>
+          <strong>時間割から新しい授業を登録しています</strong>
+          <p id="timetable-course-context-summary"></p>
+        </div>
+        <button id="cancel-timetable-course" class="button button--secondary button--compact" type="button">登録せず時間割へ戻る</button>
+      </aside>
+
       <ol class="step-guide" aria-label="登録の流れ">
         <li><span>1</span>シラバス準備</li>
         <li><span>2</span>AI変換</li>
@@ -173,6 +181,7 @@
           <span class="field-state field-state--explicit">シラバスから取得</span>
           <span class="field-state field-state--inferred">シラバスから推察</span>
           <span class="field-state field-state--proposed">AI下書き提案・未確認</span>
+          <span class="field-state field-state--timetable">時間割から引継ぎ</span>
           <span class="field-state field-state--missing">未入力</span>
           <span class="field-state field-state--manual">手動修正</span>
         </div>
@@ -247,6 +256,8 @@
             <div><dt>授業ID</dt><dd id="success-id"></dd></div>
           </dl>
           <p>未公開の変更があります。管理ホームで変更内容を確認し、「ClassViewへ公開」を押してください。</p>
+          <p id="timetable-success-message" hidden></p>
+          <a id="timetable-return-link" class="button button--link" href="/timetable" hidden>時間割の確認へ戻る</a>
           <a class="button button--link" href="{{ url_for('index') }}">管理ホームへ戻る</a>
         </div>
       </section>

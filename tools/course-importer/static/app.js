@@ -12,6 +12,7 @@
     proposalReviews: {},
     conversionMode: "support",
     inferredFields: [],
+    timetableContext: null,
   };
 
   const SCALAR_GROUPS = [
@@ -91,6 +92,11 @@
   const proposalSummary = $("#proposal-summary");
   const proposalSummaryCount = $("#proposal-summary-count");
   const proposalSummaryList = $("#proposal-summary-list");
+  const timetableContextBanner = $("#timetable-course-context");
+  const timetableContextSummary = $("#timetable-course-context-summary");
+  const cancelTimetableCourse = $("#cancel-timetable-course");
+  const timetableSuccessMessage = $("#timetable-success-message");
+  const timetableReturnLink = $("#timetable-return-link");
 
   const hasText = (value) => typeof value === "string" && value.trim().length > 0;
   const nonEmptyItems = (value) => Array.isArray(value) ? value.filter(hasText) : [];
@@ -116,8 +122,63 @@
     } catch (_error) {
       payload = { error: "サーバーから正しい応答を受け取れませんでした。" };
     }
-    if (!response.ok) throw new Error(payload.error || `HTTP ${response.status}`);
+    if (!response.ok) {
+      const error = new Error(payload.error || `HTTP ${response.status}`);
+      error.payload = payload;
+      throw error;
+    }
     return payload;
+  };
+
+  const loadTimetableContext = async () => {
+    const token = new URLSearchParams(window.location.search).get("timetableContext");
+    if (!token) return null;
+    try {
+      const context = await requestJson(`/api/timetable/course-context/${encodeURIComponent(token)}`);
+      state.timetableContext = context;
+      const variant = context.courseVariantTags?.length
+        ? ` / 授業の段階: ${context.courseVariantTags.join("・")}` : "";
+      const instructor = context.instructorCandidates?.length
+        ? ` / 講師情報: ${context.instructorCandidates.join("・")}` : "";
+      timetableContextSummary.textContent = `Excel上の授業: ${context.subjectName}${variant} / 時間割で${context.count}回使用${instructor}`;
+      timetableContextBanner.hidden = false;
+      return context;
+    } catch (error) {
+      timetableContextSummary.textContent = error.message;
+      timetableContextBanner.hidden = false;
+      cancelTimetableCourse.textContent = "時間割へ戻る";
+      return null;
+    }
+  };
+
+  const timetableContextReady = loadTimetableContext();
+
+  const applyTimetableCandidates = () => {
+    const context = state.timetableContext;
+    if (!context || !state.course) return;
+    state.course.title = context.subjectName;
+    state.fieldMeta.title = {
+      sourceType: "timetable",
+      reason: `時間割Excelの科目表記「${context.subjectName}」から引き継ぎました。`,
+    };
+    if (!hasText(state.course.academicYear) && hasText(context.academicYearCandidate)) {
+      state.course.academicYear = context.academicYearCandidate;
+      state.fieldMeta.academicYear = {
+        sourceType: "timetable",
+        reason: `時間割の使用日から年度候補「${context.academicYearCandidate}」を引き継ぎました。`,
+      };
+    }
+    if (
+      !hasText(state.course.instructor)
+      && Array.isArray(context.instructorCandidates)
+      && context.instructorCandidates.length === 1
+    ) {
+      state.course.instructor = context.instructorCandidates[0];
+      state.fieldMeta.instructor = {
+        sourceType: "timetable",
+        reason: `時間割の講師情報「${context.instructorCandidates[0]}」を候補として引き継ぎました。`,
+      };
+    }
   };
 
   const loadEditorConfig = async () => {
@@ -790,9 +851,11 @@
       (payload.errors || []).forEach((message) => addText(validationErrors, "li", "", message));
       validationResult.hidden = false;
       if (payload.valid) {
+        await timetableContextReady;
         state.course = Editor.normalizeCourse(payload.course, state.config.template);
-        state.initialCourse = Editor.clone(state.course);
         state.fieldMeta = payload.fieldMeta || {};
+        applyTimetableCandidates();
+        state.initialCourse = Editor.clone(state.course);
         state.proposalReviews = payload.proposalReviews || {};
         state.conversionMode = payload.conversionMode || state.conversionMode;
         state.inferredFields = [];
@@ -869,6 +932,7 @@
     registerButton.disabled = true;
     setStatus(registerStatus, "重複を再確認し、バックアップを作成して追加しています…");
     try {
+      await timetableContextReady;
       const course = Editor.toCourseJson(state.course, state.config.template);
       const payload = await requestJson("/api/register", {
         method: "POST",
@@ -878,17 +942,50 @@
           validationToken: state.validationToken,
           course,
           inferenceConfirmed: state.inferredFields.length === 0 || inferenceConfirmed.checked,
+          timetableContextToken: state.timetableContext?.token || "",
         }),
       });
       $("#success-title").textContent = payload.title;
       $("#success-id").textContent = payload.id;
       successResult.hidden = false;
+      const timetableResult = payload.timetableMapping;
+      if (timetableResult) {
+        timetableSuccessMessage.textContent = `時間割の「${state.timetableContext.subjectName}」との対応も登録しました。`;
+        timetableSuccessMessage.hidden = false;
+        timetableReturnLink.href = timetableResult.returnUrl;
+        timetableReturnLink.hidden = false;
+      }
       state.validationToken = "";
       setStatus(registerStatus, "保存しました。未公開の変更があります。", "success");
       successResult.scrollIntoView({ behavior: "smooth", block: "nearest" });
     } catch (error) {
       setStatus(registerStatus, error.message, "error");
-      invalidateFinalValidation("登録前の再検証が必要です。");
+      if (error.payload?.courseCreated) {
+        $("#success-title").textContent = error.payload.title;
+        $("#success-id").textContent = error.payload.id;
+        timetableSuccessMessage.textContent = "授業は作成済みですが、時間割との対応は未登録です。時間割へ戻り、既存授業として対応してください。";
+        timetableSuccessMessage.hidden = false;
+        timetableReturnLink.href = state.timetableContext?.returnUrl || "/timetable";
+        timetableReturnLink.hidden = false;
+        successResult.hidden = false;
+        state.validationToken = "";
+      } else {
+        invalidateFinalValidation("登録前の再検証が必要です。");
+      }
+    }
+  });
+
+  cancelTimetableCourse.addEventListener("click", async () => {
+    const context = await timetableContextReady;
+    if (!context) return window.location.assign("/timetable");
+    try {
+      const result = await requestJson(
+        `/api/timetable/course-context/${encodeURIComponent(context.token)}/cancel`,
+        {method: "POST"},
+      );
+      window.location.assign(result.returnUrl || context.returnUrl || "/timetable");
+    } catch (_error) {
+      window.location.assign(context.returnUrl || "/timetable");
     }
   });
 

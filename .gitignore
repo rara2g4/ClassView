@@ -9,6 +9,11 @@ tools/course-importer/dist/
 tools/course-importer/build/
 tools/course-importer/*.spec
 
+# Local Excel source files are never public ClassView data
+*.xlsx
+*.xlsm
+*.xls
+
 # Python
 __pycache__/
 *.py[cod]

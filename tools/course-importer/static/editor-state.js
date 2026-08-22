@@ -50,7 +50,7 @@
       return "missing";
     }
     if (!sameValue(course[field], initialCourse[field])) return "manual";
-    if (["explicit", "inferred", "missing"].includes(sourceType)) return sourceType;
+    if (["explicit", "inferred", "timetable", "missing"].includes(sourceType)) return sourceType;
     return hasValue(initialCourse[field]) ? "explicit" : "missing";
   };
 

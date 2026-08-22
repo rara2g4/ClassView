@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rara2g4.github.io/ClassView/data/timetable-month.schema.json",
+  "title": "ClassView monthly timetable",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "yearMonth", "days"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "yearMonth": { "type": "string", "pattern": "^20[0-9]{2}-(0[1-9]|1[0-2])$" },
+    "days": {
+      "type": "object",
+      "propertyNames": { "format": "date" },
+      "additionalProperties": {
+        "type": "array",
+        "items": { "$ref": "#/$defs/entry" }
+      }
+    }
+  },
+  "$defs": {
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": { "kind": { "const": "class" } },
+            "required": ["kind"]
+          },
+          "then": {
+            "properties": {
+              "courseId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": { "enum": ["special", "event", "holiday", "other"] }
+            },
+            "required": ["kind"]
+          },
+          "then": {
+            "properties": { "courseId": { "type": "null" } }
+          }
+        }
+      ],
+      "required": [
+        "entryId", "period", "courseId", "subjectRaw", "subjectName",
+        "subjectBaseName", "courseVariantTags", "grades", "gradeRaw",
+        "groupTags", "instructors", "rooms", "kind", "status"
+      ],
+      "properties": {
+        "entryId": { "type": "string", "pattern": "^tt-[a-f0-9]{16}$" },
+        "period": { "type": "integer", "minimum": 1, "maximum": 4 },
+        "courseId": {
+          "oneOf": [
+            { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+            { "type": "null" }
+          ]
+        },
+        "subjectRaw": { "type": "string", "minLength": 1 },
+        "subjectName": { "type": "string", "minLength": 1 },
+        "subjectBaseName": { "type": "string", "minLength": 1 },
+        "courseVariantTags": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "grades": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "integer", "minimum": 1, "maximum": 3 }
+        },
+        "gradeRaw": { "type": "string" },
+        "groupTags": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "instructors": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "rooms": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        },
+        "kind": { "enum": ["class", "exam", "special", "event", "holiday", "other"] },
+        "status": { "enum": ["confirmed", "tentative"] }
+      }
+    }
+  }
+}

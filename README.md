@@ -25,6 +25,7 @@ HTML・CSS・JavaScriptだけで構成された静的サイトです。npm、フ
 - 起動時の最新状態確認、職員向けエラー表示、公開履歴
 - Google Forms回答CSVの読込、授業・年度別集計、個別回答、要確認状態を扱う受講者フィードバック管理
 - ローカル管理ツールによる制作物の追加、編集、削除、並び替え、掲載確認、公開前プレビュー
+- 学校の時間割Excelを正本とする、差分・警告確認付きの月別時間割JSON生成
 
 公開サイト側のログイン、口コミ投稿、管理画面、データベースは実装していません。授業管理はlocalhostで動くローカル専用ツールとして提供します。
 
@@ -46,12 +47,19 @@ ClassView/
 │  ├─ archived-courses.json # 公開対象外のアーカイブ授業
 │  ├─ course-works.json  # 授業・年度別の実際の制作物
 │  ├─ course-works.schema.json # 制作物データのJSON Schema
+│  ├─ timetable-month.schema.json # 月別時間割のJSON Schema
+│  ├─ timetable-manifest.schema.json # 時間割目録のJSON Schema
+│  ├─ timetable-periods.schema.json # 時限情報のJSON Schema
 │  ├─ course.template.json # 授業1件分の入力テンプレート
-│  └─ course.schema.json # 授業1件分のJSON Schema
+│  ├─ course.schema.json # 授業1件分のJSON Schema
+│  └─ timetable/         # 管理ツールが生成する月別公開時間割
 ├─ assets/
 │  └─ works/             # 管理ツールで登録した公開用画像
 ├─ docs/
 │  ├─ syllabus-conversion-prompt.md # シラバスをJSONへ変換するAI用指示
+│  ├─ build-windows.md  # Windows管理ツールの再現可能なビルド手順
+│  ├─ timetable-course-registration-report.md # 未登録科目から授業登録・対応までの実装報告
+│  ├─ timetable-special-items-report.md # 単発講座・特別授業分類の実装報告
 │  └─ ClassView_操作マニュアル.md # 学校職員向けの操作手順
 ├─ tools/
 │  └─ course-importer/   # ローカル専用の授業・フィードバック管理ツール

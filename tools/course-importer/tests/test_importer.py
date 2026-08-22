@@ -224,6 +224,25 @@ class CourseImporterTests(unittest.TestCase):
         self.assertTrue(result["valid"])
         self.assertEqual(result["fieldMeta"]["instructor"]["sourceType"], "explicit")
 
+    def test_timetable_metadata_is_limited_to_safe_candidate_fields(self):
+        preparation = self.prepare()
+        course = self.course("new-course", "After Effects[A]")
+        course["academicYear"] = "2025"
+        course["instructor"] = "講師X"
+        meta = self.field_meta(
+            course,
+            title={"sourceType": "timetable", "reason": "時間割Excelの科目表記から引継ぎ"},
+            academicYear={"sourceType": "timetable", "reason": "時間割の使用日から引継ぎ"},
+            instructor={"sourceType": "timetable", "reason": "時間割の講師情報から引継ぎ"},
+        )
+        validation = self.service.validate_course(preparation.token, course, meta, [])
+        self.assertTrue(validation["valid"])
+
+        meta["summary"] = {"sourceType": "timetable", "reason": "時間割から生成"}
+        invalid = self.service.validate_course(preparation.token, course, meta, [])
+        self.assertFalse(invalid["valid"])
+        self.assertTrue(any("時間割から引き継げません" in error for error in invalid["errors"]))
+
     def test_strict_mode_rejects_proposed_draft(self):
         preparation = self.prepare(mode="strict")
         course = self.course("new-course")

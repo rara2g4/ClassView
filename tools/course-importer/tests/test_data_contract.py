@@ -129,9 +129,10 @@ class CourseDataContractTests(unittest.TestCase):
         self.assertNotIn("shell=True", publisher)
         self.assertIn('kwargs["shell"] = False', publisher)
 
-        build_script = (
-            REPO_ROOT / "tools" / "course-importer" / "build_windows.bat"
-        ).read_text(encoding="utf-8")
+        build_root = REPO_ROOT / "tools" / "course-importer"
+        build_script = (build_root / "build_windows.bat").read_text(
+            encoding="utf-8"
+        ) + (build_root / "build_windows.ps1").read_text(encoding="utf-8")
         self.assertIn("--noconsole", build_script)
         self.assertIn("CREATE_NO_WINDOW", publisher)
         self.assertNotIn("os.system(", publisher)

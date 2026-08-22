@@ -13,7 +13,7 @@ if not exist "%IMPORTER_PYTHON%" (
   if errorlevel 1 goto :setup_error
 )
 
-"%IMPORTER_PYTHON%" -c "import flask, jsonschema, pypdf" >nul 2>&1
+"%IMPORTER_PYTHON%" -c "import flask, jsonschema, openpyxl, pypdf" >nul 2>&1
 if errorlevel 1 (
   echo Installing required Python packages...
   "%IMPORTER_PYTHON%" -m pip install -r "%IMPORTER_REQUIREMENTS%"

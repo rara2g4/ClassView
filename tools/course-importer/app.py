@@ -17,6 +17,7 @@ from werkzeug.serving import BaseWSGIServer, make_server
 from importer import CourseImporter, ImporterError
 from feedback_service import FeedbackError, FeedbackService
 from publisher import ClassViewPublisher, PublicationError
+from timetable_service import TimetableError, TimetableService
 from works_service import CourseWorksService, WorksError
 from single_instance import (
     APP_NAME,
@@ -115,11 +116,13 @@ def create_app(
     course_works = CourseWorksService(
         repo_root or REPO_ROOT, work_root or default_work_root, service
     )
+    timetable = TimetableService(repo_root or REPO_ROOT, work_root or default_work_root)
     request_activity = activity or RequestActivity()
     app.config["IMPORTER_SERVICE"] = service
     app.config["PUBLISHER_SERVICE"] = publisher
     app.config["FEEDBACK_SERVICE"] = feedback
     app.config["COURSE_WORKS_SERVICE"] = course_works
+    app.config["TIMETABLE_SERVICE"] = timetable
     app.config["REQUEST_ACTIVITY"] = request_activity
     app.config["APPLICATION_RUNTIME"] = runtime
 
@@ -192,9 +195,13 @@ def create_app(
             error.status,
         )
 
+    @app.errorhandler(TimetableError)
+    def handle_timetable_error(error: TimetableError):
+        return jsonify({"error": error.message, "code": error.code}), error.status
+
     @app.errorhandler(RequestEntityTooLarge)
     def handle_too_large(_error: RequestEntityTooLarge):
-        return jsonify({"error": "PDFが大きすぎます（上限512MB）。"}), 413
+        return jsonify({"error": "選択したファイルが大きすぎます（上限512MB）。"}), 413
 
     @app.get("/")
     def index():
@@ -207,6 +214,97 @@ def create_app(
     @app.get("/manage")
     def manage():
         return render_template("manage.html", id_pattern=service.id_pattern())
+
+    @app.get("/timetable")
+    def timetable_page():
+        return render_template("timetable.html")
+
+    @app.get("/api/timetable/status")
+    def timetable_status():
+        return jsonify(timetable.status())
+
+    @app.get("/api/timetable/previews/<token>")
+    def timetable_preview(token: str):
+        return jsonify(timetable.get_preview(token))
+
+    @app.post("/api/timetable/course-context")
+    def create_timetable_course_context():
+        payload = request.get_json(silent=True) or {}
+        return jsonify(timetable.create_course_context(
+            str(payload.get("previewToken", "")),
+            str(payload.get("subjectName", "")),
+        ))
+
+    @app.get("/api/timetable/course-context/<token>")
+    def timetable_course_context(token: str):
+        return jsonify(timetable.get_course_context(token))
+
+    @app.post("/api/timetable/course-context/<token>/cancel")
+    def cancel_timetable_course_context(token: str):
+        return jsonify(timetable.cancel_course_context(token))
+
+    @app.post("/api/timetable/analyze")
+    def analyze_timetable():
+        uploaded = request.files.get("excel")
+        if uploaded is None or not uploaded.filename:
+            raise TimetableError("時間割Excelを選択してください。")
+        result = timetable.analyze(
+            uploaded.stream,
+            uploaded.filename,
+            request.form.get("startDate", ""),
+            request.form.get("endDate", ""),
+            sheet_name=request.form.get("sheetName", ""),
+            source_modified_at=request.form.get("sourceModifiedAt") or None,
+        )
+        return jsonify(result)
+
+    @app.post("/api/timetable/mappings/subject")
+    def save_timetable_subject_mapping():
+        payload = request.get_json(silent=True) or {}
+        result = timetable.save_mapping(
+            str(payload.get("subjectName", "")),
+            str(payload.get("courseId", "")),
+            replace_existing=bool(payload.get("replaceExisting", False)),
+        )
+        preview_token = str(payload.get("previewToken", ""))
+        if preview_token:
+            result["preview"] = timetable.refresh_preview(preview_token)
+        return jsonify(result)
+
+    @app.post("/api/timetable/mappings/item")
+    def save_timetable_item_mapping():
+        payload = request.get_json(silent=True) or {}
+        result = timetable.save_item_mapping(
+            str(payload.get("subjectName", "")),
+            str(payload.get("classification", "")),
+            replace_existing=bool(payload.get("replaceExisting", False)),
+        )
+        preview_token = str(payload.get("previewToken", ""))
+        if preview_token:
+            result["preview"] = timetable.refresh_preview(preview_token)
+        return jsonify(result)
+
+    @app.post("/api/timetable/mappings/group")
+    def save_timetable_group_mapping():
+        payload = request.get_json(silent=True) or {}
+        result = timetable.save_group_mapping(
+            str(payload.get("rawToken", "")),
+            group_id=str(payload.get("groupId", "")),
+            display_name=str(payload.get("displayName", "")),
+        )
+        preview_token = str(payload.get("previewToken", ""))
+        if preview_token:
+            result["preview"] = timetable.refresh_preview(preview_token)
+        return jsonify(result)
+
+    @app.post("/api/timetable/save")
+    def save_timetable():
+        payload = request.get_json(silent=True) or {}
+        result = timetable.save_preview(
+            str(payload.get("token", "")), bool(payload.get("warningsAcknowledged", False))
+        )
+        publisher.record_operation("時間割を保存", f"{result['entryCount']}件")
+        return jsonify(result)
 
     @app.get("/works/course/<course_id>")
     def course_works_page(course_id: str):
@@ -528,6 +626,23 @@ def create_app(
                 bool(payload.get("inferenceConfirmed", False)),
             )
         publisher.record_operation("新しい授業を登録", result.get("id", ""))
+        timetable_context_token = str(payload.get("timetableContextToken", ""))
+        if timetable_context_token:
+            try:
+                timetable_result = timetable.complete_course_registration(
+                    timetable_context_token, result["id"]
+                )
+            except TimetableError as error:
+                return jsonify({
+                    "error": (
+                        f"授業「{result['title']}」は保存されましたが、"
+                        f"時間割との対応を登録できませんでした: {error.message}"
+                    ),
+                    "code": "timetable_mapping_failed",
+                    "courseCreated": True,
+                    **result,
+                }), 409
+            result["timetableMapping"] = timetable_result
         return jsonify({"success": True, **result, "unpublished": True})
 
     return app

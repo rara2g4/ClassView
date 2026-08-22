@@ -58,7 +58,8 @@ class CourseImporter:
 
     MAX_EXTRACTED_PAGES = 20
     CONVERSION_MODES = {"strict", "support"}
-    SOURCE_TYPES = {"explicit", "inferred", "proposed", "missing"}
+    SOURCE_TYPES = {"explicit", "inferred", "proposed", "timetable", "missing"}
+    TIMETABLE_FIELDS = {"title", "academicYear", "instructor"}
     REVIEW_STATUSES = {"pending", "accepted", "edited", "rejected"}
     INFERABLE_FIELDS = {
         "summary",
@@ -512,7 +513,7 @@ class CourseImporter:
                         "field": field,
                         "path": f"fieldMeta.{field}.sourceType",
                         "message": (
-                            f"fieldMeta.{field}.sourceType: explicit、inferred、proposed、missingの"
+                            f"fieldMeta.{field}.sourceType: explicit、inferred、proposed、timetable、missingの"
                             "いずれかを指定してください。"
                         ),
                     }
@@ -568,6 +569,23 @@ class CourseImporter:
                             "message": f"{field}: AI下書き提案には提案理由が必要です。",
                         }
                     )
+            if source_type == "timetable":
+                if field not in self.TIMETABLE_FIELDS:
+                    details.append(
+                        {
+                            "field": field,
+                            "path": f"fieldMeta.{field}.sourceType",
+                            "message": f"{field}: この項目は時間割から引き継げません。",
+                        }
+                    )
+                if not isinstance(reason, str) or not reason.strip():
+                    details.append(
+                        {
+                            "field": field,
+                            "path": f"fieldMeta.{field}.reason",
+                            "message": f"{field}: 時間割から引き継いだ根拠が必要です。",
+                        }
+                    )
             has_value = self._has_value(course_object.get(field))
             if field in manually_changed:
                 continue
@@ -579,7 +597,7 @@ class CourseImporter:
                         "message": f"{field}: 情報不足の項目には値を設定できません。",
                     }
                 )
-            if source_type in {"explicit", "inferred", "proposed"} and not has_value:
+            if source_type in {"explicit", "inferred", "proposed", "timetable"} and not has_value:
                 details.append(
                     {
                         "field": field,

@@ -183,6 +183,8 @@ Jinjaの自動エスケープとJavaScriptの `textContent` を使用し、自�
 tools/course-importer/build_windows.bat
 ```
 
+clone直後からの詳しい手順、必要なPython、PowerShellからのテスト付きビルド、起動確認方法は [`docs/build-windows.md`](../../docs/build-windows.md) にまとめています。`build_windows.bat` はダブルクリック用の薄いラッパーで、再現可能なビルド設定本体はGit管理された `build_windows.ps1` です。Python Launcherの `py -3` と `python` の両方に対応します。
+
 初回ビルド時に `requirements-build.txt` のPyInstallerを開発用仮想環境へインストールし、次を生成します。
 
 ```text
@@ -487,6 +489,30 @@ node tools/course-importer/tests/test_editor_state.js
 - `shell=False`、特殊文字を含む授業名、診断情報の認証情報マスク
 - 一時Gitリポジトリとローカルのbare remoteを使った本番GitHub非接続テスト
 
+## 時間割Excelの取り込み
+
+管理ホームの「時間割を更新」では、Excelを選択しただけでは公開データを書き換えません。反映する開始日・終了日を指定し、解析結果、前回との差分、確認事項を見てから保存します。解析結果は「解決が必要」「確認推奨」「参考情報」に分離し、補足欄の参考情報は折りたたんで種類別に表示します。解決が必要な項目が残っている場合は保存できません。確認推奨の項目は、内容を確認したことを明示してから保存します。
+
+科目セルの `[A]` などは授業の段階・区分として科目名に残し、`(1組)` / `（A組）` など保守的に判定できる丸括弧表記だけを受講グループ候補にします。`【専任】`などは個人名に限定しない講師情報として分離します。未知グループの対応画面では元表記、使用件数、日付・時限・学年・セルを含む使用例を確認し、既存canonical groupへのalias追加または新規group作成を選べます。旧形式の裸のgroup keyは括弧の由来が不明なため自動再利用しません。
+
+解析は `openpyxl` で数式用と表示値用のブックを開き、日付数式のキャッシュがない場合は単純な日付参照式を安全に解決します。曜日は B、E、H、K、N、Q、T 列、科目・学年・教室は各3列として読みます。時限番号から表の下罫線までを1つの時限ブロックとして扱うため、時限番号が各行に繰り返されない並行授業も同じ時限へ正規化します。縦結合セルはアンカー値を論理的に補完し、元Excelは変更しません。色だけを授業種別や確定状態の根拠にはしません。
+
+科目名は講師表記と原文由来のグループ記号を取り除いて正規化しますが、類似名から授業IDを推測しません。明示対応は公開対象外の `runtime/timetable/config.json` に保存します。前回の確定スナップショットと取込日時も `runtime/timetable/` に保存し、Excel原本やローカルパスは保存・公開しません。
+
+未登録科目はベース科目名ごとに整理しますが、`[A]`、`[C]` などの授業段階は独立したカードと対応キーとして保持します。ベース名が同じだけでは同じ授業へ対応しません。各カードには使用回数、学年、講師情報、日付・時限・グループを含む代表例を表示し、公開中の既存授業へ人が対応するか、既存のシラバスインポーターで1件ずつ新規登録できます。授業名との完全一致候補は確認用に表示するだけで、自動保存しません。ベース名だけが一致する授業は参考表示に留めます。
+
+新規登録へ進む場合、元の解析結果と対象科目は期限付きの非公開メモリ状態として保持し、URLには推測困難なコンテキストトークンだけを渡します。登録画面では時間割上の授業名を `title`、解析年度を `academicYear`、一意に決まる講師だけを `instructor` の候補として反映します。これらは `timetable` 情報源としてシラバス由来の値と区別し、概要、到達目標、授業回などのシラバス情報は時間割から生成しません。授業IDは既存どおり管理者が入力し、公開中・アーカイブ済み双方との重複を拒否します。
+
+授業が正常に保存された後だけ、対象の完全な科目名を作成した授業IDへ対応させます。対応完了後はExcelを再選択せず、保持中の解析結果へ対応を再適用して件数とカードを更新します。授業保存に失敗した場合は対応を作らず、授業保存後に対応だけが失敗した場合は両者の状態を明示します。キャンセル時も対応は作りません。削除またはアーカイブ済みの授業を指す既存対応は「対応先授業が見つかりません」として保存を止めます。
+
+時間割上の名称が必ずしもシラバス授業とは限らないため、未登録カードでは通常授業の対応・新規登録に加え、「単発講座・特別授業」「行事・説明会」「試験」「休暇」「その他」へ職員が明示分類できます。分類前に使用回数、日付、時限、学年、グループ、講師、教室、Excel原表記、セル位置を確認でき、名称だけから単発講座を自動推測しません。明示分類後は `courseId: null` のまま正当な時間割entryとなり、同じ完全一致名称を次回も再利用します。
+
+通常授業の `subjectMappings` と、授業ではない項目の `timetableItemMappings` は `runtime/timetable/config.json` 内で分離します。同じ名称を両方へ登録できず、分類変更時だけ確認付きで一方を置き換えます。「時間割項目の分類」では現在の扱い、対応授業、今回の使用回数を確認して個別変更できます。現在の時間割対応が年度共通であることに合わせ、明示分類も年度共通の完全一致キーです。保存済みの過去時間割は再取込・保存しない限り変更しません。
+
+月別Schemaでは `class` の `courseId` を必須の文字列とし、`special`、`event`、`holiday`、`other` は `null` に限定します。`exam` は既存仕様を維持して通常授業との対応がある場合と、明示分類により対応なしの場合の両方を許可します。今回は `relatedCourseId` と職員メモを公開Schemaへ追加していません。
+
+公開データは `data/timetable/manifest.json`、`periods.json`、`YYYY-MM.json` に分割します。保存前に3種類のJSON Schemaで検証し、一時ファイルから置換します。現在の公開JSON、前回スナップショット、対応設定は `backups/timetable/` へ退避し、途中失敗時は復元します。既存の公開処理は許可された時間割JSONだけを明示的にstageし、`.xlsx` は対象にしません。
+
 ## ファイル構成
 
 ```text
@@ -495,6 +521,7 @@ tools/course-importer/
 ├─ importer.py                  PDF、検証、追記の中核処理
 ├─ publisher.py                 状態確認、安全な同期・公開・履歴・診断
 ├─ works_service.py             制作物データ、画像検証、バックアップ、並び順
+├─ timetable_service.py         Excel解析、正規化、警告、差分、月別JSON保存
 ├─ single_instance.py           単一起動、実行中URL、health確認、終了後処理
 ├─ classview-admin.json         接続先、ブランチ、公開URLの一元設定
 ├─ requirements.txt             必要なPythonライブラリ
@@ -508,16 +535,19 @@ tools/course-importer/
 ├─ templates/manage.html         既存授業の管理画面
 ├─ templates/works.html          制作物の追加・編集・プレビュー画面
 ├─ templates/works_error.html    制作物管理の職員向けエラー画面
+├─ templates/timetable.html      時間割の選択、差分・警告確認、保存画面
 ├─ static/style.css              管理画面のスタイル
 ├─ static/dashboard.js           状態確認、未公開変更、公開、診断UI
 ├─ static/app.js                 画面の段階制御、フォーム、ライブプレビュー
 ├─ static/course-management.js   編集、年度引き継ぎ、アーカイブ等の画面制御
 ├─ static/works.js               制作物管理画面の操作
+├─ static/timetable.js           時間割のdry-run、対応登録、絞り込み、保存
 ├─ static/editor-state.js        フォーム状態と授業JSONの相互変換
 ├─ tests/test_importer.py        実データを使わないPythonテスト
 ├─ tests/test_publisher.py       一時Git環境を使う公開・同期テスト
 ├─ tests/test_single_instance.py 単一起動と終了ライフサイクルのテスト
 ├─ tests/test_works.py            制作物データ・画像・管理APIのテスト
+├─ tests/test_timetable.py        Excel解析、差分、Schema、atomic保存のテスト
 ├─ tests/test_public_course_works.js 公開ページの年度・URL・パス検証
 └─ tests/test_editor_state.js    フォーム状態のJavaScriptテスト
 ```
