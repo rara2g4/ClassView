@@ -1,0 +1,2081 @@
+{
+  "schemaVersion": 1,
+  "yearMonth": "2025-04",
+  "days": {
+    "2025-04-21": [
+      {
+        "period": 1,
+        "courseId": "photoshop-b-d",
+        "subjectRaw": "Photoshop[B][D]【中野】",
+        "subjectName": "Photoshop[B][D]",
+        "subjectBaseName": "Photoshop",
+        "courseVariantTags": [
+          "B",
+          "D"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "中野"
+        ],
+        "rooms": [
+          "スカイホール"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-7302e0e33ed6262b"
+      },
+      {
+        "period": 1,
+        "courseId": "moba-b-d",
+        "subjectRaw": "MOBA[B][D]【細川亮】",
+        "subjectName": "MOBA[B][D]",
+        "subjectBaseName": "MOBA",
+        "courseVariantTags": [
+          "B",
+          "D"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "細川亮"
+        ],
+        "rooms": [
+          "オンライン"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-abe13b41be655c44"
+      },
+      {
+        "period": 1,
+        "courseId": "drone-introduction",
+        "subjectRaw": "ドローン概論（A組）【CDP】",
+        "subjectName": "ドローン概論",
+        "subjectBaseName": "ドローン概論",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [
+          "A組"
+        ],
+        "instructors": [
+          "CDP"
+        ],
+        "rooms": [
+          "アリーナ"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-d163abfa95519faa"
+      },
+      {
+        "period": 2,
+        "courseId": "moba-b-d",
+        "subjectRaw": "MOBA[B][D]【細川亮】",
+        "subjectName": "MOBA[B][D]",
+        "subjectBaseName": "MOBA",
+        "courseVariantTags": [
+          "B",
+          "D"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "細川亮"
+        ],
+        "rooms": [
+          "オンライン"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-3125558ffa07d537"
+      },
+      {
+        "period": 2,
+        "courseId": "drone-introduction",
+        "subjectRaw": "ドローン概論（A組）【CDP】",
+        "subjectName": "ドローン概論",
+        "subjectBaseName": "ドローン概論",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [
+          "A組"
+        ],
+        "instructors": [
+          "CDP"
+        ],
+        "rooms": [
+          "アリーナ"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-c88cc118dcce883a"
+      },
+      {
+        "period": 2,
+        "courseId": "photoshop-b-d",
+        "subjectRaw": "Photoshop[B][D]【中野】",
+        "subjectName": "Photoshop[B][D]",
+        "subjectBaseName": "Photoshop",
+        "courseVariantTags": [
+          "B",
+          "D"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "中野"
+        ],
+        "rooms": [
+          "スカイホール"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-fdebfa62349476a3"
+      },
+      {
+        "period": 3,
+        "courseId": "after-effects-a",
+        "subjectRaw": "After Effects[A]【中野】",
+        "subjectName": "After Effects[A]",
+        "subjectBaseName": "After Effects",
+        "courseVariantTags": [
+          "A"
+        ],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "instructors": [
+          "中野"
+        ],
+        "rooms": [
+          "723",
+          "724"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-150d48f005dacb93"
+      },
+      {
+        "period": 3,
+        "courseId": "ai-application-a",
+        "subjectRaw": "AI応用[A]【成田】",
+        "subjectName": "AI応用[A]",
+        "subjectBaseName": "AI応用",
+        "courseVariantTags": [
+          "A"
+        ],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "instructors": [
+          "成田"
+        ],
+        "rooms": [
+          "オンライン"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-41b80254a2a39a91"
+      },
+      {
+        "period": 3,
+        "courseId": "robotics-introduction",
+        "subjectRaw": "ロボット工学入門【渥美】",
+        "subjectName": "ロボット工学入門",
+        "subjectBaseName": "ロボット工学入門",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "instructors": [
+          "渥美"
+        ],
+        "rooms": [
+          "スカイホール"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-b86513ae0cccb69c"
+      },
+      {
+        "period": 4,
+        "courseId": "ai-application-a",
+        "subjectRaw": "AI応用[A]【成田】",
+        "subjectName": "AI応用[A]",
+        "subjectBaseName": "AI応用",
+        "courseVariantTags": [
+          "A"
+        ],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "instructors": [
+          "成田"
+        ],
+        "rooms": [
+          "オンライン"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-3cd3f93c3141548d"
+      },
+      {
+        "period": 4,
+        "courseId": "after-effects-c",
+        "subjectRaw": "After Effects[C]【中野】",
+        "subjectName": "After Effects[C]",
+        "subjectBaseName": "After Effects",
+        "courseVariantTags": [
+          "C"
+        ],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "instructors": [
+          "中野"
+        ],
+        "rooms": [
+          "オープンホール"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-90d95def4723e1bd"
+      },
+      {
+        "period": 4,
+        "courseId": "general-education",
+        "subjectRaw": "一般教養【専任】",
+        "subjectName": "一般教養",
+        "subjectBaseName": "一般教養",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "instructors": [
+          "専任"
+        ],
+        "rooms": [
+          "スカイホール"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-fb45a017ce9819af"
+      }
+    ],
+    "2025-04-22": [
+      {
+        "period": 1,
+        "courseId": "system-development-a-c",
+        "subjectRaw": "システム開発[A][C]【成田】",
+        "subjectName": "システム開発[A][C]",
+        "subjectBaseName": "システム開発",
+        "courseVariantTags": [
+          "A",
+          "C"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "成田"
+        ],
+        "rooms": [
+          "オンライン"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-5688748f25304027"
+      },
+      {
+        "period": 1,
+        "courseId": "streaming-a",
+        "subjectRaw": "配信[A]【原】",
+        "subjectName": "配信[A]",
+        "subjectBaseName": "配信",
+        "courseVariantTags": [
+          "A"
+        ],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "instructors": [
+          "原"
+        ],
+        "rooms": [
+          "オンライン"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-7dc6ba62a999ba4b"
+      },
+      {
+        "period": 1,
+        "courseId": "drawing-b",
+        "subjectRaw": "デッサン[B]【戸山】",
+        "subjectName": "デッサン[B]",
+        "subjectBaseName": "デッサン",
+        "courseVariantTags": [
+          "B"
+        ],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "instructors": [
+          "戸山"
+        ],
+        "rooms": [
+          "トレーニングセンター"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-ce9235bef26c94e5"
+      },
+      {
+        "period": 1,
+        "courseId": "drone-application-a",
+        "subjectRaw": "ドローン応用[A]【CDP】",
+        "subjectName": "ドローン応用[A]",
+        "subjectBaseName": "ドローン応用",
+        "courseVariantTags": [
+          "A"
+        ],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "instructors": [
+          "CDP"
+        ],
+        "rooms": [
+          "アリーナ"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-cfaf62b027fe6c09"
+      },
+      {
+        "period": 1,
+        "courseId": "vr-production-b-d",
+        "subjectRaw": "VR制作[B][D]【小野寺】",
+        "subjectName": "VR制作[B][D]",
+        "subjectBaseName": "VR制作",
+        "courseVariantTags": [
+          "B",
+          "D"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "小野寺"
+        ],
+        "rooms": [
+          "クリエイティブ1"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-f11c64f728f93315"
+      },
+      {
+        "period": 2,
+        "courseId": "security-operations",
+        "subjectRaw": "セキュリティ運用【阿部】",
+        "subjectName": "セキュリティ運用",
+        "subjectBaseName": "セキュリティ運用",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "instructors": [
+          "阿部"
+        ],
+        "rooms": [
+          "723",
+          "724"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-19389dbb3ba68249"
+      },
+      {
+        "period": 2,
+        "courseId": "drawing-d",
+        "subjectRaw": "デッサン[D]【戸山】",
+        "subjectName": "デッサン[D]",
+        "subjectBaseName": "デッサン",
+        "courseVariantTags": [
+          "D"
+        ],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "instructors": [
+          "戸山"
+        ],
+        "rooms": [
+          "トレーニングセンター"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-1c5251542ebc9147"
+      },
+      {
+        "period": 2,
+        "courseId": "system-development-a-c",
+        "subjectRaw": "システム開発[A][C]【成田】",
+        "subjectName": "システム開発[A][C]",
+        "subjectBaseName": "システム開発",
+        "courseVariantTags": [
+          "A",
+          "C"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "成田"
+        ],
+        "rooms": [
+          "オンライン"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-278e45ced442ca35"
+      },
+      {
+        "period": 2,
+        "courseId": "streaming-a",
+        "subjectRaw": "配信[A]【原】",
+        "subjectName": "配信[A]",
+        "subjectBaseName": "配信",
+        "courseVariantTags": [
+          "A"
+        ],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "instructors": [
+          "原"
+        ],
+        "rooms": [
+          "オンライン"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-7eab100c96272735"
+      },
+      {
+        "period": 2,
+        "courseId": "vr-production-b-d",
+        "subjectRaw": "VR制作[B][D]【小野寺】",
+        "subjectName": "VR制作[B][D]",
+        "subjectBaseName": "VR制作",
+        "courseVariantTags": [
+          "B",
+          "D"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "小野寺"
+        ],
+        "rooms": [
+          "クリエイティブ1"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-a83523342fb342c2"
+      },
+      {
+        "period": 2,
+        "courseId": "drone-application-a",
+        "subjectRaw": "ドローン応用[A]【CDP】",
+        "subjectName": "ドローン応用[A]",
+        "subjectBaseName": "ドローン応用",
+        "courseVariantTags": [
+          "A"
+        ],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "instructors": [
+          "CDP"
+        ],
+        "rooms": [
+          "アリーナ"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-ceb5ccf9e6d2d54c"
+      },
+      {
+        "period": 3,
+        "courseId": "web-production-a",
+        "subjectRaw": "WEB制作[A]【長濵】",
+        "subjectName": "WEB制作[A]",
+        "subjectBaseName": "WEB制作",
+        "courseVariantTags": [
+          "A"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "長濵"
+        ],
+        "rooms": [
+          "723",
+          "724"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-1144f4d1fa729c4b"
+      },
+      {
+        "period": 3,
+        "courseId": "information-security-practice-b-d",
+        "subjectRaw": "情報セキュリティ演習[B][D]【阿部】",
+        "subjectName": "情報セキュリティ演習[B][D]",
+        "subjectBaseName": "情報セキュリティ演習",
+        "courseVariantTags": [
+          "B",
+          "D"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "阿部"
+        ],
+        "rooms": [
+          "トレーニングセンター"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-1c0c3e509fe73658"
+      },
+      {
+        "period": 3,
+        "courseId": "pilot-skills-d",
+        "subjectRaw": "パイロットスキル[D]【CDP】",
+        "subjectName": "パイロットスキル[D]",
+        "subjectBaseName": "パイロットスキル",
+        "courseVariantTags": [
+          "D"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "CDP"
+        ],
+        "rooms": [
+          "アリーナ"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-3a0983d8bfefbc9c"
+      },
+      {
+        "period": 3,
+        "courseId": "drone-application-a",
+        "subjectRaw": "ドローン応用[A]【CDP】",
+        "subjectName": "ドローン応用[A]",
+        "subjectBaseName": "ドローン応用",
+        "courseVariantTags": [
+          "A"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "CDP"
+        ],
+        "rooms": [
+          "アリーナ"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-753e6c960a21f23f"
+      },
+      {
+        "period": 3,
+        "courseId": "html-css-b",
+        "subjectRaw": "HTML・CSS[B]【長濵】",
+        "subjectName": "HTML・CSS[B]",
+        "subjectBaseName": "HTML・CSS",
+        "courseVariantTags": [
+          "B"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "長濵"
+        ],
+        "rooms": [
+          "723",
+          "724"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-82acbb2ac40654bb"
+      },
+      {
+        "period": 3,
+        "courseId": "programming-basics",
+        "subjectRaw": "プログラミング基礎（1組）【本多】",
+        "subjectName": "プログラミング基礎",
+        "subjectBaseName": "プログラミング基礎",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [
+          "1組"
+        ],
+        "instructors": [
+          "本多"
+        ],
+        "rooms": [
+          "721",
+          "722"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-bf5468b67330ee69"
+      },
+      {
+        "period": 3,
+        "courseId": "communication-1",
+        "subjectRaw": "コミュニケーション1(2組)【小黒】",
+        "subjectName": "コミュニケーション1",
+        "subjectBaseName": "コミュニケーション1",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [
+          "2組"
+        ],
+        "instructors": [
+          "小黒"
+        ],
+        "rooms": [
+          "オープンホール"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-bfcb1bf3b27bc208"
+      },
+      {
+        "period": 4,
+        "courseId": "communication-1",
+        "subjectRaw": "コミュニケーション1(1組)【小黒】",
+        "subjectName": "コミュニケーション1",
+        "subjectBaseName": "コミュニケーション1",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [
+          "1組"
+        ],
+        "instructors": [
+          "小黒"
+        ],
+        "rooms": [
+          "オープンホール"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-30e3fc3abeb88d14"
+      },
+      {
+        "period": 4,
+        "courseId": "html-css-b",
+        "subjectRaw": "HTML・CSS[B]【長濵】",
+        "subjectName": "HTML・CSS[B]",
+        "subjectBaseName": "HTML・CSS",
+        "courseVariantTags": [
+          "B"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "長濵"
+        ],
+        "rooms": [
+          "723",
+          "724"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-43a3a80f53b35a47"
+      },
+      {
+        "period": 4,
+        "courseId": "information-security-practice-b-d",
+        "subjectRaw": "情報セキュリティ演習[B][D]【阿部】",
+        "subjectName": "情報セキュリティ演習[B][D]",
+        "subjectBaseName": "情報セキュリティ演習",
+        "courseVariantTags": [
+          "B",
+          "D"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "阿部"
+        ],
+        "rooms": [
+          "トレーニングセンター"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-527e13fa7a166c3e"
+      },
+      {
+        "period": 4,
+        "courseId": "web-production-a",
+        "subjectRaw": "WEB制作[A]【長濵】",
+        "subjectName": "WEB制作[A]",
+        "subjectBaseName": "WEB制作",
+        "courseVariantTags": [
+          "A"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "長濵"
+        ],
+        "rooms": [
+          "723",
+          "724"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-968c9dab0e60c51b"
+      },
+      {
+        "period": 4,
+        "courseId": "pilot-skills-d",
+        "subjectRaw": "パイロットスキル[D]【CDP】",
+        "subjectName": "パイロットスキル[D]",
+        "subjectBaseName": "パイロットスキル",
+        "courseVariantTags": [
+          "D"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "CDP"
+        ],
+        "rooms": [
+          "アリーナ"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-a29a5c682674b48c"
+      },
+      {
+        "period": 4,
+        "courseId": "programming-basics",
+        "subjectRaw": "プログラミング基礎（2組）【本多】",
+        "subjectName": "プログラミング基礎",
+        "subjectBaseName": "プログラミング基礎",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [
+          "2組"
+        ],
+        "instructors": [
+          "本多"
+        ],
+        "rooms": [
+          "721",
+          "722"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-bbd6022d51d1f909"
+      },
+      {
+        "period": 4,
+        "courseId": "drone-application-a",
+        "subjectRaw": "ドローン応用[A]【CDP】",
+        "subjectName": "ドローン応用[A]",
+        "subjectBaseName": "ドローン応用",
+        "courseVariantTags": [
+          "A"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "CDP"
+        ],
+        "rooms": [
+          "アリーナ"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-e876c93c6e959d6d"
+      }
+    ],
+    "2025-04-23": [
+      {
+        "period": 1,
+        "courseId": "marketing",
+        "subjectRaw": "マーケティング【中田】",
+        "subjectName": "マーケティング",
+        "subjectBaseName": "マーケティング",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "instructors": [
+          "中田"
+        ],
+        "rooms": [
+          "オープンホール"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-77e91a1afca8e3c9"
+      },
+      {
+        "period": 1,
+        "courseId": "graduation-project-a-b",
+        "subjectRaw": "卒業制作[A][B]【専任】",
+        "subjectName": "卒業制作[A][B]",
+        "subjectBaseName": "卒業制作",
+        "courseVariantTags": [
+          "A",
+          "B"
+        ],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "instructors": [
+          "専任"
+        ],
+        "rooms": [
+          "スカイホール"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-a5a5d9c61bfaf841"
+      },
+      {
+        "period": 2,
+        "courseId": "advancement-project-a-b",
+        "subjectRaw": "進級制作[A][B]【専任】",
+        "subjectName": "進級制作[A][B]",
+        "subjectBaseName": "進級制作",
+        "courseVariantTags": [
+          "A",
+          "B"
+        ],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "instructors": [
+          "専任"
+        ],
+        "rooms": [
+          "スカイホール"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-44900b3bccbcb0dd"
+      },
+      {
+        "period": 2,
+        "courseId": null,
+        "subjectRaw": "スーツメイク講座",
+        "subjectName": "スーツメイク講座",
+        "subjectBaseName": "スーツメイク講座",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "instructors": [],
+        "rooms": [
+          "カンファレンスセンター"
+        ],
+        "kind": "special",
+        "status": "confirmed",
+        "entryId": "tt-d8561f639bced1ff"
+      },
+      {
+        "period": 3,
+        "courseId": "career-design-c-grade-3",
+        "subjectRaw": "キャリアデザイン[C](3年)【専任】",
+        "subjectName": "キャリアデザイン[C](3年)",
+        "subjectBaseName": "キャリアデザイン (3年)",
+        "courseVariantTags": [
+          "C"
+        ],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "instructors": [
+          "専任"
+        ],
+        "rooms": [
+          "オープンホール",
+          "HUB"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-3d683667298a806f"
+      },
+      {
+        "period": 3,
+        "courseId": "advancement-project-a-b",
+        "subjectRaw": "進級制作[A][B]【専任】",
+        "subjectName": "進級制作[A][B]",
+        "subjectBaseName": "進級制作",
+        "courseVariantTags": [
+          "A",
+          "B"
+        ],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "instructors": [
+          "専任"
+        ],
+        "rooms": [],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-6439ccec566f69ef"
+      },
+      {
+        "period": 3,
+        "courseId": "integrated-learning",
+        "subjectRaw": "総合学習【複数】",
+        "subjectName": "総合学習",
+        "subjectBaseName": "総合学習",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "instructors": [
+          "複数"
+        ],
+        "rooms": [
+          "スカイホール"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-e0d27ca3273e921e"
+      },
+      {
+        "period": 4,
+        "courseId": "career-design-c-grade-2",
+        "subjectRaw": "キャリアデザイン[C](2年)【専任】",
+        "subjectName": "キャリアデザイン[C](2年)",
+        "subjectBaseName": "キャリアデザイン (2年)",
+        "courseVariantTags": [
+          "C"
+        ],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "instructors": [
+          "専任"
+        ],
+        "rooms": [
+          "スカイホール"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-38f0dc79fe1feb52"
+      },
+      {
+        "period": 4,
+        "courseId": "integrated-learning",
+        "subjectRaw": "総合学習【複数】",
+        "subjectName": "総合学習",
+        "subjectBaseName": "総合学習",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "instructors": [
+          "複数"
+        ],
+        "rooms": [],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-3ac3061a97a8a168"
+      }
+    ],
+    "2025-04-24": [
+      {
+        "period": 1,
+        "courseId": "drone-programming",
+        "subjectRaw": "ドローンプログラミング【CDP】",
+        "subjectName": "ドローンプログラミング",
+        "subjectBaseName": "ドローンプログラミング",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "instructors": [
+          "CDP"
+        ],
+        "rooms": [
+          "723",
+          "724"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-1ec071b0ef666701"
+      },
+      {
+        "period": 1,
+        "courseId": "it-certification",
+        "subjectRaw": "IT資格（1組）【本多】",
+        "subjectName": "IT資格",
+        "subjectBaseName": "IT資格",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [
+          "1組"
+        ],
+        "instructors": [
+          "本多"
+        ],
+        "rooms": [
+          "721",
+          "722"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-2914a55c99496f57"
+      },
+      {
+        "period": 1,
+        "courseId": "unity-b",
+        "subjectRaw": "Unity[B]【蒲田】",
+        "subjectName": "Unity[B]",
+        "subjectBaseName": "Unity",
+        "courseVariantTags": [
+          "B"
+        ],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "instructors": [
+          "蒲田"
+        ],
+        "rooms": [
+          "GAMEROOM2"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-9bbf9350d286f423"
+      },
+      {
+        "period": 1,
+        "courseId": "drone-advanced-b",
+        "subjectRaw": "ドローン特講[B]【CDP】",
+        "subjectName": "ドローン特講[B]",
+        "subjectBaseName": "ドローン特講",
+        "courseVariantTags": [
+          "B"
+        ],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "instructors": [
+          "CDP"
+        ],
+        "rooms": [
+          "アリーナ"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-f7e216377fe03c8c"
+      },
+      {
+        "period": 1,
+        "courseId": "design-production-a-c",
+        "subjectRaw": "デザイン制作[A][C]【菊池・深沢】",
+        "subjectName": "デザイン制作[A][C]",
+        "subjectBaseName": "デザイン制作",
+        "courseVariantTags": [
+          "A",
+          "C"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "菊池",
+          "深沢"
+        ],
+        "rooms": [
+          "オープンホール"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-f8628c3260c79f3a"
+      },
+      {
+        "period": 2,
+        "courseId": "unity-b",
+        "subjectRaw": "Unity[B]【蒲田】",
+        "subjectName": "Unity[B]",
+        "subjectBaseName": "Unity",
+        "courseVariantTags": [
+          "B"
+        ],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "instructors": [
+          "蒲田"
+        ],
+        "rooms": [
+          "GAMEROOM2"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-02acd4abc32cd6a5"
+      },
+      {
+        "period": 2,
+        "courseId": "career-design-1",
+        "subjectRaw": "キャリアデザイン1(2組)【専任】",
+        "subjectName": "キャリアデザイン1",
+        "subjectBaseName": "キャリアデザイン1",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [
+          "2組"
+        ],
+        "instructors": [
+          "専任"
+        ],
+        "rooms": [
+          "オープンホール"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-06c8cf8286fc13e7"
+      },
+      {
+        "period": 2,
+        "courseId": "drone-advanced-b",
+        "subjectRaw": "ドローン特講[B]【CDP】",
+        "subjectName": "ドローン特講[B]",
+        "subjectBaseName": "ドローン特講",
+        "courseVariantTags": [
+          "B"
+        ],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "instructors": [
+          "CDP"
+        ],
+        "rooms": [
+          "アリーナ"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-7206520f84bb98cc"
+      },
+      {
+        "period": 2,
+        "courseId": "design-production-a-c",
+        "subjectRaw": "デザイン制作[A][C]【菊池・深沢】",
+        "subjectName": "デザイン制作[A][C]",
+        "subjectBaseName": "デザイン制作",
+        "courseVariantTags": [
+          "A",
+          "C"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "菊池",
+          "深沢"
+        ],
+        "rooms": [
+          "オープンホール"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-7b942a6db4a79d57"
+      },
+      {
+        "period": 2,
+        "courseId": "drone-programming",
+        "subjectRaw": "ドローンプログラミング【CDP】",
+        "subjectName": "ドローンプログラミング",
+        "subjectBaseName": "ドローンプログラミング",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "instructors": [
+          "CDP"
+        ],
+        "rooms": [
+          "723",
+          "724"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-807f1256397aa9d8"
+      },
+      {
+        "period": 2,
+        "courseId": "it-certification",
+        "subjectRaw": "IT資格（1組）【本多】",
+        "subjectName": "IT資格",
+        "subjectBaseName": "IT資格",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [
+          "1組"
+        ],
+        "instructors": [
+          "本多"
+        ],
+        "rooms": [
+          "721",
+          "722"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-9f5532ab3079f168"
+      },
+      {
+        "period": 3,
+        "courseId": "game-development-b-d",
+        "subjectRaw": "ゲーム制作[B][D]【蒲田】",
+        "subjectName": "ゲーム制作[B][D]",
+        "subjectBaseName": "ゲーム制作",
+        "courseVariantTags": [
+          "B",
+          "D"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "蒲田"
+        ],
+        "rooms": [
+          "GAMEROOM2"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-138e67bb83d7c641"
+      },
+      {
+        "period": 3,
+        "courseId": "career-design-1",
+        "subjectRaw": "キャリアデザイン1(1組)【専任】",
+        "subjectName": "キャリアデザイン1",
+        "subjectBaseName": "キャリアデザイン1",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [
+          "1組"
+        ],
+        "instructors": [
+          "専任"
+        ],
+        "rooms": [
+          "オープンホール"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-17afbed05b642c77"
+      },
+      {
+        "period": 3,
+        "courseId": "security-basics",
+        "subjectRaw": "セキュリティ基礎【齋藤聖】",
+        "subjectName": "セキュリティ基礎",
+        "subjectBaseName": "セキュリティ基礎",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "instructors": [
+          "齋藤聖"
+        ],
+        "rooms": [
+          "723",
+          "724"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-2ea13e5dc7093667"
+      },
+      {
+        "period": 3,
+        "courseId": "data-analysis-d",
+        "subjectRaw": "データ分析[D]【尻枝】",
+        "subjectName": "データ分析[D]",
+        "subjectBaseName": "データ分析",
+        "courseVariantTags": [
+          "D"
+        ],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "instructors": [
+          "尻枝"
+        ],
+        "rooms": [
+          "オンライン"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-985ca459b81e4300"
+      },
+      {
+        "period": 3,
+        "courseId": "it-certification",
+        "subjectRaw": "IT資格（2組）【本多】",
+        "subjectName": "IT資格",
+        "subjectBaseName": "IT資格",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [
+          "2組"
+        ],
+        "instructors": [
+          "本多"
+        ],
+        "rooms": [
+          "721",
+          "722"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-e98140293e2a2612"
+      },
+      {
+        "period": 4,
+        "courseId": "game-development-b-d",
+        "subjectRaw": "ゲーム制作[B][D]【蒲田】",
+        "subjectName": "ゲーム制作[B][D]",
+        "subjectBaseName": "ゲーム制作",
+        "courseVariantTags": [
+          "B",
+          "D"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "蒲田"
+        ],
+        "rooms": [
+          "GAMEROOM2"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-84bf827275f68e69"
+      },
+      {
+        "period": 4,
+        "courseId": "security-basics",
+        "subjectRaw": "セキュリティ基礎【齋藤聖】",
+        "subjectName": "セキュリティ基礎",
+        "subjectBaseName": "セキュリティ基礎",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "instructors": [
+          "齋藤聖"
+        ],
+        "rooms": [
+          "723",
+          "724"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-d42b52b4fa0d2149"
+      },
+      {
+        "period": 4,
+        "courseId": "it-certification",
+        "subjectRaw": "IT資格（2組）【本多】",
+        "subjectName": "IT資格",
+        "subjectBaseName": "IT資格",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [
+          "2組"
+        ],
+        "instructors": [
+          "本多"
+        ],
+        "rooms": [
+          "721",
+          "722"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-dfeaf8b5ecad60cd"
+      }
+    ],
+    "2025-04-25": [
+      {
+        "period": 1,
+        "courseId": "fps-b-d",
+        "subjectRaw": "FPS[B][D]【辻】",
+        "subjectName": "FPS[B][D]",
+        "subjectBaseName": "FPS",
+        "courseVariantTags": [
+          "B",
+          "D"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "辻"
+        ],
+        "rooms": [
+          "オンライン"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-0e2eaf09583758a5"
+      },
+      {
+        "period": 1,
+        "courseId": "drone-introduction",
+        "subjectRaw": "ドローン概論（B組）【CDP】",
+        "subjectName": "ドローン概論",
+        "subjectBaseName": "ドローン概論",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [
+          "B組"
+        ],
+        "instructors": [
+          "CDP"
+        ],
+        "rooms": [
+          "アリーナ"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-428c5737026d5682"
+      },
+      {
+        "period": 1,
+        "courseId": "python-application-b",
+        "subjectRaw": "Python応用[B]【成田】",
+        "subjectName": "Python応用[B]",
+        "subjectBaseName": "Python応用",
+        "courseVariantTags": [
+          "B"
+        ],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "instructors": [
+          "成田"
+        ],
+        "rooms": [
+          "オンライン"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-8cfc6e2d5b0022e2"
+      },
+      {
+        "period": 1,
+        "courseId": "illustrator-b-d",
+        "subjectRaw": "Illustrator[B][D]【深沢】",
+        "subjectName": "Illustrator[B][D]",
+        "subjectBaseName": "Illustrator",
+        "courseVariantTags": [
+          "B",
+          "D"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "深沢"
+        ],
+        "rooms": [
+          "オープンホール"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-f087e7b97fe80c3f"
+      },
+      {
+        "period": 2,
+        "courseId": "drone-introduction",
+        "subjectRaw": "ドローン概論（B組）【CDP】",
+        "subjectName": "ドローン概論",
+        "subjectBaseName": "ドローン概論",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [
+          "B組"
+        ],
+        "instructors": [
+          "CDP"
+        ],
+        "rooms": [
+          "アリーナ"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-047aeac661ba16a7"
+      },
+      {
+        "period": 2,
+        "courseId": "python-application-b",
+        "subjectRaw": "Python応用[B]【成田】",
+        "subjectName": "Python応用[B]",
+        "subjectBaseName": "Python応用",
+        "courseVariantTags": [
+          "B"
+        ],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "instructors": [
+          "成田"
+        ],
+        "rooms": [
+          "オンライン"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-06566fc1cbd90939"
+      },
+      {
+        "period": 2,
+        "courseId": "illustrator-b-d",
+        "subjectRaw": "Illustrator[B][D]【深沢】",
+        "subjectName": "Illustrator[B][D]",
+        "subjectBaseName": "Illustrator",
+        "courseVariantTags": [
+          "B",
+          "D"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "深沢"
+        ],
+        "rooms": [
+          "オープンホール"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-27cb10bc142eb45e"
+      },
+      {
+        "period": 2,
+        "courseId": "fps-b-d",
+        "subjectRaw": "FPS[B][D]【辻】",
+        "subjectName": "FPS[B][D]",
+        "subjectBaseName": "FPS",
+        "courseVariantTags": [
+          "B",
+          "D"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "辻"
+        ],
+        "rooms": [
+          "オンライン"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-70a3ab93acdfed32"
+      },
+      {
+        "period": 3,
+        "courseId": "event-planning-c",
+        "subjectRaw": "イベント企画[C]【eek】",
+        "subjectName": "イベント企画[C]",
+        "subjectBaseName": "イベント企画",
+        "courseVariantTags": [
+          "C"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "eek"
+        ],
+        "rooms": [
+          "オンライン"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-73769474feab774f"
+      },
+      {
+        "period": 3,
+        "courseId": "programming-basics",
+        "subjectRaw": "プログラミング基礎（1組）【本多】",
+        "subjectName": "プログラミング基礎",
+        "subjectBaseName": "プログラミング基礎",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [
+          "1組"
+        ],
+        "instructors": [
+          "本多"
+        ],
+        "rooms": [
+          "721",
+          "722"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-89cdddf710f71866"
+      },
+      {
+        "period": 3,
+        "courseId": "event-planning-operation-a",
+        "subjectRaw": "イベント企画・運営[A]【eek】",
+        "subjectName": "イベント企画・運営[A]",
+        "subjectBaseName": "イベント企画・運営",
+        "courseVariantTags": [
+          "A"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "eek"
+        ],
+        "rooms": [
+          "オンライン"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-96e072b7b28dcf72"
+      },
+      {
+        "period": 3,
+        "courseId": "blender-b-d",
+        "subjectRaw": "Blender[B][D]【大澤】",
+        "subjectName": "Blender[B][D]",
+        "subjectBaseName": "Blender",
+        "courseVariantTags": [
+          "B",
+          "D"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "大澤"
+        ],
+        "rooms": [
+          "スカイホール"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-9a62cd11b1d2aa11"
+      },
+      {
+        "period": 3,
+        "courseId": "office",
+        "subjectRaw": "Office(2組)【太田】",
+        "subjectName": "Office",
+        "subjectBaseName": "Office",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [
+          "2組"
+        ],
+        "instructors": [
+          "太田"
+        ],
+        "rooms": [
+          "723",
+          "724"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-9e36d0f988e81474"
+      },
+      {
+        "period": 3,
+        "courseId": "server-application",
+        "subjectRaw": "サーバー応用【細川聡】",
+        "subjectName": "サーバー応用",
+        "subjectBaseName": "サーバー応用",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "instructors": [
+          "細川聡"
+        ],
+        "rooms": [
+          "733",
+          "734"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-c79063dd4f527f6b"
+      },
+      {
+        "period": 4,
+        "courseId": "office",
+        "subjectRaw": "Office(1組)【太田】",
+        "subjectName": "Office",
+        "subjectBaseName": "Office",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [
+          "1組"
+        ],
+        "instructors": [
+          "太田"
+        ],
+        "rooms": [
+          "723",
+          "724"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-05087bee1c073f8e"
+      },
+      {
+        "period": 4,
+        "courseId": "programming-basics",
+        "subjectRaw": "プログラミング基礎（2組）【本多】",
+        "subjectName": "プログラミング基礎",
+        "subjectBaseName": "プログラミング基礎",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [
+          "2組"
+        ],
+        "instructors": [
+          "本多"
+        ],
+        "rooms": [
+          "721",
+          "722"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-17cfdab5ef93f294"
+      },
+      {
+        "period": 4,
+        "courseId": "event-operation-c",
+        "subjectRaw": "イベント運営[C]【eek】",
+        "subjectName": "イベント運営[C]",
+        "subjectBaseName": "イベント運営",
+        "courseVariantTags": [
+          "C"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "eek"
+        ],
+        "rooms": [
+          "オンライン"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-6c5224dcb258217a"
+      },
+      {
+        "period": 4,
+        "courseId": "event-planning-operation-a",
+        "subjectRaw": "イベント企画・運営[A]【eek】",
+        "subjectName": "イベント企画・運営[A]",
+        "subjectBaseName": "イベント企画・運営",
+        "courseVariantTags": [
+          "A"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "eek"
+        ],
+        "rooms": [
+          "オンライン"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-ab94626495c52368"
+      },
+      {
+        "period": 4,
+        "courseId": "blender-b-d",
+        "subjectRaw": "Blender[B][D]【大澤】",
+        "subjectName": "Blender[B][D]",
+        "subjectBaseName": "Blender",
+        "courseVariantTags": [
+          "B",
+          "D"
+        ],
+        "grades": [
+          2,
+          3
+        ],
+        "gradeRaw": "2,3",
+        "groupTags": [],
+        "instructors": [
+          "大澤"
+        ],
+        "rooms": [
+          "スカイホール"
+        ],
+        "kind": "class",
+        "status": "confirmed",
+        "entryId": "tt-b6acbfceeae82ca5"
+      }
+    ]
+  }
+}

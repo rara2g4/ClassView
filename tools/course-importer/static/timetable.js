@@ -1,4 +1,4 @@
-(() => {
+((global) => {
   "use strict";
 
   const $ = (selector) => document.querySelector(selector);
@@ -18,6 +18,12 @@
     special_schedule: "予定・行事の補足",
     note: "その他の補足",
   };
+  const saveControlState = (preview) => ({
+    saveDisabled: Number(preview?.rangeBlockingCount || 0) > 0,
+    warningConfirmationRequired: Number(preview?.rangeWarningCount || 0) > 0,
+  });
+  global.ClassViewTimetableAdmin = { saveControlState };
+  if (typeof document === "undefined") return;
 
   const requestJson = async (url, options) => {
     const response = await fetch(url, options);
@@ -58,7 +64,9 @@
   const renderIssues = () => {
     const list = $("#issue-list");
     const filter = $("#issue-filter").value;
-    const issues = (state.preview?.issues || []).filter((item) => (
+    const scope = $("#issue-scope-filter").value;
+    const source = scope === "workbook" ? state.preview?.issues : state.preview?.rangeIssues;
+    const issues = (source || []).filter((item) => (
       ["blocking", "warning"].includes(item.severity) && (filter === "all" || item.severity === filter)
     ));
     list.replaceChildren();
@@ -96,7 +104,7 @@
   };
 
   const renderOverview = () => {
-    const counts = state.preview?.issueCounts || [];
+    const counts = state.preview?.rangeIssueCounts || [];
     appendOverview($("#blocking-overview"), counts.filter((item) => item.severity === "blocking"), "解決が必要な項目はありません。");
     appendOverview($("#warning-overview"), counts.filter((item) => item.severity === "warning"), "確認推奨の項目はありません。");
     appendOverview($("#reference-overview"), counts.filter((item) => item.severity === "reference"), "参考情報はありません。");
@@ -106,7 +114,7 @@
     if (state.referencesRendered) return;
     const root = $("#reference-groups");
     root.replaceChildren();
-    const references = (state.preview?.issues || []).filter((item) => item.severity === "reference");
+    const references = (state.preview?.rangeIssues || []).filter((item) => item.severity === "reference");
     const groups = new Map();
     references.forEach((item) => {
       const key = item.referenceCategory || "note";
@@ -599,17 +607,22 @@
 
   const renderPreview = () => {
     const payload = state.preview;
+    const saveControls = saveControlState(payload);
     state.referencesRendered = false;
     $("#review-section").hidden = false;
-    $("#review-counts").textContent = `${payload.entryCount}件 / ${payload.dateCount}日`;
-    $("#review-summary").textContent = `${payload.entryCount}件の予定を認識しました。解決が必要 ${payload.blockingCount}件、確認推奨 ${payload.warningCount}件、参考情報 ${payload.referenceCount || 0}件です。`;
-    $("#review-summary").className = `dashboard-status-summary${payload.blockingCount ? " is-error" : payload.warningCount ? " is-behind" : ""}`;
+    $("#review-counts").textContent = `${payload.startDate} ～ ${payload.endDate} / ${payload.entryCount}件・${payload.dateCount}日`;
+    $("#review-summary").textContent = `今回の保存期間：解決が必要 ${payload.rangeBlockingCount}件、確認推奨 ${payload.rangeWarningCount}件、参考情報 ${payload.rangeReferenceCount || 0}件です。`;
+    $("#review-summary").className = `dashboard-status-summary${payload.rangeBlockingCount ? " is-error" : payload.rangeWarningCount ? " is-behind" : ""}`;
+    $("#all-issues-summary").textContent = payload.outsideRangeBlockingCount
+      ? `Excel全体には解決が必要な項目が${payload.blockingCount}件あります。このうち${payload.outsideRangeBlockingCount}件は今回の保存期間外にあり、今回の保存を妨げません。`
+      : `Excel全体の解決が必要な項目は${payload.blockingCount}件です。`;
+    $("#issue-scope-filter").value = "range";
     $("#warnings-confirmed").checked = false;
-    $("#warning-confirm-row").hidden = payload.warningCount === 0;
-    $("#save-timetable").disabled = payload.blockingCount > 0;
-    $("#reference-section").hidden = !payload.referenceCount;
+    $("#warning-confirm-row").hidden = !saveControls.warningConfirmationRequired;
+    $("#save-timetable").disabled = saveControls.saveDisabled;
+    $("#reference-section").hidden = !payload.rangeReferenceCount;
     $("#reference-section").open = false;
-    $("#reference-summary").textContent = `参考情報を表示（${payload.referenceCount || 0}件）`;
+    $("#reference-summary").textContent = `今回期間の参考情報を表示（${payload.rangeReferenceCount || 0}件）`;
     $("#reference-groups").replaceChildren();
     renderOverview();
     renderMappings();
@@ -675,11 +688,12 @@
       await loadStatus();
     } catch (error) {
       setStatus($("#save-status"), error.message, "error");
-      button.disabled = Boolean(state.preview?.blockingCount);
+      button.disabled = saveControlState(state.preview).saveDisabled;
     }
   });
 
   $("#issue-filter").addEventListener("change", renderIssues);
+  $("#issue-scope-filter").addEventListener("change", renderIssues);
   $("#change-filter").addEventListener("change", renderChanges);
   $("#reference-section").addEventListener("toggle", () => {
     if ($("#reference-section").open) renderReferences();
@@ -714,4 +728,4 @@
     }
   };
   initialize();
-})();
+})(globalThis);

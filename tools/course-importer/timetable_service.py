@@ -63,6 +63,17 @@ ISSUE_LABELS = {
     "unregistered_subject": "未登録科目",
 }
 
+# These issues describe workbook-wide parsing conditions rather than one
+# timetable entry.  A date-less issue is not automatically global: only the
+# explicitly listed structural conditions affect every partial save.
+GLOBAL_ISSUE_CODES = {
+    "date_parse_failed",
+    "inconsistent_period_time",
+    "no_entries_in_range",
+    "period_times_missing",
+    "unexpected_structure",
+}
+
 
 class TimetableError(Exception):
     def __init__(self, message: str, *, code: str = "timetable_error", status: int = 400):
@@ -137,6 +148,13 @@ class TimetableService:
         self.config_path = self.runtime_root / "config.json"
         self.snapshot_path = self.runtime_root / "last-import.json"
         self.metadata_path = self.runtime_root / "import-metadata.json"
+        self.default_config_path = (
+            self.repo_root
+            / "tools"
+            / "course-importer"
+            / "defaults"
+            / "timetable-config.json"
+        )
         self.courses_path = self.data_root / "courses.json"
         self.month_schema_path = self.data_root / "timetable-month.schema.json"
         self.manifest_schema_path = self.data_root / "timetable-manifest.schema.json"
@@ -160,8 +178,8 @@ class TimetableService:
             ) from error
 
     def _config(self) -> dict[str, Any]:
-        value = self._load_json(
-            self.config_path,
+        default_config = self._load_json(
+            self.default_config_path,
             {
                 "sheetName": "2025通年時間割",
                 "subjectMappings": {},
@@ -170,6 +188,10 @@ class TimetableService:
                 "groupMappings": {},
                 "legacyGroupTags": {},
             },
+        )
+        value = self._load_json(
+            self.config_path,
+            default_config,
         )
         if not isinstance(value, dict):
             raise TimetableError("時間割の内部設定が不正です。", status=500)
@@ -211,14 +233,17 @@ class TimetableService:
     def status(self) -> dict[str, Any]:
         config = self._config()
         metadata = self._load_json(self.metadata_path, {})
-        snapshot = self._load_json(self.snapshot_path, {"entries": []})
-        entries = snapshot.get("entries", []) if isinstance(snapshot, dict) else []
+        entries = self._load_snapshot_entries()
+        if not metadata and (self.public_root / "manifest.json").exists():
+            manifest = self._load_json(self.public_root / "manifest.json", {})
+            if isinstance(manifest, dict):
+                metadata = {"lastImportedAt": manifest.get("updatedAt")}
         return {
             "sheetName": config["sheetName"],
             "lastFilename": metadata.get("sourceFilename"),
             "lastImportedAt": metadata.get("lastImportedAt"),
             "sourceModifiedAt": metadata.get("sourceModifiedAt"),
-            "entryCount": len(entries) if isinstance(entries, list) else 0,
+            "entryCount": len(entries),
             "subjectMappings": config["subjectMappings"],
             "timetableItemMappings": config["timetableItemMappings"],
             "canonicalGroups": self._canonical_group_options(config),
@@ -1189,12 +1214,15 @@ class TimetableService:
                 item["subjectRaw"] = subject_raw
         if extra:
             item.update(extra)
+        if not item.get("date") and code in GLOBAL_ISSUE_CODES:
+            item["scope"] = "global"
         item["id"] = hashlib.sha256(json.dumps(item, ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()[:16]
         return item
 
     @staticmethod
     def _deduplicate_issues(issues: list[dict[str, Any]]) -> list[dict[str, Any]]:
         seen: set[tuple[Any, ...]] = set()
+        by_key: dict[tuple[Any, ...], dict[str, Any]] = {}
         result = []
         for issue in issues:
             if issue["code"] in {"unregistered_subject", "mapped_course_missing", "unknown_group_tag"}:
@@ -1206,11 +1234,63 @@ class TimetableService:
                 key = (issue["code"], issue.get("date"), issue.get("period"), issue.get("subjectRaw"), issue["message"])
             if key not in seen:
                 seen.add(key)
-                result.append(issue)
+                stored = copy.deepcopy(issue)
+                by_key[key] = stored
+                result.append(stored)
+                continue
+            stored = by_key[key]
+            dates = list(stored.get("dates", []))
+            if stored.get("date"):
+                dates.append(stored["date"])
+            dates.extend(issue.get("dates", []))
+            if issue.get("date"):
+                dates.append(issue["date"])
+            dates = sorted(set(dates))
+            if len(dates) > 1:
+                stored["dates"] = dates
         return result
 
+    @staticmethod
+    def _issue_dates(issue: dict[str, Any]) -> list[date] | None:
+        raw_dates = []
+        if issue.get("date"):
+            raw_dates.append(issue["date"])
+        if isinstance(issue.get("dates"), list):
+            raw_dates.extend(issue["dates"])
+        if not raw_dates:
+            return []
+        parsed = []
+        try:
+            for value in dict.fromkeys(raw_dates):
+                parsed.append(date.fromisoformat(value))
+        except (TypeError, ValueError):
+            return None
+        return parsed
+
+    @classmethod
+    def issues_for_range(
+        cls, issues: list[dict[str, Any]], start_date: date, end_date: date
+    ) -> list[dict[str, Any]]:
+        """Return issues that can affect an inclusive confirmed save range."""
+        scoped = []
+        for issue in issues:
+            if issue.get("scope") == "global":
+                scoped.append(issue)
+                continue
+            issue_dates = cls._issue_dates(issue)
+            if issue_dates is None:
+                # A malformed internal date cannot be scoped safely.
+                scoped.append(issue)
+                continue
+            if any(start_date <= value <= end_date for value in issue_dates):
+                scoped.append(issue)
+        return scoped
+
     def _load_snapshot_entries(self) -> list[dict[str, Any]]:
-        document = self._load_json(self.snapshot_path, {"entries": []})
+        if self.snapshot_path.exists():
+            document = self._load_json(self.snapshot_path, {"entries": []})
+        else:
+            document = {"entries": self._load_public_snapshot_entries()}
         entries = document.get("entries", []) if isinstance(document, dict) else []
         if not isinstance(entries, list):
             raise TimetableError("前回の時間割スナップショットが不正です。", status=500)
@@ -1223,6 +1303,31 @@ class TimetableService:
                 entry.setdefault("courseVariantTags", parsed["courseVariantTags"])
             upgraded.append(entry)
         return upgraded
+
+    def _load_public_snapshot_entries(self) -> list[dict[str, Any]]:
+        manifest_path = self.public_root / "manifest.json"
+        if not manifest_path.exists():
+            return []
+        manifest = self._load_json(manifest_path, {})
+        months = manifest.get("months", []) if isinstance(manifest, dict) else []
+        if not isinstance(months, list) or not all(isinstance(month, str) for month in months):
+            raise TimetableError("公開時間割の目録が不正です。", status=500)
+        entries: list[dict[str, Any]] = []
+        for month in months:
+            document = self._load_json(self.public_root / f"{month}.json", {})
+            days = document.get("days", {}) if isinstance(document, dict) else {}
+            if not isinstance(days, dict):
+                raise TimetableError("公開時間割データが不正です。", status=500)
+            for day, day_entries in days.items():
+                if not isinstance(day, str) or not isinstance(day_entries, list):
+                    raise TimetableError("公開時間割データが不正です。", status=500)
+                for source_entry in day_entries:
+                    if not isinstance(source_entry, dict):
+                        raise TimetableError("公開時間割データが不正です。", status=500)
+                    entry = copy.deepcopy(source_entry)
+                    entry["date"] = day
+                    entries.append(entry)
+        return entries
 
     @classmethod
     def compare(cls, before: list[dict[str, Any]], after: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -1403,11 +1508,12 @@ class TimetableService:
             })
         return results
 
-    def _preview_payload(self, preview: TimetablePreview) -> dict[str, Any]:
-        severity_counts = Counter(issue["severity"] for issue in preview.issues)
+    @staticmethod
+    def _issue_count_payload(issues: list[dict[str, Any]]) -> tuple[Counter[str], list[dict[str, Any]]]:
+        severity_counts = Counter(issue["severity"] for issue in issues)
         grouped_counts: Counter[tuple[str, str, str]] = Counter()
         fallback_labels: dict[str, str] = {}
-        for issue in preview.issues:
+        for issue in issues:
             category = issue.get("referenceCategory", "")
             grouped_counts[(issue["severity"], issue["code"], category)] += 1
             fallback_labels.setdefault(issue["code"], issue["message"])
@@ -1422,6 +1528,14 @@ class TimetableService:
                 "label": ISSUE_LABELS.get(code, fallback_labels[code]),
                 "count": count,
             })
+        return severity_counts, issue_counts
+
+    def _preview_payload(self, preview: TimetablePreview) -> dict[str, Any]:
+        range_issues = self.issues_for_range(
+            preview.issues, preview.start_date, preview.end_date
+        )
+        severity_counts, issue_counts = self._issue_count_payload(preview.issues)
+        range_severity_counts, range_issue_counts = self._issue_count_payload(range_issues)
         return {
             "token": preview.token,
             "filename": preview.filename,
@@ -1435,6 +1549,16 @@ class TimetableService:
             "referenceCount": severity_counts["reference"],
             "infoCount": severity_counts["info"],
             "issueCounts": issue_counts,
+            "rangeBlockingCount": range_severity_counts["blocking"],
+            "rangeWarningCount": range_severity_counts["warning"],
+            "rangeReferenceCount": range_severity_counts["reference"],
+            "rangeInfoCount": range_severity_counts["info"],
+            "rangeIssueCounts": range_issue_counts,
+            "rangeIssues": range_issues,
+            "outsideRangeBlockingCount": (
+                severity_counts["blocking"] - range_severity_counts["blocking"]
+            ),
+            "canSave": range_severity_counts["blocking"] == 0,
             "tokenSummary": preview.token_summary,
             "unregisteredSubjects": self._subject_summary(preview),
             "mappingSettings": self._mapping_summary(preview),
@@ -1554,13 +1678,36 @@ class TimetableService:
                 )
             config = self._config()
             valid_course_ids = {item["id"] for item in self._course_options()}
-            retained = [
-                issue for issue in preview.issues
-                if issue["code"] not in {
-                    "unregistered_subject", "mapped_course_missing",
-                    "unknown_group_tag", "duplicate_entry",
-                }
-            ]
+            retained = []
+            for issue in preview.issues:
+                code = issue["code"]
+                if code in {"unregistered_subject", "mapped_course_missing"}:
+                    subject_name = _text(issue.get("subjectName"))
+                    key = _mapping_key(subject_name)
+                    mapped_course = config["subjectMappings"].get(key)
+                    mapped_item = config["timetableItemMappings"].get(key)
+                    if not mapped_item and (
+                        not mapped_course or mapped_course not in valid_course_ids
+                    ):
+                        retained.append(issue)
+                    continue
+                if code == "unknown_group_tag":
+                    alias = _text(issue.get("groupAlias"))
+                    canonical_id = config["groupMappings"].get(alias)
+                    canonical = config["canonicalGroups"].get(canonical_id, {}) if canonical_id else {}
+                    if not (
+                        isinstance(canonical, dict)
+                        and _text(canonical.get("displayName"))
+                    ):
+                        retained.append(issue)
+                    continue
+                if code == "duplicate_entry":
+                    if not self.issues_for_range(
+                        [issue], preview.start_date, preview.end_date
+                    ):
+                        retained.append(issue)
+                    continue
+                retained.append(issue)
             source_index = {
                 (
                     item.get("date"), item.get("period"), item.get("subjectRaw"),
@@ -1639,8 +1786,11 @@ class TimetableService:
             preview = self.previews.get(token)
             if preview is None:
                 raise TimetableError("確認内容の有効期限が切れました。Excelをもう一度読み込んでください。", code="preview_expired", status=404)
-            blocking = [issue for issue in preview.issues if issue["severity"] == "blocking"]
-            warnings = [issue for issue in preview.issues if issue["severity"] == "warning"]
+            save_issues = self.issues_for_range(
+                preview.issues, preview.start_date, preview.end_date
+            )
+            blocking = [issue for issue in save_issues if issue["severity"] == "blocking"]
+            warnings = [issue for issue in save_issues if issue["severity"] == "warning"]
             if blocking:
                 raise TimetableError("解決が必要な項目が残っているため保存できません。", code="blocking_issues", status=409)
             if warnings and not warnings_acknowledged:

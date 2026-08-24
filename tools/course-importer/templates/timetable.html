@@ -66,6 +66,7 @@
           <div id="review-counts" class="timetable-counts"></div>
         </div>
         <p id="review-summary" class="dashboard-status-summary"></p>
+        <p id="all-issues-summary" class="timetable-scope-summary"></p>
         <div id="issue-overview" class="timetable-issue-overview" aria-label="解析結果の分類">
           <section class="timetable-overview-card timetable-overview-card--blocking">
             <h3>解決が必要</h3>
@@ -123,11 +124,17 @@
           <section aria-labelledby="issues-heading">
             <div class="timetable-subheading">
               <h3 id="issues-heading">対応・確認する項目</h3>
-              <select id="issue-filter" aria-label="確認事項の絞り込み">
-                <option value="all">解決必須と確認推奨</option>
-                <option value="blocking">解決が必要</option>
-                <option value="warning">確認推奨</option>
-              </select>
+              <div class="timetable-issue-filters">
+                <select id="issue-scope-filter" aria-label="確認事項の対象範囲">
+                  <option value="range">今回の保存期間</option>
+                  <option value="workbook">Excel全体</option>
+                </select>
+                <select id="issue-filter" aria-label="確認事項の絞り込み">
+                  <option value="all">解決必須と確認推奨</option>
+                  <option value="blocking">解決が必要</option>
+                  <option value="warning">確認推奨</option>
+                </select>
+              </div>
             </div>
             <div id="issue-list" class="timetable-list"></div>
           </section>

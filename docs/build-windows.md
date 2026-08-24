@@ -29,7 +29,9 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\course-importer\bu
 
 ビルドはPyInstallerの `--onefile --noconsole` を使用します。`templates/` と `static/` はexeへ同梱します。更新対象の `data/`、JSON Schema、`runtime/`、`backups/`、設定はexe内へ入れず、リポジトリ内の書き込み可能な場所を使用します。そのため、exeは `tools\course-importer\dist\` に置いたまま起動してください。
 
-ClassView固有の設定はGit管理されたPowerShellスクリプトに記載しています。PyInstallerが生成する `.spec`、`build/`、過去版の `*.previous.exe` は再生成可能な中間・保管ファイルなのでGit管理しません。`dist/ClassView管理ツール.exe` だけを現行の配布用ビルドとして管理します。学校のExcel原本、`runtime/`、ログ、バックアップはexeへ同梱せず、Git管理対象外のままです。
+ClassView固有の設定はGit管理されたPowerShellスクリプトに記載しています。PyInstallerが生成する `.spec`、`build/`、過去版の `*.previous.exe` は再生成可能な中間・保管ファイルなのでGit管理しません。`dist/ClassView管理ツール.exe` だけを現行の配布用ビルドとして管理します。
+
+clone直後の時間割管理では、確認済みの非機密対応を`defaults/timetable-config.json`から読み込み、前回スナップショットを公開済みの`data/timetable/`から復元します。学校のExcel原本、受講者の個別回答、`runtime/`、ログ、バックアップはexeへ同梱せず、Git管理対象外のままです。これらの運用データをGitHubへ載せることなく、現在のコード・公開データ・時間割対応・exeを別PCへ引き継げます。
 
 ## 起動確認
 

@@ -8,7 +8,7 @@ HTML・CSS・JavaScriptだけで構成された静的サイトです。npm、フ
 
 ## 現在実装されている機能
 
-- 8件のサンプル授業を表示する授業一覧
+- 現在登録済みの57件の授業を表示する授業一覧
 - 授業名、概要、分野、学習内容、身につく知識や技術を対象としたキーワード検索
 - 分野と授業形式による絞り込み
 - 検索と2種類の絞り込みの併用
@@ -26,6 +26,7 @@ HTML・CSS・JavaScriptだけで構成された静的サイトです。npm、フ
 - Google Forms回答CSVの読込、授業・年度別集計、個別回答、要確認状態を扱う受講者フィードバック管理
 - ローカル管理ツールによる制作物の追加、編集、削除、並び替え、掲載確認、公開前プレビュー
 - 学校の時間割Excelを正本とする、差分・警告確認付きの月別時間割JSON生成
+- 日別・週別を切り替えられる学生向け時間割ページ
 
 公開サイト側のログイン、口コミ投稿、管理画面、データベースは実装していません。授業管理はlocalhostで動くローカル専用ツールとして提供します。
 
@@ -35,13 +36,15 @@ HTML・CSS・JavaScriptだけで構成された静的サイトです。npm、フ
 ClassView/
 ├─ index.html             # 授業一覧・検索ページ
 ├─ course.html            # 授業詳細ページ
+├─ timetable.html         # 学生向け時間割ページ
 ├─ css/
 │  └─ style.css          # 一覧と詳細で共通のデザイン
 ├─ js/
 │  ├─ course-list.js     # 一覧表示、検索、絞り込み
 │  ├─ course-detail.js   # 授業IDの取得と詳細表示
 │  ├─ course-works.js    # 実際の制作物の取得、表示、画像拡大
-│  └─ feedback-form.js   # 共通Google Form設定と事前入力URL生成
+│  ├─ feedback-form.js   # 共通Google Form設定と事前入力URL生成
+│  └─ timetable.js       # 公開時間割の取得、日別・週別表示
 ├─ data/
 │  ├─ courses.json       # 全授業の一覧・詳細データ
 │  ├─ archived-courses.json # 公開対象外のアーカイブ授業
@@ -77,6 +80,18 @@ python -m http.server 8000
 ```
 
 その後、ブラウザで `http://localhost:8000/` を開きます。HTMLファイルを直接ダブルクリックして開く方法では、ブラウザの制限によりJSONを読み込めない場合があります。
+
+## 別のWindows PCへの引き継ぎ
+
+GitHubの`main`ブランチをcloneすると、現在の公開サイト、登録済み授業、2025年4月21日〜25日の公開時間割、時間割対応の初期設定、管理ツールのソース、動作確認済みのWindows版exeをまとめて取得できます。
+
+```text
+git clone https://github.com/rara2g4/ClassView.git
+```
+
+clone後は、`tools/course-importer/dist/ClassView管理ツール.exe`をリポジトリ内のその場所から起動してください。別PCに`runtime/timetable/config.json`がまだ存在しない場合は、Git管理された`tools/course-importer/defaults/timetable-config.json`を初期値として使用します。前回の時間割スナップショットがない場合も、Git管理された`data/timetable/`から復元して差分比較できます。
+
+生の時間割Excel、受講者フィードバックの個別回答、バックアップ、ログ、PC固有のruntime状態は、個人情報と運用データを守るためcloneには含まれません。現在のコード・公開データ・非機密の対応設定はcloneだけで引き継げますが、次回の実時間割取込には学校で管理しているExcel原本を別途選択してください。
 
 ## シラバスインポーター
 

@@ -115,6 +115,32 @@ img {
   font-size: 0.85rem;
 }
 
+.site-navigation {
+  display: flex;
+  align-items: center;
+  gap: 6px 24px;
+}
+
+.site-navigation__link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  border-bottom: 2px solid transparent;
+  color: var(--color-subtle);
+  font-size: 0.85rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.site-navigation__link:hover {
+  color: var(--color-accent);
+}
+
+.site-navigation__link[aria-current="page"] {
+  border-bottom-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
 .back-link:hover {
   color: var(--color-accent);
 }
@@ -749,6 +775,309 @@ img {
   font-size: 0.8rem;
 }
 
+.timetable-page {
+  --timetable-period-width: 9rem;
+}
+
+.timetable-header {
+  max-width: var(--reading-width);
+}
+
+.timetable-header h1 {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3.1rem);
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+}
+
+.timetable-header > p:last-child {
+  margin: 18px 0 0;
+  color: var(--color-subtle);
+}
+
+.timetable-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px 28px;
+  margin-top: 36px;
+  padding-block: 18px;
+  border-block: 1px solid var(--color-line);
+}
+
+.timetable-view-switch,
+.timetable-date-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.timetable-switch-button,
+.timetable-navigation-button {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid #b8c3c8;
+  border-radius: 2px;
+  background: var(--color-white);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.timetable-switch-button:hover,
+.timetable-navigation-button:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.timetable-switch-button[aria-pressed="true"] {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-white);
+}
+
+.timetable-results {
+  margin-top: 38px;
+}
+
+.timetable-date-heading {
+  margin: 0 0 20px;
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  line-height: 1.45;
+}
+
+.timetable-content {
+  min-width: 0;
+}
+
+.timetable-day-schedule {
+  border-top: 1px solid var(--color-line);
+}
+
+.timetable-period {
+  display: grid;
+  grid-template-columns: var(--timetable-period-width) minmax(0, 1fr);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.timetable-period__heading {
+  display: grid;
+  align-content: start;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: 8px;
+  padding: 22px 16px 22px 0;
+}
+
+.timetable-period__number {
+  color: var(--color-accent);
+  font-size: 0.75rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+}
+
+.timetable-period__label {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.timetable-period__time {
+  display: block;
+  margin-top: 3px;
+  color: var(--color-subtle);
+  font-size: 0.72rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.timetable-period__entries {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  align-items: start;
+  gap: 14px;
+  min-width: 0;
+  padding: 18px 0 18px 22px;
+  border-left: 1px solid var(--color-line);
+}
+
+.timetable-period__empty,
+.timetable-mobile-day__empty {
+  margin: 0;
+  color: var(--color-subtle);
+  font-size: 0.86rem;
+}
+
+.timetable-entry {
+  min-width: 0;
+  padding: 11px 13px;
+  border-left: 3px solid var(--color-accent);
+  background: var(--color-surface);
+}
+
+.timetable-entry__labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+
+.timetable-entry__badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border: 1px solid #b8c3c8;
+  color: var(--color-subtle);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.timetable-entry__badge--tentative {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.timetable-entry__title {
+  margin: 0;
+  font-size: 0.94rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.timetable-entry__link {
+  color: var(--color-text);
+  font-weight: 700;
+  text-decoration-color: var(--color-accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+}
+
+.timetable-entry__link:hover {
+  color: var(--color-accent);
+}
+
+.timetable-entry__facts {
+  display: grid;
+  gap: 3px;
+  margin: 8px 0 0;
+}
+
+.timetable-entry__fact {
+  display: grid;
+  grid-template-columns: 2.6rem minmax(0, 1fr);
+  gap: 7px;
+  font-size: 0.75rem;
+}
+
+.timetable-entry__fact dt {
+  color: var(--color-subtle);
+}
+
+.timetable-entry__fact dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.timetable-empty-state {
+  margin-top: 0;
+}
+
+.timetable-week-table-wrapper {
+  max-width: 100%;
+  overflow-x: auto;
+  border-block: 1px solid var(--color-line);
+}
+
+.timetable-week-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.82rem;
+}
+
+.timetable-week-table th,
+.timetable-week-table td {
+  padding: 11px;
+  border-right: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+  vertical-align: top;
+  text-align: left;
+}
+
+.timetable-week-table tr:last-child > * {
+  border-bottom: 0;
+}
+
+.timetable-week-table tr > *:last-child {
+  border-right: 0;
+}
+
+.timetable-week-table thead th {
+  background: var(--color-surface);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.timetable-week-table__period-heading,
+.timetable-week-table__period {
+  width: 7.5rem;
+}
+
+.timetable-week-table__period strong,
+.timetable-week-table__period span {
+  display: block;
+}
+
+.timetable-week-table__period span {
+  margin-top: 3px;
+  color: var(--color-subtle);
+  font-size: 0.68rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.timetable-entry--compact {
+  padding: 8px 9px;
+  background: var(--color-white);
+}
+
+.timetable-entry--compact + .timetable-entry--compact {
+  margin-top: 9px;
+}
+
+.timetable-entry--compact .timetable-entry__title {
+  font-size: 0.78rem;
+}
+
+.timetable-entry--compact .timetable-entry__fact {
+  grid-template-columns: 2.3rem minmax(0, 1fr);
+  font-size: 0.68rem;
+}
+
+.timetable-week-table__empty {
+  color: #98a2a7;
+}
+
+.timetable-week-mobile {
+  display: none;
+}
+
+.timetable-notice {
+  max-width: var(--reading-width);
+  margin-top: 40px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-line);
+  color: var(--color-subtle);
+  font-size: 0.78rem;
+}
+
+.timetable-notice p {
+  margin: 0;
+}
+
+.timetable-updated-at {
+  margin-top: 3px !important;
+}
+
 .loading,
 .error-message {
   margin: 0;
@@ -883,6 +1212,65 @@ img {
   .course-works-grid {
     gap-block: 26px;
   }
+
+  .timetable-header h1 {
+    font-size: clamp(1.8rem, 9vw, 2.35rem);
+  }
+
+  .timetable-toolbar {
+    display: grid;
+  }
+
+  .timetable-date-navigation {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .timetable-navigation-button {
+    padding-inline: 8px;
+  }
+
+  .timetable-period {
+    grid-template-columns: 1fr;
+  }
+
+  .timetable-period__heading {
+    padding: 16px 0 8px;
+  }
+
+  .timetable-period__entries {
+    padding: 4px 0 16px;
+    border-left: 0;
+  }
+
+  .timetable-week-desktop {
+    display: none;
+  }
+
+  .timetable-week-mobile {
+    display: grid;
+    gap: 30px;
+  }
+
+  .timetable-mobile-day {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .timetable-mobile-day__heading {
+    margin: 0;
+    padding: 14px 0 8px;
+    color: var(--color-accent);
+    font-size: 1.05rem;
+  }
+
+  .timetable-mobile-period {
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .timetable-mobile-day__empty {
+    padding: 8px 0 16px;
+  }
 }
 
 @media (max-width: 360px) {
@@ -900,6 +1288,15 @@ img {
     font-size: 1.1rem;
   }
 
+  .site-navigation {
+    gap: 12px;
+  }
+
+  .site-navigation__link {
+    min-height: 40px;
+    font-size: 0.76rem;
+  }
+
   .back-link {
     font-size: 0.78rem;
   }
@@ -912,5 +1309,17 @@ img {
   .course-work__actions {
     display: grid;
     gap: 0;
+  }
+
+  .timetable-page {
+    --timetable-period-width: 100%;
+  }
+
+  .timetable-date-navigation {
+    grid-template-columns: 1fr 0.8fr 1fr;
+  }
+
+  .timetable-navigation-button {
+    font-size: 0.78rem;
   }
 }

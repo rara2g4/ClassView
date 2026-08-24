@@ -1,0 +1,78 @@
+{
+  "sheetName": "2025通年時間割",
+  "subjectMappings": {
+    "AI応用[A]": "ai-application-a",
+    "AfterEffects[A]": "after-effects-a",
+    "AfterEffects[C]": "after-effects-c",
+    "Blender[B][D]": "blender-b-d",
+    "FPS[B][D]": "fps-b-d",
+    "HTML・CSS[B]": "html-css-b",
+    "IT資格": "it-certification",
+    "Illustrator[B][D]": "illustrator-b-d",
+    "MOBA[B][D]": "moba-b-d",
+    "Office": "office",
+    "Photoshop[B][D]": "photoshop-b-d",
+    "Python応用[B]": "python-application-b",
+    "Unity[B]": "unity-b",
+    "VR制作[B][D]": "vr-production-b-d",
+    "WEB制作[A]": "web-production-a",
+    "イベント企画[C]": "event-planning-c",
+    "イベント企画・運営[A]": "event-planning-operation-a",
+    "イベント運営[C]": "event-operation-c",
+    "キャリアデザイン1": "career-design-1",
+    "キャリアデザイン[C](2年)": "career-design-c-grade-2",
+    "キャリアデザイン[C](3年)": "career-design-c-grade-3",
+    "ゲーム制作[B][D]": "game-development-b-d",
+    "コミュニケーション1": "communication-1",
+    "サーバー応用": "server-application",
+    "システム開発[A][C]": "system-development-a-c",
+    "セキュリティ基礎": "security-basics",
+    "セキュリティ運用": "security-operations",
+    "デザイン制作[A][C]": "design-production-a-c",
+    "デッサン[B]": "drawing-b",
+    "デッサン[D]": "drawing-d",
+    "データ分析[D]": "data-analysis-d",
+    "ドローンプログラミング": "drone-programming",
+    "ドローン応用[A]": "drone-application-a",
+    "ドローン概論": "drone-introduction",
+    "ドローン特講[B]": "drone-advanced-b",
+    "パイロットスキル[D]": "pilot-skills-d",
+    "プログラミング基礎": "programming-basics",
+    "マーケティング": "marketing",
+    "ロボット工学入門": "robotics-introduction",
+    "一般教養": "general-education",
+    "卒業制作[A][B]": "graduation-project-a-b",
+    "情報セキュリティ演習[B][D]": "information-security-practice-b-d",
+    "総合学習": "integrated-learning",
+    "進級制作[A][B]": "advancement-project-a-b",
+    "配信[A]": "streaming-a"
+  },
+  "timetableItemMappings": {
+    "スーツメイク講座": {
+      "type": "special",
+      "displayName": "スーツメイク講座",
+      "updatedAt": "2026-08-24T20:19:22Z"
+    }
+  },
+  "canonicalGroups": {
+    "group-b132514309ec": {
+      "displayName": "1組"
+    },
+    "group-4ff3b0291d58": {
+      "displayName": "2組"
+    },
+    "group-72c86594bf8f": {
+      "displayName": "A組"
+    },
+    "group-4d151e08148d": {
+      "displayName": "B組"
+    }
+  },
+  "groupMappings": {
+    "(1組)": "group-b132514309ec",
+    "(2組)": "group-4ff3b0291d58",
+    "(A組)": "group-72c86594bf8f",
+    "(B組)": "group-4d151e08148d"
+  },
+  "legacyGroupTags": {}
+}

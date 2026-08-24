@@ -36,6 +36,42 @@ class CourseDataContractTests(unittest.TestCase):
             with self.subTest(course_id=course["id"]):
                 self.assertEqual(list(self.validator.iter_errors(course)), [])
 
+    def test_clone_handoff_contains_valid_timetable_state(self):
+        courses = json.loads(
+            (REPO_ROOT / "data" / "courses.json").read_text(encoding="utf-8")
+        )
+        course_ids = {course["id"] for course in courses["courses"]}
+        config = json.loads(
+            (
+                REPO_ROOT
+                / "tools"
+                / "course-importer"
+                / "defaults"
+                / "timetable-config.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertTrue(config["subjectMappings"])
+        self.assertLessEqual(set(config["subjectMappings"].values()), course_ids)
+
+        timetable_root = REPO_ROOT / "data" / "timetable"
+        manifest = json.loads(
+            (timetable_root / "manifest.json").read_text(encoding="utf-8")
+        )
+        self.assertTrue(manifest["months"])
+        for month in manifest["months"]:
+            with self.subTest(month=month):
+                self.assertTrue((timetable_root / f"{month}.json").is_file())
+
+        self.assertTrue(
+            (
+                REPO_ROOT
+                / "tools"
+                / "course-importer"
+                / "dist"
+                / "ClassView管理ツール.exe"
+            ).is_file()
+        )
+
     def test_archived_courses_use_the_same_schema_and_stay_out_of_public_scripts(self):
         archived = json.loads(
             (REPO_ROOT / "data" / "archived-courses.json").read_text(encoding="utf-8")

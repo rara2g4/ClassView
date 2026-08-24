@@ -83,6 +83,82 @@ class TimetableServiceTests(unittest.TestCase):
             logger.removeHandler(handler)
         self.temp.cleanup()
 
+    def test_clone_uses_versioned_timetable_config_when_runtime_is_empty(self):
+        self.service.config_path.unlink()
+        self.service.default_config_path.parent.mkdir(parents=True)
+        self.service.default_config_path.write_text(
+            json.dumps(
+                {
+                    "sheetName": "引き継ぎ用時間割",
+                    "subjectMappings": {"Webプログラミング": "web-programming"},
+                    "timetableItemMappings": {},
+                    "canonicalGroups": {"group-a": {"displayName": "A組"}},
+                    "groupMappings": {"(A組)": "group-a"},
+                    "legacyGroupTags": {},
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+
+        config = self.service._config()
+
+        self.assertEqual(config["sheetName"], "引き継ぎ用時間割")
+        self.assertEqual(config["subjectMappings"]["Webプログラミング"], "web-programming")
+        self.assertFalse(self.service.config_path.exists())
+
+    def test_clone_reconstructs_previous_snapshot_from_public_timetable(self):
+        self.service.public_root.mkdir(parents=True)
+        (self.service.public_root / "manifest.json").write_text(
+            json.dumps(
+                {
+                    "schemaVersion": 1,
+                    "academicYear": "2025",
+                    "updatedAt": "2026-08-24T22:04:56Z",
+                    "version": "test-version",
+                    "months": ["2025-04"],
+                }
+            ),
+            encoding="utf-8",
+        )
+        (self.service.public_root / "2025-04.json").write_text(
+            json.dumps(
+                {
+                    "schemaVersion": 1,
+                    "yearMonth": "2025-04",
+                    "days": {
+                        "2025-04-21": [
+                            {
+                                "period": 1,
+                                "courseId": "web-programming",
+                                "subjectRaw": "Webプログラミング",
+                                "subjectName": "Webプログラミング",
+                                "grades": [1],
+                                "gradeRaw": "1",
+                                "groupTags": [],
+                                "instructors": [],
+                                "rooms": ["教室1"],
+                                "kind": "class",
+                                "status": "confirmed",
+                                "entryId": "tt-test",
+                            }
+                        ]
+                    },
+                },
+                ensure_ascii=False,
+            ),
+            encoding="utf-8",
+        )
+
+        entries = self.service._load_snapshot_entries()
+        status = self.service.status()
+
+        self.assertEqual(entries[0]["date"], "2025-04-21")
+        self.assertEqual(entries[0]["subjectBaseName"], "Webプログラミング")
+        self.assertEqual(entries[0]["courseVariantTags"], [])
+        self.assertEqual(status["entryCount"], 1)
+        self.assertEqual(status["lastImportedAt"], "2026-08-24T22:04:56Z")
+
     @staticmethod
     def workbook_bytes(*, unknown_subject: bool = False, suspicious_room: bool = False) -> io.BytesIO:
         workbook = Workbook()
@@ -312,6 +388,186 @@ class TimetableServiceTests(unittest.TestCase):
             Draft202012Validator(schema).validate(document)
         self.assertTrue(Path(result["backupPath"]).is_dir())
 
+    def test_issue_range_is_inclusive_and_excludes_adjacent_dates(self):
+        issues = [
+            self.service._issue("blocking", "unregistered_subject", "前日", date_value=date(2025, 4, 20)),
+            self.service._issue("blocking", "unregistered_subject", "開始日", date_value=date(2025, 4, 21)),
+            self.service._issue("blocking", "unregistered_subject", "終了日", date_value=date(2025, 4, 25)),
+            self.service._issue("blocking", "unregistered_subject", "翌日", date_value=date(2025, 4, 26)),
+        ]
+        scoped = self.service.issues_for_range(
+            issues, date(2025, 4, 21), date(2025, 4, 25)
+        )
+        self.assertEqual([item["message"] for item in scoped], ["開始日", "終了日"])
+
+    def test_deduplicated_issue_keeps_all_occurrence_dates_for_range_checks(self):
+        issues = self.service._deduplicate_issues([
+            self.service._issue(
+                "blocking", "unregistered_subject", "未登録の科目があります: Java[A]",
+                date_value=date(2025, 5, 10), extra={"subjectName": "Java[A]"},
+            ),
+            self.service._issue(
+                "blocking", "unregistered_subject", "未登録の科目があります: Java[A]",
+                date_value=date(2025, 4, 23), extra={"subjectName": "Java[A]"},
+            ),
+        ])
+        self.assertEqual(len(issues), 1)
+        self.assertEqual(issues[0]["dates"], ["2025-04-23", "2025-05-10"])
+        self.assertEqual(
+            self.service.issues_for_range(
+                issues, date(2025, 4, 21), date(2025, 4, 25)
+            ),
+            issues,
+        )
+
+    def test_global_structural_issue_applies_but_unknown_date_less_issue_does_not(self):
+        structural = self.service._issue(
+            "blocking", "unexpected_structure", "Excel構造を確認できません。"
+        )
+        local_without_date = self.service._issue(
+            "blocking", "unregistered_subject", "日付を持たない局所項目"
+        )
+        scoped = self.service.issues_for_range(
+            [structural, local_without_date], date(2025, 4, 21), date(2025, 4, 25)
+        )
+        self.assertEqual(scoped, [structural])
+        self.assertEqual(structural["scope"], "global")
+        self.assertNotIn("scope", local_without_date)
+
+    def test_preview_keeps_workbook_issues_separate_from_save_range(self):
+        analyzed = self.analyze()
+        preview = self.service.previews[analyzed["token"]]
+        outside_blocking = self.service._issue(
+            "blocking", "unregistered_subject", "5月の未登録科目",
+            date_value=date(2025, 5, 10),
+        )
+        inside_warning = self.service._issue(
+            "warning", "tentative", "今回期間の確認事項",
+            date_value=date(2025, 4, 23),
+        )
+        outside_reference = self.service._issue(
+            "reference", "supplemental_info", "期間外の参考情報",
+            date_value=date(2025, 6, 1),
+        )
+        preview.issues = [outside_blocking, inside_warning, outside_reference]
+        payload = self.service.get_preview(analyzed["token"])
+        self.assertEqual(payload["blockingCount"], 1)
+        self.assertEqual(payload["rangeBlockingCount"], 0)
+        self.assertEqual(payload["outsideRangeBlockingCount"], 1)
+        self.assertEqual(payload["rangeWarningCount"], 1)
+        self.assertEqual(payload["referenceCount"], 1)
+        self.assertEqual(payload["rangeReferenceCount"], 0)
+        self.assertTrue(payload["canSave"])
+        self.assertEqual(payload["issues"], preview.issues)
+        self.assertEqual(payload["rangeIssues"], [inside_warning])
+
+    def test_save_ignores_outside_blocking_and_warning(self):
+        analyzed = self.analyze()
+        preview = self.service.previews[analyzed["token"]]
+        preview.issues = [
+            self.service._issue(
+                "blocking", "unregistered_subject", "5月の未登録科目",
+                date_value=date(2025, 5, 10),
+            ),
+            self.service._issue(
+                "warning", "tentative", "5月の確認事項",
+                date_value=date(2025, 5, 11),
+            ),
+        ]
+        result = self.service.save_preview(analyzed["token"], False)
+        self.assertTrue(result["success"])
+
+    def test_save_requires_inside_warning_and_rejects_inside_or_global_blocking(self):
+        warning_preview = self.analyze()
+        self.service.previews[warning_preview["token"]].issues = [
+            self.service._issue(
+                "warning", "tentative", "期間内warning",
+                date_value=date(2025, 4, 23),
+            )
+        ]
+        with self.assertRaises(TimetableError) as warning_error:
+            self.service.save_preview(warning_preview["token"], False)
+        self.assertEqual(warning_error.exception.code, "warnings_not_acknowledged")
+        self.assertTrue(self.service.save_preview(warning_preview["token"], True)["success"])
+
+        for issue in (
+            self.service._issue(
+                "blocking", "unregistered_subject", "期間内blocking",
+                date_value=date(2025, 4, 23),
+            ),
+            self.service._issue(
+                "blocking", "unexpected_structure", "全体構造blocking"
+            ),
+        ):
+            analyzed = self.analyze()
+            self.service.previews[analyzed["token"]].issues = [issue]
+            with self.assertRaises(TimetableError) as blocking_error:
+                self.service.save_preview(analyzed["token"], True)
+            self.assertEqual(blocking_error.exception.code, "blocking_issues")
+
+    def test_expanding_or_selecting_annual_range_reactivates_later_issue(self):
+        later_issue = self.service._issue(
+            "blocking", "unregistered_subject", "Java[A]未登録",
+            date_value=date(2025, 5, 10),
+        )
+        april = self.service.issues_for_range(
+            [later_issue], date(2025, 4, 21), date(2025, 4, 25)
+        )
+        expanded = self.service.issues_for_range(
+            [later_issue], date(2025, 4, 21), date(2025, 5, 31)
+        )
+        annual = self.service.issues_for_range(
+            [later_issue], date(2025, 4, 1), date(2026, 3, 31)
+        )
+        self.assertEqual(april, [])
+        self.assertEqual(expanded, [later_issue])
+        self.assertEqual(annual, [later_issue])
+
+    def test_save_api_uses_the_same_range_scoped_validation(self):
+        application = create_app(self.repo, self.work)
+        timetable = application.config["TIMETABLE_SERVICE"]
+        client = application.test_client()
+
+        outside = timetable.analyze(
+            self.workbook_bytes(), "API範囲外.xlsx", "2025-04-21", "2025-04-27",
+            sheet_name="2025通年時間割",
+        )
+        timetable.previews[outside["token"]].issues = [
+            timetable._issue(
+                "blocking", "unregistered_subject", "5月の未登録科目",
+                date_value=date(2025, 5, 10),
+            )
+        ]
+        saved = client.post("/api/timetable/save", json={
+            "token": outside["token"], "warningsAcknowledged": False,
+        })
+        self.assertEqual(saved.status_code, 200)
+
+        inside = timetable.analyze(
+            self.workbook_bytes(), "API範囲内.xlsx", "2025-04-21", "2025-04-27",
+            sheet_name="2025通年時間割",
+        )
+        timetable.previews[inside["token"]].issues = [
+            timetable._issue(
+                "blocking", "unregistered_subject", "期間内の未登録科目",
+                date_value=date(2025, 4, 23),
+            )
+        ]
+        rejected = client.post("/api/timetable/save", json={
+            "token": inside["token"], "warningsAcknowledged": True,
+        })
+        self.assertEqual(rejected.status_code, 409)
+        self.assertEqual(rejected.get_json()["code"], "blocking_issues")
+
+    def test_admin_ui_uses_range_counts_for_save_controls(self):
+        script = (TOOL_ROOT / "static" / "timetable.js").read_text(encoding="utf-8")
+        template = (TOOL_ROOT / "templates" / "timetable.html").read_text(encoding="utf-8")
+        self.assertIn('const saveControls = saveControlState(payload)', script)
+        self.assertIn('saveControls.saveDisabled', script)
+        self.assertIn('saveControls.warningConfirmationRequired', script)
+        self.assertIn('id="issue-scope-filter"', template)
+        self.assertIn('id="all-issues-summary"', template)
+
     def test_private_write_failure_restores_public_and_snapshot(self):
         self.service.public_root.mkdir(parents=True)
         old_manifest = {"old": True}
@@ -504,6 +760,25 @@ class TimetableServiceTests(unittest.TestCase):
         reanalyzed = self.analyze_subjects(["スーツ講座【外部講師】"])
         self.assertFalse(any(
             issue["code"] == "unregistered_subject" for issue in reanalyzed["issues"]
+        ))
+
+    def test_refresh_keeps_unrelated_outside_range_issues(self):
+        preview = self.analyze_subjects(["スーツ講座【外部講師】"])
+        stored = self.service.previews[preview["token"]]
+        stored.issues.append(self.service._issue(
+            "blocking", "unregistered_subject", "未登録の科目があります: 将来科目",
+            date_value=date(2025, 5, 10), extra={"subjectName": "将来科目"},
+        ))
+        stored.issues = self.service._deduplicate_issues(stored.issues)
+
+        self.service.save_item_mapping("スーツ講座", "special")
+        refreshed = self.service.refresh_preview(preview["token"])
+
+        self.assertEqual(refreshed["blockingCount"], 1)
+        self.assertEqual(refreshed["rangeBlockingCount"], 0)
+        self.assertEqual(refreshed["outsideRangeBlockingCount"], 1)
+        self.assertTrue(any(
+            issue.get("subjectName") == "将来科目" for issue in refreshed["issues"]
         ))
 
     def test_event_holiday_and_other_explicit_mappings_do_not_require_courses(self):
