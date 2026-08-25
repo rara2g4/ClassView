@@ -110,20 +110,24 @@
     };
   };
 
-  const initialExpandedDateKey = (dates, selectedDate, todayDate) => {
-    const dateKeys = Array.isArray(dates) ? dates.map(formatDateKey) : [];
-    const selectedKey = selectedDate ? formatDateKey(selectedDate) : "";
-    if (dateKeys.includes(selectedKey)) return selectedKey;
-    const todayKey = todayDate ? formatDateKey(todayDate) : "";
-    if (dateKeys.includes(todayKey)) return todayKey;
-    return dateKeys[0] || "";
-  };
-
   const toggleExpandedDateKeys = (dateKeys, targetKey) => {
     const next = new Set(Array.isArray(dateKeys) ? dateKeys : []);
     if (next.has(targetKey)) next.delete(targetKey);
     else next.add(targetKey);
     return [...next];
+  };
+
+  const expandedDateKeysForWeek = (
+    currentWeekKey,
+    expandedDateKeys,
+    nextWeekKey,
+    visibleDateKeys,
+  ) => {
+    if (!nextWeekKey || currentWeekKey !== nextWeekKey) return [];
+    const visibleKeys = new Set(Array.isArray(visibleDateKeys) ? visibleDateKeys : []);
+    return Array.isArray(expandedDateKeys)
+      ? expandedDateKeys.filter((dateKey) => visibleKeys.has(dateKey))
+      : [];
   };
 
   const courseDetailUrl = (courseId) =>
@@ -135,9 +139,9 @@
     addDays,
     compactEntryData,
     courseDetailUrl,
+    expandedDateKeysForWeek,
     formatDateKey,
     formatGrades,
-    initialExpandedDateKey,
     kindLabel,
     monthKey,
     parseCalendarDate,
@@ -168,6 +172,13 @@
     manifest: null,
     periods: null,
     monthCache: new Map(),
+    mobileWeekKey: "",
+    mobileExpandedDateKeys: [],
+  };
+
+  const resetMobileWeekExpansion = () => {
+    state.mobileWeekKey = "";
+    state.mobileExpandedDateKeys = [];
   };
 
   const element = (tagName, className = "", text = "") => {
@@ -415,17 +426,20 @@
 
   const renderWeekMobile = (dates, entriesByDate, periodKeys) => {
     const wrapper = element("div", "timetable-week-mobile");
-    const initiallyExpanded = initialExpandedDateKey(
-      dates,
-      state.selectedDate,
-      fromDate(new Date()),
+    const weekKey = dates.length ? formatDateKey(dates[0]) : "";
+    const visibleDateKeys = dates.map(formatDateKey);
+    state.mobileExpandedDateKeys = expandedDateKeysForWeek(
+      state.mobileWeekKey,
+      state.mobileExpandedDateKeys,
+      weekKey,
+      visibleDateKeys,
     );
-    let expandedDateKeys = initiallyExpanded ? [initiallyExpanded] : [];
+    state.mobileWeekKey = weekKey;
     dates.forEach((dateParts) => {
       const dateKey = formatDateKey(dateParts);
       const dayEntries = entriesByDate.get(dateKey) || [];
       const panelId = `timetable-mobile-day-${dateKey}`;
-      const isExpanded = dateKey === initiallyExpanded;
+      const isExpanded = state.mobileExpandedDateKeys.includes(dateKey);
       const day = element("section", "timetable-mobile-day");
       const heading = element("h3", "timetable-mobile-day__heading");
       const button = element("button", "timetable-mobile-day__toggle");
@@ -469,8 +483,11 @@
         });
       }
       button.addEventListener("click", () => {
-        expandedDateKeys = toggleExpandedDateKeys(expandedDateKeys, dateKey);
-        const nextExpanded = expandedDateKeys.includes(dateKey);
+        state.mobileExpandedDateKeys = toggleExpandedDateKeys(
+          state.mobileExpandedDateKeys,
+          dateKey,
+        );
+        const nextExpanded = state.mobileExpandedDateKeys.includes(dateKey);
         button.setAttribute("aria-expanded", String(nextExpanded));
         panel.hidden = !nextExpanded;
         action.textContent = nextExpanded ? "折りたたむ" : "開く";
@@ -543,6 +560,13 @@
   };
 
   const selectDate = (dateParts, { replace = false, updateHistory = true } = {}) => {
+    if (
+      state.mode === "week" &&
+      state.selectedDate &&
+      formatDateKey(startOfWeek(state.selectedDate)) !== formatDateKey(startOfWeek(dateParts))
+    ) {
+      resetMobileWeekExpansion();
+    }
     state.selectedDate = dateParts;
     if (updateHistory) updateUrl(replace);
     void render();
@@ -583,6 +607,7 @@
   weekButton.addEventListener("click", () => {
     if (state.mode === "week") return;
     state.mode = "week";
+    resetMobileWeekExpansion();
     updateNavigationLabels();
     updateUrl(true);
     void render();
@@ -595,8 +620,17 @@
   );
   todayButton.addEventListener("click", () => selectDate(fromDate(new Date())));
   window.addEventListener("popstate", () => {
-    state.selectedDate = initialDate();
-    state.mode = initialMode();
+    const nextSelectedDate = initialDate();
+    const nextMode = initialMode();
+    const weekChanged =
+      state.selectedDate &&
+      formatDateKey(startOfWeek(state.selectedDate)) !==
+        formatDateKey(startOfWeek(nextSelectedDate));
+    if (state.mode !== nextMode || (nextMode === "week" && weekChanged)) {
+      resetMobileWeekExpansion();
+    }
+    state.selectedDate = nextSelectedDate;
+    state.mode = nextMode;
     updateNavigationLabels();
     void render();
   });

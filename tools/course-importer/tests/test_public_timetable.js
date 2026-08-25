@@ -48,39 +48,49 @@ assert.equal(api.weekDayCount(weekdays, monday), 5);
 weekdays.set("2025-04-26", [{ period: 1 }]);
 assert.equal(api.weekDayCount(weekdays, monday), 7);
 
-const weekDates = Array.from({ length: 5 }, (_, index) => api.addDays(monday, index));
 assert.equal(
-  api.initialExpandedDateKey(
-    weekDates,
-    { year: 2025, month: 4, day: 23 },
-    { year: 2025, month: 4, day: 22 },
-  ),
-  "2025-04-23",
+  JSON.stringify(api.toggleExpandedDateKeys([], "2025-04-23")),
+  JSON.stringify(["2025-04-23"]),
 );
 assert.equal(
-  api.initialExpandedDateKey(
-    weekDates,
-    { year: 2025, month: 5, day: 1 },
-    { year: 2025, month: 4, day: 22 },
-  ),
-  "2025-04-22",
+  JSON.stringify(api.toggleExpandedDateKeys(["2025-04-23"], "2025-04-23")),
+  JSON.stringify([]),
 );
 assert.equal(
-  api.initialExpandedDateKey(
-    weekDates,
-    { year: 2025, month: 5, day: 1 },
-    { year: 2025, month: 5, day: 2 },
-  ),
-  "2025-04-21",
-);
-assert.equal(api.initialExpandedDateKey([], monday, monday), "");
-assert.equal(
-  JSON.stringify(api.toggleExpandedDateKeys(["2025-04-21"], "2025-04-22")),
-  JSON.stringify(["2025-04-21", "2025-04-22"]),
+  JSON.stringify(api.toggleExpandedDateKeys(["2025-04-21"], "2025-04-23")),
+  JSON.stringify(["2025-04-21", "2025-04-23"]),
 );
 assert.equal(
   JSON.stringify(api.toggleExpandedDateKeys(["2025-04-21", "2025-04-22"], "2025-04-21")),
   JSON.stringify(["2025-04-22"]),
+);
+assert.equal(
+  JSON.stringify(
+    api.expandedDateKeysForWeek(
+      "2025-04-21",
+      ["2025-04-21", "2025-04-23"],
+      "2025-04-21",
+      ["2025-04-21", "2025-04-22", "2025-04-23"],
+    ),
+  ),
+  JSON.stringify(["2025-04-21", "2025-04-23"]),
+);
+assert.equal(
+  JSON.stringify(
+    api.expandedDateKeysForWeek(
+      "2025-04-21",
+      ["2025-04-21"],
+      "2025-04-28",
+      ["2025-04-28", "2025-04-29"],
+    ),
+  ),
+  JSON.stringify([]),
+);
+assert.equal(
+  JSON.stringify(
+    api.expandedDateKeysForWeek("", [], "2025-04-21", ["2025-04-21"]),
+  ),
+  JSON.stringify([]),
 );
 
 const classEntry = api.compactEntryData({
@@ -126,6 +136,12 @@ assert.match(source, /periods\.json\?v=/);
 assert.match(source, /\$\{key\}\.json\?v=/);
 assert.match(source, /aria-expanded/);
 assert.match(source, /aria-controls/);
+assert.match(source, /mobileExpandedDateKeys: \[\]/);
+assert.match(source, /resetMobileWeekExpansion\(\)/);
+assert.match(source, /expandedDateKeysForWeek/);
+assert.match(source, /isExpanded \? "折りたたむ" : "開く"/);
+assert.match(source, /action\.textContent = nextExpanded \? "折りたたむ" : "開く"/);
+assert.equal(source.includes("initialExpandedDateKey"), false);
 assert.match(source, /searchParams\.set\("view", "week"\)/);
 assert.match(source, /params\.get\("view"\) === "week"/);
 assert.match(source, /createMobileWeekEntry/);

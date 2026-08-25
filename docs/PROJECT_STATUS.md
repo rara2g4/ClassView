@@ -1,16 +1,16 @@
 # ClassView Project Status
 
 Last verified:
-2026-08-25 15:29 JST
+2026-08-25 16:17 JST
 
 Verified against commit:
-`cc12805eddc5b653563457eb598b720af098dc5e`
+`a12e60559eaba4a8af7f2d6a495588b43d14c774`
 
 Branch:
 `main`
 
 Working tree at verification:
-開始時は `main` と `origin/main` がcommit `cc12805` で一致し、working treeはclean。現在は授業詳細導線、キャッシュ対策、root時間割化、授業一覧移行、スマートフォン週間導線改善の実装・文書・テスト差分が未commit。commit / push / 公開は未実施。復旧した `tools/course-importer/.venv/` はGit管理外。
+開始時は `main` と `origin/main` がcommit `a12e605` で一致し、working treeはclean。現在はスマートフォン週間accordionを全曜日collapsedで開始する実装・文書・テストの4ファイルが未commit。今回のcommit / push / 公開は未実施。復旧した `tools/course-importer/.venv/` はGit管理外。
 
 Purpose:
 この文書はPC間・Codexセッション間の引き継ぎ用。実コードと矛盾する場合は、Git・コード・テスト・runtime・公開データ・Excelを根拠に再監査する。
@@ -64,7 +64,7 @@ ClassViewは、学生が授業内容、対象学年、授業形式、授業回�
 - 学生向け時間割。デフォルト日表示、前日/今日/翌日、前週/今週/翌週、`?date=YYYY-MM-DD`、月跨ぎ、empty state、授業詳細リンク、special等の表示、responsive対応。
 - PC週間表示は週間モードだけ最大1480pxのwide layoutを使い、5日×時限表、可読性を上げた文字、曜日sticky headerを実装。1024px以下では時間割領域だけ横スクロールする。
 - 日表示・PC週間はcourseId付き授業名を正式な`<a href="course.html?id=...">`に統一。スマートフォン週間はcourseId付きcompact行全体を同じ詳細URLの`<a>`とし、授業単位の中間詳細展開を廃止。courseIdを持たないspecial等は矢印なしの非リンク。
-- スマートフォン週間表示は曜日単位のaccordionを維持。selected dateだけを初期展開し、複数日を同時に開ける。授業名・対象・group・教室をcompact表示し、授業行の1タップで詳細へ移動する。
+- スマートフォン週間表示は曜日単位のaccordionで、週間表示へ入った直後と週移動後は全曜日を折りたたむ。「開く / 折りたたむ」と`aria-expanded`を同期し、操作後は複数日を同時に開ける。授業名・対象・group・教室をcompact表示し、授業行の1タップで詳細へ移動する。
 - 週間表示はURLへ`view=week`を保持し、詳細ページからブラウザで戻っても同じ日付の週間表示と日別accordionへ復帰する。
 - `data/site-version.json`を`no-cache`で確認し、CSSとページJavaScriptへ同一の安定した`?v=<version>`を付与。`courses.json`と`course-works.json`は`no-cache`で再検証する。
 - 時間割manifestは`no-cache`で取得し、既存manifest `version`を`periods.json`と月別JSONのversion queryへ利用。同一ページ内の月別メモリcacheは維持。
@@ -102,7 +102,7 @@ ClassViewは、学生が授業内容、対象学年、授業形式、授業回�
 
 ## 6. In progress
 
-授業詳細導線、GitHub Pagesキャッシュ対策、root時間割化、授業一覧移行、スマートフォン週間の直接詳細導線はローカル実装・自動テスト・ブラウザ確認まで完了。commit / push / 公開はユーザー確認待ち。
+スマートフォン週間accordionの全曜日collapsed初期状態はローカル実装・自動テスト・ブラウザ確認まで完了。commit / push / 公開はユーザー確認待ち。
 
 ## 7. Not implemented
 
@@ -234,10 +234,12 @@ Browser verification at `http://127.0.0.1:8765/`、`courses.html`、`course.html
 - rootの`?date=2025-04-21`は日表示、12 entries・12 course links、「時間割」active。`timetable.html?date=2025-04-21`も同じ日付・日表示で動作。
 - 1440px PC週間は4/21～4/25、84 entries・83 course links、wide layout、ページ全体の横overflowなし。`Photoshop[B][D]`、`ドローン概論`、`After Effects[A]`の正式URLを実データで確認。
 - `courses.html`は57 cards・57授業名links・旧`course-card__link` 0件。1440px / 390pxで表示し、ページ全体の横overflowなし。授業名リンクから詳細へ遷移し、詳細ページの一覧戻り先が`courses.html`であることを確認。
-- 390px週間は5日accordion、selected dateだけ初期展開。courseId付き83行はcompact行全体のリンク、矢印83、授業単位の詳細button / 展開DOMは0件。
+- 390px週間は5日accordionを全曜日collapsedで開始し、`?date=2025-04-21`と`?date=2025-04-23`のどちらでも自動展開なし。courseId付き83行はcompact行全体のリンク、矢印83、授業単位の詳細button / 展開DOMは0件。
 - `スーツメイク講座`は特別授業badge付きの非リンク1行で、内部link・矢印とも0件。全5日accordionは個別に開閉可能。
-- 390pxの`Photoshop[B][D]`行から1タップで詳細へ直接遷移。戻ると`?date=2025-04-21&view=week`、週間表示、selected dateのaccordion展開へ復帰。
-- asset inventoryでCSSとページJSがsite version `20260825T0626236729072Z`を使用。ブラウザconsole error / warningは0件。
+- 曜日header全体のbuttonで「開く」→「折りたたむ」→「開く」と`aria-expanded`を同期。複数日展開を維持し、前週・次週へ移動した時は新しい週を全曜日collapsedで開始する。
+- 320 / 375 / 390pxは5日ともinitial collapsedでページ全体の横overflowなし。展開済み2日を375pxへ変更しても同じ画面上の展開stateを維持。
+- 768pxではPC週間表へ切り替わり、1440px PC週間は84 entries・83 course linksを維持。390px日表示も12 entries・12 course linksを維持。
+- asset inventoryでページJavaScriptがsite version `20260825T0710554206681Z`を使用。ブラウザconsole error / warningは0件。
 
 ## 10. Git-ignored required data
 
@@ -294,7 +296,7 @@ Browser verification at `http://127.0.0.1:8765/`、`courses.html`、`course.html
 | timetable公開データ | 2025-04の5日84件がGit管理済み | B | manifest/month JSON、commit `ac3ba08` |
 | 日表示 | 実装・ブラウザ確認済み | A | public JS/CSS/browser |
 | PC週間表示 | 5日×時限表を維持し、週間時のみ最大1480px、可読性改善、sticky headerを実装 | B | public JS/CSS/browser |
-| スマホ週間改善 | 曜日accordion、selected date初期展開、compact授業、タップ詳細を実装 | B | mobile browser実測、public JS/tests |
+| スマホ週間改善 | 曜日accordionの全日collapsed初期状態、複数日展開、compact授業、タップ詳細を実装 | B | mobile browser実測、public JS/tests |
 | localStorage個人化 | 未実装という認識と一致 | A | public JS、testで `localStorage` 不使用を確認 |
 | Windows exe | 現行exeがGit管理されclone直後から存在 | B | dist file、commit、build tests |
 | publish | 許可リスト、同期停止、安全なcommit/pushあり | A | publisher/tests |
