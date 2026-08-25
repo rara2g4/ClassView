@@ -45,8 +45,79 @@ assert.equal(api.weekDayCount(weekdays, monday), 5);
 weekdays.set("2025-04-26", [{ period: 1 }]);
 assert.equal(api.weekDayCount(weekdays, monday), 7);
 
+const weekDates = Array.from({ length: 5 }, (_, index) => api.addDays(monday, index));
+assert.equal(
+  api.initialExpandedDateKey(
+    weekDates,
+    { year: 2025, month: 4, day: 23 },
+    { year: 2025, month: 4, day: 22 },
+  ),
+  "2025-04-23",
+);
+assert.equal(
+  api.initialExpandedDateKey(
+    weekDates,
+    { year: 2025, month: 5, day: 1 },
+    { year: 2025, month: 4, day: 22 },
+  ),
+  "2025-04-22",
+);
+assert.equal(
+  api.initialExpandedDateKey(
+    weekDates,
+    { year: 2025, month: 5, day: 1 },
+    { year: 2025, month: 5, day: 2 },
+  ),
+  "2025-04-21",
+);
+assert.equal(api.initialExpandedDateKey([], monday, monday), "");
+assert.equal(
+  JSON.stringify(api.toggleExpandedDateKeys(["2025-04-21"], "2025-04-22")),
+  JSON.stringify(["2025-04-21", "2025-04-22"]),
+);
+assert.equal(
+  JSON.stringify(api.toggleExpandedDateKeys(["2025-04-21", "2025-04-22"], "2025-04-21")),
+  JSON.stringify(["2025-04-22"]),
+);
+
+const classEntry = api.compactEntryData({
+  subjectName: "情報デザイン",
+  grades: [1, 2],
+  gradeRaw: "1,2",
+  groupTags: ["A組", "B組"],
+  rooms: ["PC室"],
+  instructors: ["山田先生"],
+  courseId: "information-design",
+  kind: "class",
+});
+assert.equal(classEntry.title, "情報デザイン");
+assert.equal(classEntry.audience, "1・2年 / A組・B組");
+assert.equal(classEntry.room, "PC室");
+assert.equal(classEntry.instructor, "山田先生");
+assert.equal(classEntry.meta, "1・2年 / A組・B組 · PC室");
+assert.equal(classEntry.courseId, "information-design");
+assert.equal(classEntry.kind, "");
+
+const specialEntry = api.compactEntryData({
+  subjectName: "全校集会",
+  gradeRaw: "全学年",
+  kind: "event",
+});
+assert.equal(specialEntry.title, "全校集会");
+assert.equal(specialEntry.audience, "全学年");
+assert.equal(specialEntry.kind, "行事");
+assert.equal(specialEntry.courseId, null);
+
+const sparseEntry = api.compactEntryData();
+assert.equal(sparseEntry.title, "時間割項目");
+assert.equal(sparseEntry.meta, "");
+assert.equal(sparseEntry.instructor, "");
+
 assert.equal(source.includes("innerHTML"), false);
 assert.equal(source.includes("localStorage"), false);
 assert.match(source, /\.\/data\/timetable\//);
 assert.match(source, /course\.html\?id=/);
+assert.match(source, /aria-expanded/);
+assert.match(source, /aria-controls/);
+assert.match(source, /createMobileWeekEntry/);
 console.log("Public timetable tests passed.");

@@ -84,14 +84,59 @@
     return weekendHasEntries ? 7 : 5;
   };
 
+  const joinTextValues = (values, separator = "、") =>
+    Array.isArray(values)
+      ? values.filter((value) => typeof value === "string" && value.trim()).join(separator)
+      : "";
+
+  const compactEntryData = (entry = {}) => {
+    const audience = [
+      formatGrades(entry.grades, entry.gradeRaw),
+      joinTextValues(entry.groupTags, "・"),
+    ].filter(Boolean).join(" / ");
+    const room = joinTextValues(entry.rooms);
+    return {
+      title: typeof entry.subjectName === "string" && entry.subjectName.trim()
+        ? entry.subjectName
+        : "時間割項目",
+      kind: kindLabel(entry.kind),
+      audience,
+      room,
+      instructor: joinTextValues(entry.instructors),
+      meta: [audience, room].filter(Boolean).join(" · "),
+      courseId: typeof entry.courseId === "string" && entry.courseId
+        ? entry.courseId
+        : null,
+    };
+  };
+
+  const initialExpandedDateKey = (dates, selectedDate, todayDate) => {
+    const dateKeys = Array.isArray(dates) ? dates.map(formatDateKey) : [];
+    const selectedKey = selectedDate ? formatDateKey(selectedDate) : "";
+    if (dateKeys.includes(selectedKey)) return selectedKey;
+    const todayKey = todayDate ? formatDateKey(todayDate) : "";
+    if (dateKeys.includes(todayKey)) return todayKey;
+    return dateKeys[0] || "";
+  };
+
+  const toggleExpandedDateKeys = (dateKeys, targetKey) => {
+    const next = new Set(Array.isArray(dateKeys) ? dateKeys : []);
+    if (next.has(targetKey)) next.delete(targetKey);
+    else next.add(targetKey);
+    return [...next];
+  };
+
   const api = {
     addDays,
+    compactEntryData,
     formatDateKey,
     formatGrades,
+    initialExpandedDateKey,
     kindLabel,
     monthKey,
     parseCalendarDate,
     startOfWeek,
+    toggleExpandedDateKeys,
     weekDayCount,
   };
   global.ClassViewTimetable = api;
@@ -109,6 +154,7 @@
   const previousButton = document.querySelector("#previous-date-button");
   const todayButton = document.querySelector("#today-button");
   const nextButton = document.querySelector("#next-date-button");
+  const pageRoot = document.querySelector(".timetable-page");
 
   const state = {
     mode: "day",
@@ -125,10 +171,7 @@
     return node;
   };
 
-  const arrayText = (values, separator = "、") =>
-    Array.isArray(values)
-      ? values.filter((value) => typeof value === "string" && value.trim()).join(separator)
-      : "";
+  const arrayText = joinTextValues;
 
   const fetchJson = async (url) => {
     const response = await fetch(url, { cache: "no-store" });
@@ -223,6 +266,49 @@
       });
       item.append(list);
     }
+    return item;
+  };
+
+  const createMobileWeekEntry = (entry) => {
+    const data = compactEntryData(entry);
+    const item = element("article", "timetable-mobile-entry");
+    const details = element("details", "timetable-mobile-entry__details");
+    const summary = element("summary", "timetable-mobile-entry__summary");
+    const heading = element("span", "timetable-mobile-entry__heading");
+    const labels = element("span", "timetable-mobile-entry__labels");
+    if (data.kind) {
+      labels.append(createBadge(data.kind, "timetable-entry__badge--kind"));
+    }
+    heading.append(labels, element("span", "timetable-mobile-entry__title", data.title));
+    summary.append(heading);
+    if (data.meta) {
+      summary.append(element("span", "timetable-mobile-entry__meta", data.meta));
+    }
+    details.append(summary);
+
+    const expanded = element("div", "timetable-mobile-entry__expanded");
+    const facts = [
+      ["対象", data.audience],
+      ["講師", data.instructor],
+      ["教室", data.room],
+    ].filter(([, value]) => value);
+    if (facts.length) {
+      const list = element("dl", "timetable-mobile-entry__facts");
+      facts.forEach(([label, value]) => {
+        const row = element("div", "timetable-mobile-entry__fact");
+        row.append(element("dt", "", label), element("dd", "", value));
+        list.append(row);
+      });
+      expanded.append(list);
+    }
+    if (data.courseId) {
+      const link = element("a", "timetable-mobile-entry__link", "授業詳細を見る");
+      link.href = `course.html?id=${encodeURIComponent(data.courseId)}`;
+      link.setAttribute("aria-label", `${data.title}の授業詳細を見る`);
+      expanded.append(link);
+    }
+    details.append(expanded);
+    item.append(details);
     return item;
   };
 
@@ -333,24 +419,67 @@
 
   const renderWeekMobile = (dates, entriesByDate, periodKeys) => {
     const wrapper = element("div", "timetable-week-mobile");
+    const initiallyExpanded = initialExpandedDateKey(
+      dates,
+      state.selectedDate,
+      fromDate(new Date()),
+    );
+    let expandedDateKeys = initiallyExpanded ? [initiallyExpanded] : [];
     dates.forEach((dateParts) => {
+      const dateKey = formatDateKey(dateParts);
+      const dayEntries = entriesByDate.get(dateKey) || [];
+      const panelId = `timetable-mobile-day-${dateKey}`;
+      const isExpanded = dateKey === initiallyExpanded;
       const day = element("section", "timetable-mobile-day");
-      day.append(element("h3", "timetable-mobile-day__heading", formatShortDate(dateParts)));
-      const dayEntries = entriesByDate.get(formatDateKey(dateParts)) || [];
+      const heading = element("h3", "timetable-mobile-day__heading");
+      const button = element("button", "timetable-mobile-day__toggle");
+      button.type = "button";
+      button.setAttribute("aria-expanded", String(isExpanded));
+      button.setAttribute("aria-controls", panelId);
+      const headingText = element("span", "timetable-mobile-day__heading-text");
+      headingText.append(
+        element(
+          "span",
+          "timetable-mobile-day__date",
+          `${dateParts.month}/${dateParts.day} ${DAY_NAMES[toLocalDate(dateParts).getDay()]}曜日`,
+        ),
+        element("span", "timetable-mobile-day__count", `${dayEntries.length}件`),
+      );
+      const action = element(
+        "span",
+        "timetable-mobile-day__action",
+        isExpanded ? "折りたたむ" : "開く",
+      );
+      action.setAttribute("aria-hidden", "true");
+      button.append(headingText, action);
+      heading.append(button);
+      day.append(heading);
+
+      const panel = element("div", "timetable-mobile-day__panel");
+      panel.id = panelId;
+      panel.hidden = !isExpanded;
       if (!dayEntries.length) {
-        day.append(element("p", "timetable-mobile-day__empty", "この日の登録はありません。"));
+        panel.append(element("p", "timetable-mobile-day__empty", "この日の登録はありません。"));
       } else {
         periodKeys.forEach((key) => {
           const entries = dayEntries.filter((entry) => String(entry.period) === key);
           if (!entries.length) return;
           const period = element("section", "timetable-mobile-period");
           period.append(createPeriodHeader(key, "h4"));
-          const list = element("div", "timetable-period__entries");
-          entries.forEach((entry) => list.append(createEntry(entry)));
+          const list = element("div", "timetable-mobile-period__entries");
+          entries.forEach((entry) => list.append(createMobileWeekEntry(entry)));
           period.append(list);
-          day.append(period);
+          panel.append(period);
         });
       }
+      button.addEventListener("click", () => {
+        expandedDateKeys = toggleExpandedDateKeys(expandedDateKeys, dateKey);
+        const nextExpanded = expandedDateKeys.includes(dateKey);
+        button.setAttribute("aria-expanded", String(nextExpanded));
+        panel.hidden = !nextExpanded;
+        action.textContent = nextExpanded ? "折りたたむ" : "開く";
+      });
+      day.append(panel);
       wrapper.append(day);
     });
     return wrapper;
@@ -401,6 +530,7 @@
 
   const updateNavigationLabels = () => {
     const isDay = state.mode === "day";
+    pageRoot?.classList.toggle("timetable-page--week", !isDay);
     previousButton.textContent = isDay ? "← 前の日" : "← 前の週";
     todayButton.textContent = isDay ? "今日" : "今週";
     nextButton.textContent = isDay ? "次の日 →" : "次の週 →";

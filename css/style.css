@@ -988,10 +988,10 @@ img {
 
 .timetable-week-table {
   width: 100%;
-  min-width: 900px;
+  min-width: 1100px;
   border-collapse: collapse;
   table-layout: fixed;
-  font-size: 0.82rem;
+  font-size: 0.86rem;
 }
 
 .timetable-week-table th,
@@ -1012,8 +1012,12 @@ img {
 }
 
 .timetable-week-table thead th {
+  position: sticky;
+  z-index: 2;
+  top: 0;
   background: var(--color-surface);
-  font-size: 0.8rem;
+  box-shadow: 0 1px 0 var(--color-line);
+  font-size: 0.86rem;
   font-weight: 700;
 }
 
@@ -1045,12 +1049,16 @@ img {
 }
 
 .timetable-entry--compact .timetable-entry__title {
-  font-size: 0.78rem;
+  font-size: 0.86rem;
 }
 
 .timetable-entry--compact .timetable-entry__fact {
-  grid-template-columns: 2.3rem minmax(0, 1fr);
-  font-size: 0.68rem;
+  grid-template-columns: 2.4rem minmax(0, 1fr);
+  font-size: 0.72rem;
+}
+
+.timetable-week-table a:focus-visible {
+  scroll-margin-top: 4rem;
 }
 
 .timetable-week-table__empty {
@@ -1059,6 +1067,18 @@ img {
 
 .timetable-week-mobile {
   display: none;
+}
+
+@media (min-width: 761px) {
+  .timetable-page--week {
+    width: min(calc(100% - 48px), 1480px);
+  }
+}
+
+@media (min-width: 1200px) {
+  .timetable-week-table-wrapper {
+    overflow: visible;
+  }
 }
 
 .timetable-notice {
@@ -1249,7 +1269,8 @@ img {
 
   .timetable-week-mobile {
     display: grid;
-    gap: 30px;
+    max-width: none;
+    border-bottom: 1px solid var(--color-line);
   }
 
   .timetable-mobile-day {
@@ -1258,18 +1279,177 @@ img {
 
   .timetable-mobile-day__heading {
     margin: 0;
-    padding: 14px 0 8px;
+  }
+
+  .timetable-mobile-day__toggle {
+    display: flex;
+    width: 100%;
+    min-height: 64px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 2px;
+    border: 0;
+    background: var(--color-white);
+    color: var(--color-text);
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .timetable-mobile-day__toggle:hover {
     color: var(--color-accent);
-    font-size: 1.05rem;
+  }
+
+  .timetable-mobile-day__toggle[aria-expanded="true"] {
+    color: var(--color-accent);
+  }
+
+  .timetable-mobile-day__heading-text {
+    display: grid;
+    gap: 1px;
+  }
+
+  .timetable-mobile-day__date {
+    font-size: 1rem;
+    font-weight: 750;
+  }
+
+  .timetable-mobile-day__count {
+    color: var(--color-subtle);
+    font-size: 0.78rem;
+    font-weight: 500;
+  }
+
+  .timetable-mobile-day__action {
+    flex: none;
+    color: var(--color-accent);
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  .timetable-mobile-day__panel {
+    padding-bottom: 18px;
   }
 
   .timetable-mobile-period {
-    padding-bottom: 5px;
-    border-bottom: 1px solid var(--color-line);
+    padding-bottom: 10px;
+  }
+
+  .timetable-mobile-period + .timetable-mobile-period {
+    padding-top: 8px;
+    border-top: 1px solid var(--color-line);
+  }
+
+  .timetable-mobile-period .timetable-period__heading {
+    padding: 10px 0 6px;
+  }
+
+  .timetable-mobile-period__entries {
+    display: grid;
+    gap: 2px;
+  }
+
+  .timetable-mobile-entry {
+    min-width: 0;
+    border-left: 2px solid var(--color-accent);
+    background: var(--color-surface);
+  }
+
+  .timetable-mobile-entry__summary {
+    display: grid;
+    gap: 2px;
+    padding: 9px 12px;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .timetable-mobile-entry__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .timetable-mobile-entry__summary::after {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    margin-left: 10px;
+    color: var(--color-accent);
+    content: "詳細";
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  .timetable-mobile-entry__details[open] .timetable-mobile-entry__summary::after {
+    content: "閉じる";
+  }
+
+  .timetable-mobile-entry__heading {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .timetable-mobile-entry__labels:empty {
+    display: none;
+  }
+
+  .timetable-mobile-entry__title {
+    min-width: 0;
+    font-size: 0.94rem;
+    font-weight: 720;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+
+  .timetable-mobile-entry__meta {
+    color: var(--color-subtle);
+    font-size: 0.78rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  .timetable-mobile-entry__expanded {
+    padding: 0 12px 11px;
+  }
+
+  .timetable-mobile-entry__facts {
+    display: grid;
+    gap: 3px;
+    margin: 0;
+    padding-top: 8px;
+    border-top: 1px solid var(--color-line);
+  }
+
+  .timetable-mobile-entry__fact {
+    display: grid;
+    grid-template-columns: 2.6rem minmax(0, 1fr);
+    gap: 8px;
+    font-size: 0.78rem;
+  }
+
+  .timetable-mobile-entry__fact dt {
+    color: var(--color-subtle);
+  }
+
+  .timetable-mobile-entry__fact dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .timetable-mobile-entry__link {
+    display: inline-block;
+    min-height: 40px;
+    margin-top: 7px;
+    padding-block: 7px;
+    color: var(--color-accent);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-underline-offset: 0.22em;
   }
 
   .timetable-mobile-day__empty {
-    padding: 8px 0 16px;
+    padding: 8px 0 4px;
   }
 }
 
