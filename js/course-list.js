@@ -61,10 +61,19 @@
     return item;
   };
 
+  const courseDetailUrl = (courseId) =>
+    `course.html?id=${encodeURIComponent(courseId)}`;
+
   const createCourseCard = (course) => {
     const card = element("article", "course-card");
     card.append(element("p", "course-card__category", course.category));
-    card.append(element("h3", "", course.title || "名称未設定の授業"));
+    const titleText = course.title || "名称未設定の授業";
+    const heading = element("h3");
+    const titleLink = element("a", "course-card__title-link", titleText);
+    titleLink.href = courseDetailUrl(course.id);
+    titleLink.setAttribute("aria-label", `${titleText}の授業詳細を見る`);
+    heading.append(titleLink);
+    card.append(heading);
 
     if (hasText(course.summary)) {
       card.append(element("p", "course-card__summary", course.summary));
@@ -81,10 +90,6 @@
       card.append(list);
     }
 
-    const link = element("a", "course-card__link", "詳細を見る");
-    link.href = `course.html?id=${encodeURIComponent(course.id)}`;
-    link.setAttribute("aria-label", `${course.title || "授業"}の詳細を見る`);
-    card.append(link);
     return card;
   };
 
@@ -137,7 +142,7 @@
 
   const loadCourses = async () => {
     try {
-      const response = await fetch(COURSES_DATA_URL, { cache: "no-store" });
+      const response = await fetch(COURSES_DATA_URL, { cache: "no-cache" });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
       courses = Array.isArray(data.courses) ? data.courses : [];

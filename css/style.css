@@ -273,6 +273,19 @@ img {
   line-height: 1.45;
 }
 
+.course-card__title-link {
+  color: var(--color-accent);
+  cursor: pointer;
+  text-decoration: none;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+}
+
+.course-card__title-link:hover,
+.course-card__title-link:focus-visible {
+  text-decoration: underline;
+}
+
 .course-card__summary {
   margin: 11px 0 0;
   color: var(--color-subtle);
@@ -304,7 +317,6 @@ img {
   font-weight: 600;
 }
 
-.course-card__link,
 .text-link {
   display: inline-flex;
   align-items: center;
@@ -314,11 +326,6 @@ img {
   font-size: 0.88rem;
   font-weight: 700;
   text-underline-offset: 0.25em;
-}
-
-.course-card__link::after {
-  margin-left: 7px;
-  content: "→";
 }
 
 .empty-state {
@@ -942,15 +949,17 @@ img {
 }
 
 .timetable-entry__link {
-  color: var(--color-text);
+  color: var(--color-accent);
+  cursor: pointer;
   font-weight: 700;
-  text-decoration-color: var(--color-accent);
+  text-decoration: none;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.22em;
 }
 
-.timetable-entry__link:hover {
-  color: var(--color-accent);
+.timetable-entry__link:hover,
+.timetable-entry__link:focus-visible {
+  text-decoration: underline;
 }
 
 .timetable-entry__facts {
@@ -1355,31 +1364,27 @@ img {
     background: var(--color-surface);
   }
 
-  .timetable-mobile-entry__summary {
+  .timetable-mobile-entry__compact {
     display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 2px;
-    padding: 9px 12px;
+    min-height: 52px;
+    padding: 10px 12px;
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .timetable-mobile-entry__compact--link {
     cursor: pointer;
-    list-style: none;
   }
 
-  .timetable-mobile-entry__summary::-webkit-details-marker {
-    display: none;
+  .timetable-mobile-entry__compact--link:hover,
+  .timetable-mobile-entry__compact--link:focus-visible {
+    background: var(--color-accent-soft);
   }
 
-  .timetable-mobile-entry__summary::after {
-    grid-column: 2;
-    grid-row: 1 / span 2;
-    align-self: center;
-    margin-left: 10px;
-    color: var(--color-accent);
-    content: "詳細";
-    font-size: 0.7rem;
-    font-weight: 700;
-  }
-
-  .timetable-mobile-entry__details[open] .timetable-mobile-entry__summary::after {
-    content: "閉じる";
+  .timetable-mobile-entry__compact--link:active {
+    background: rgba(29, 95, 120, 0.16);
   }
 
   .timetable-mobile-entry__heading {
@@ -1401,51 +1406,32 @@ img {
     overflow-wrap: anywhere;
   }
 
+  .timetable-mobile-entry__compact--link .timetable-mobile-entry__title {
+    color: var(--color-accent);
+  }
+
+  .timetable-mobile-entry__compact--link:hover .timetable-mobile-entry__title,
+  .timetable-mobile-entry__compact--link:focus-visible .timetable-mobile-entry__title {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
   .timetable-mobile-entry__meta {
+    grid-column: 1;
     color: var(--color-subtle);
     font-size: 0.78rem;
     line-height: 1.5;
     overflow-wrap: anywhere;
   }
 
-  .timetable-mobile-entry__expanded {
-    padding: 0 12px 11px;
-  }
-
-  .timetable-mobile-entry__facts {
-    display: grid;
-    gap: 3px;
-    margin: 0;
-    padding-top: 8px;
-    border-top: 1px solid var(--color-line);
-  }
-
-  .timetable-mobile-entry__fact {
-    display: grid;
-    grid-template-columns: 2.6rem minmax(0, 1fr);
-    gap: 8px;
-    font-size: 0.78rem;
-  }
-
-  .timetable-mobile-entry__fact dt {
-    color: var(--color-subtle);
-  }
-
-  .timetable-mobile-entry__fact dd {
-    min-width: 0;
-    margin: 0;
-    overflow-wrap: anywhere;
-  }
-
-  .timetable-mobile-entry__link {
-    display: inline-block;
-    min-height: 40px;
-    margin-top: 7px;
-    padding-block: 7px;
+  .timetable-mobile-entry__arrow {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-self: center;
+    margin-left: 10px;
     color: var(--color-accent);
-    font-size: 0.82rem;
+    font-size: 0.9rem;
     font-weight: 700;
-    text-underline-offset: 0.22em;
   }
 
   .timetable-mobile-day__empty {

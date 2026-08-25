@@ -85,7 +85,7 @@ python tools/course-importer/app.py
 1. 公開中とアーカイブの全授業をSchema検証
 2. 接続先、ブランチ、公開側との差異を再確認
 3. 公開対象を確認
-4. 許可された授業・制作物・公開用集計データだけを明示的に準備
+4. 公開versionを更新し、許可された授業・制作物・公開用集計データだけを明示的に準備
 5. 人間が読める公開履歴を作成
 6. 通常のpushで公開先へ送信
 
@@ -96,10 +96,11 @@ data/courses.json
 data/archived-courses.json
 data/course-feedback-summary.json
 data/course-works.json
+data/site-version.json
 assets/works/<授業ID>/<年度>/<自動生成ファイル名>.jpg|png|webp
 ```
 
-`git add .` は使用しません。Python、CSS、JavaScript、README、テスト、その他の作業ファイルは、職員の公開操作に含まれません。すでに別のファイルが公開準備中の場合も処理を停止します。
+`data/site-version.json`は公開対象データがある場合に公開処理がUTC timestampで自動更新します。公開画面はこの値をCSSとJavaScriptのversion queryへ利用します。`git add .` は使用しません。Python、CSS、JavaScript、README、テスト、その他の作業ファイルは、職員の公開操作に含まれません。すでに別のファイルが公開準備中の場合も処理を停止します。
 
 `data/course-feedback-summary.json` は、受講者フィードバック画面で職員が「公開用データを保存」を実行した場合だけ作成・更新されます。生CSV、個別回答、自由記述、職員メモ、確認状態は公開対象になりません。
 

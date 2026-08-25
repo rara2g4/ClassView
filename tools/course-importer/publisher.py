@@ -9,7 +9,7 @@ import re
 import shutil
 import subprocess
 import threading
-from datetime import datetime
+from datetime import datetime, timezone
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Any, Sequence
@@ -112,6 +112,7 @@ class ClassViewPublisher:
         "data/archived-courses.json",
         "data/course-feedback-summary.json",
         "data/course-works.json",
+        "data/site-version.json",
         "data/timetable-month.schema.json",
         "data/timetable-manifest.schema.json",
         "data/timetable-periods.schema.json",
@@ -565,6 +566,21 @@ class ClassViewPublisher:
             or cls._is_allowed_timetable_path(normalized)
         )
 
+    def _refresh_site_version(self) -> dict[str, str]:
+        now = datetime.now(timezone.utc)
+        document = {
+            "version": now.strftime("%Y%m%dT%H%M%S%fZ"),
+            "updatedAt": now.isoformat(timespec="microseconds").replace("+00:00", "Z"),
+        }
+        target = self.repo_root / "data" / "site-version.json"
+        temporary = target.with_suffix(".json.tmp")
+        temporary.write_text(
+            json.dumps(document, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        os.replace(temporary, target)
+        return document
+
     def _validate_timetable_data(self) -> None:
         timetable_root = self.repo_root / "data" / "timetable"
         manifest_path = timetable_root / "manifest.json"
@@ -864,7 +880,6 @@ class ClassViewPublisher:
                 self.logger.error("公開失敗: %s", error.message)
                 raise error
             ahead, behind = self._relation()
-            changes = self.unpublished_changes()
             if behind > 0:
                 message = (
                     "別の場所でClassViewが更新されたため、このPCの変更をそのまま公開できません。"
@@ -887,6 +902,13 @@ class ClassViewPublisher:
                     status=409,
                     technical="公開対象外: " + ", ".join(unexpected_staged),
                 )
+            working_before_version = self._working_paths()
+            if any(
+                path != "data/site-version.json" and self._is_allowed_public_path(path)
+                for path in working_before_version
+            ):
+                self._refresh_site_version()
+            changes = self.unpublished_changes()
             changed_allowed = [
                 path for path in self._working_paths() if self._is_allowed_public_path(path)
             ]

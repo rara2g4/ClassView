@@ -6,7 +6,7 @@
   const COURSES_DATA_URL = new URL("./data/courses.json", document.baseURI);
   const root = document.querySelector("#course");
   const courseListUrl =
-    document.querySelector(".back-link")?.getAttribute("href") || "index.html";
+    document.querySelector(".back-link")?.getAttribute("href") || "courses.html";
 
   const hasText = (value) =>
     typeof value === "string" && value.trim().length > 0;
@@ -327,7 +327,7 @@
     const courseId = new URLSearchParams(window.location.search).get("id");
 
     try {
-      const response = await fetch(COURSES_DATA_URL, { cache: "no-store" });
+      const response = await fetch(COURSES_DATA_URL, { cache: "no-cache" });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
       const courses = Array.isArray(data.courses) ? data.courses : [];

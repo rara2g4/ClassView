@@ -198,8 +198,13 @@ class ClassViewPublisherTests(unittest.TestCase):
         self.assertEqual(status["unpublishedCount"], 1)
         self.assertEqual(status["unpublishedChanges"][0]["title"], "受講者フィードバック集計")
         self.publisher.publish()
-        committed = self.git("show", "--name-only", "--format=", "HEAD").stdout.splitlines()
-        self.assertEqual(committed, ["data/course-feedback-summary.json"])
+        committed = set(
+            self.git("show", "--name-only", "--format=", "HEAD").stdout.splitlines()
+        )
+        self.assertEqual(
+            committed,
+            {"data/course-feedback-summary.json", "data/site-version.json"},
+        )
 
     def test_course_works_publish_stages_only_json_and_safe_image_paths(self):
         image_path = (
@@ -251,6 +256,7 @@ class ClassViewPublisherTests(unittest.TestCase):
             committed,
             {
                 "data/course-works.json",
+                "data/site-version.json",
                 image_path.relative_to(self.repo).as_posix(),
             },
         )
@@ -380,11 +386,18 @@ class ClassViewPublisherTests(unittest.TestCase):
         add_calls = [command for command, _shell in calls if command[:2] == ["git", "add"]]
         self.assertEqual(
             add_calls,
-            [["git", "add", "--", "data/courses.json"]],
+            [["git", "add", "--", "data/courses.json", "data/site-version.json"]],
         )
         self.assertTrue(all(not shell for _command, shell in calls))
-        committed = self.git("show", "--name-only", "--pretty=format:", "HEAD").stdout.splitlines()
-        self.assertEqual(committed, ["data/courses.json"])
+        committed = set(
+            self.git("show", "--name-only", "--pretty=format:", "HEAD").stdout.splitlines()
+        )
+        self.assertEqual(committed, {"data/courses.json", "data/site-version.json"})
+        site_version = json.loads(
+            (self.repo / "data" / "site-version.json").read_text(encoding="utf-8")
+        )
+        self.assertRegex(site_version["version"], r"^\d{8}T\d{12}Z$")
+        self.assertTrue(site_version["updatedAt"].endswith("Z"))
         self.assertTrue((self.repo / "developer-note.txt").exists())
         self.assertIn("developer-note.txt", self.git("status", "--porcelain").stdout)
 
@@ -445,6 +458,7 @@ class ClassViewPublisherTests(unittest.TestCase):
         self.assertTrue(result["success"])
         committed = set(self.git("show", "--name-only", "--pretty=format:", "HEAD").stdout.splitlines())
         self.assertEqual(committed, {
+            "data/site-version.json",
             "data/timetable/2025-04.json",
             "data/timetable/manifest.json",
             "data/timetable/periods.json",

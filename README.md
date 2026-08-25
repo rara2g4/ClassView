@@ -2,7 +2,7 @@
 
 ## サイトの目的
 
-ClassViewは、複数の授業から興味や目的に合う授業を探し、詳しい学習内容や授業の進め方を確認するための授業選択支援サイトです。
+ClassViewは、時間割から気になる授業を見つけ、詳しい学習内容や授業の進め方を確認するための授業選択支援サイトです。
 
 HTML・CSS・JavaScriptだけで構成された静的サイトです。npm、フレームワーク、ビルド処理、データベースは使用していません。
 
@@ -13,7 +13,7 @@ HTML・CSS・JavaScriptだけで構成された静的サイトです。npm、フ
 - 分野と授業形式による絞り込み
 - 検索と2種類の絞り込みの併用
 - 表示件数と検索結果なしメッセージの表示
-- 授業IDを使った一覧ページから詳細ページへの移動
+- 授業IDを使った時間割・一覧の授業名から詳細ページへの移動
 - 空の任意項目を表示しない授業詳細
 - 存在しない授業ID向けの案内
 - 授業ID・授業名・年度を事前入力した共通の受講者フィードバックフォームへの導線
@@ -26,7 +26,7 @@ HTML・CSS・JavaScriptだけで構成された静的サイトです。npm、フ
 - Google Forms回答CSVの読込、授業・年度別集計、個別回答、要確認状態を扱う受講者フィードバック管理
 - ローカル管理ツールによる制作物の追加、編集、削除、並び替え、掲載確認、公開前プレビュー
 - 学校の時間割Excelを正本とする、差分・警告確認付きの月別時間割JSON生成
-- 日別・週別を切り替えられる学生向け時間割ページ
+- ルートの日表示から始まり、日別・週別を切り替えられる学生向け時間割ページ
 
 公開サイト側のログイン、口コミ投稿、管理画面、データベースは実装していません。授業管理はlocalhostで動くローカル専用ツールとして提供します。
 
@@ -34,9 +34,10 @@ HTML・CSS・JavaScriptだけで構成された静的サイトです。npm、フ
 
 ```text
 ClassView/
-├─ index.html             # 授業一覧・検索ページ
+├─ index.html             # 学生向け時間割（ルート・日表示が初期状態）
+├─ courses.html           # 授業一覧・検索ページ
 ├─ course.html            # 授業詳細ページ
-├─ timetable.html         # 学生向け時間割ページ
+├─ timetable.html         # 共有URL用に維持する学生向け時間割ページ
 ├─ css/
 │  └─ style.css          # 一覧と詳細で共通のデザイン
 ├─ js/
@@ -268,15 +269,17 @@ group-project
 
 「情報がありません」「未登録」などの代替表示は行いません。授業ごとに情報量が異なっても、存在する情報だけでページが完結します。
 
-## 一覧ページから詳細ページへ移動する仕組み
+## 時間割・一覧から詳細ページへ移動する仕組み
 
-一覧の「詳細を見る」リンクは、次の形式で授業IDを渡します。
+時間割と授業一覧の授業名リンクは、共通して次の形式で授業IDを渡します。
 
 ```text
 course.html?id=web-programming
 ```
 
-`js/course-detail.js` がURLの `id` を取得し、`data/courses.json` の `courses` 配列から同じIDの授業を探して表示します。IDがない場合や一致する授業がない場合は、ページを崩さず「授業が見つかりません」と一覧へ戻るリンクを表示します。
+`js/course-detail.js` がURLの `id` を取得し、`data/courses.json` の `courses` 配列から同じIDの授業を探して表示します。IDがない場合や一致する授業がない場合は、ページを崩さず「授業が見つかりません」と `courses.html` へ戻るリンクを表示します。
+
+ルートの `index.html` は時間割の日表示から始まります。授業一覧は `courses.html` にあり、どちらもヘッダーの「時間割」「授業を探す」から相互に移動できます。`timetable.html` と `timetable.html?date=YYYY-MM-DD` も共有済みURLとの互換性のためそのまま利用できます。週間表示では `view=week` をURLへ保持するため、授業詳細からブラウザで戻った場合も元の週間表示へ戻ります。
 
 ## GitHub Pagesでの公開方法
 
@@ -299,7 +302,7 @@ cd ClassView
 
 ```bash
 git status
-git add -- index.html course.html css js data README.md .nojekyll
+git add -- index.html courses.html course.html timetable.html css js data README.md .nojekyll
 git commit -m "Update ClassView"
 git push origin main
 ```
@@ -337,14 +340,14 @@ https://rara2g4.github.io/ClassView/
 2. ローカルサーバーで一覧と詳細を確認します。
 3. 変更をcommitし、`main` ブランチへpushします。
 4. GitHub Actionsの公開処理が完了するまで待ちます。
-5. 公開サイトを強制再読み込みします。Windowsでは `Ctrl + F5`、macOSでは `Command + Shift + R` が目安です。
+5. 公開サイトを通常どおり再読み込みし、内容を確認します。
 6. 必要に応じて次のURLを直接開き、公開中のJSON内容を確認します。
 
 ```text
 https://rara2g4.github.io/ClassView/data/courses.json
 ```
 
-ブラウザに古いJSONが残っているか確認したい場合は、確認時だけURL末尾に任意のクエリを付けられます。
+JSON取得は`cache: "no-cache"`で再検証するため、学生にキャッシュ削除や強制再読み込みを求めません。調査時だけURL末尾に任意のクエリを付けて内容を比較できます。
 
 ```text
 https://rara2g4.github.io/ClassView/data/courses.json?check=20260808
@@ -352,7 +355,11 @@ https://rara2g4.github.io/ClassView/data/courses.json?check=20260808
 
 ### GitHub Pages向けのパス設計
 
-- `index.html`、`course.html`、CSS、JavaScriptはすべて相対パスで参照しています。
+- `index.html`、`courses.html`、`course.html`、`timetable.html`、CSS、JavaScriptはすべて相対パスで参照しています。
+- `data/site-version.json`を`no-cache`で確認し、CSSとページJavaScriptへ同じ`?v=<公開version>`を付けます。同じ公開内ではURLが安定し、公開versionが変わると別URLになります。
+- 管理ツールからデータを公開する場合はsite versionを自動更新します。CSSやJavaScriptを開発者が直接更新する場合も、HTML全部ではなく`data/site-version.json`の1値だけを同じcommitで更新します。
+- 時間割manifestは`no-cache`で確認し、manifestの`version`を`periods.json`と月別JSONのURLへ付けます。
+- `courses.json`と`course-works.json`も`no-cache`で再検証します。
 - JSONは各HTMLの現在位置を基準に `data/courses.json` を解決します。
 - 詳細リンクは `course.html?id=授業ID` の相対URLです。
 - `.nojekyll` により、Jekyll変換を行わず静的ファイルをそのまま公開します。

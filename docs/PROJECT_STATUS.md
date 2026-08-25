@@ -1,16 +1,16 @@
 # ClassView Project Status
 
 Last verified:
-2026-08-25 14:22 JST
+2026-08-25 15:29 JST
 
 Verified against commit:
-`ac3ba08b19bbc53995e5c1f5d4a34b3dd0307e81`
+`cc12805eddc5b653563457eb598b720af098dc5e`
 
 Branch:
 `main`
 
 Working tree at verification:
-監査開始時は clean。現在は監査文書2件がuntrackedで、週間表示UX改善として `js/timetable.js`、`css/style.css`、`tools/course-importer/tests/test_public_timetable.js` とスクリーンショット2件を変更・追加している。commit / push / 公開は未実施。復旧した `tools/course-importer/.venv/` はGit管理外。
+開始時は `main` と `origin/main` がcommit `cc12805` で一致し、working treeはclean。現在は授業詳細導線、キャッシュ対策、root時間割化、授業一覧移行、スマートフォン週間導線改善の実装・文書・テスト差分が未commit。commit / push / 公開は未実施。復旧した `tools/course-importer/.venv/` はGit管理外。
 
 Purpose:
 この文書はPC間・Codexセッション間の引き継ぎ用。実コードと矛盾する場合は、Git・コード・テスト・runtime・公開データ・Excelを根拠に再監査する。
@@ -21,7 +21,7 @@ ClassViewは、学生が授業内容、対象学年、授業形式、授業回�
 
 ## 2. Architecture
 
-- 公開側は `index.html`、`course.html`、`timetable.html`、`css/`、`js/`、`data/`、`assets/` からなる静的サイト。常時稼働するAPI、DB、Flask、Nodeサーバーは公開側にない。
+- 公開側は `index.html`（時間割）、`courses.html`（授業一覧）、`course.html`、`timetable.html`、`css/`、`js/`、`data/`、`assets/` からなる静的サイト。常時稼働するAPI、DB、Flask、Nodeサーバーは公開側にない。
 - 公開先はGitHub Pages。ビルド工程を必要とせず、相対パスでルート配下のHTML・CSS・JavaScript・JSONを読む。
 - 職員向けローカル管理ツールは `tools/course-importer/`。Python、Flask、jsonschema、pypdf、openpyxlを使用し、Windows配布にはPyInstallerを使用する。
 - ローカル管理サーバーは `127.0.0.1` のみで待ち受け、localhost以外を拒否する。
@@ -56,13 +56,18 @@ ClassViewは、学生が授業内容、対象学年、授業形式、授業回�
 
 ### Public site
 
-- 授業一覧、検索、分野・授業形式フィルター、授業詳細、任意項目の非表示。
+- `index.html` / rootは時間割の日表示を入口とし、授業一覧・検索・分野・授業形式フィルターは`courses.html`で維持。`timetable.html`と`?date=YYYY-MM-DD`の直接URLも維持。
+- 授業一覧では授業名そのものを正式な詳細リンクとし、冗長な「詳細を見る」リンクを削除。授業詳細の一覧戻り先も`courses.html`へ更新。
 - `data/course.schema.json` による授業1件単位の正式仕様。
 - 実際の制作物の画像のみ、外部リンクのみ、画像＋リンク表示。管理用追加・編集・削除・並び替え、画像検証、バックアップも実装済み。
 - 共通Google Formへの授業ID・授業名・年度の事前入力リンク。
 - 学生向け時間割。デフォルト日表示、前日/今日/翌日、前週/今週/翌週、`?date=YYYY-MM-DD`、月跨ぎ、empty state、授業詳細リンク、special等の表示、responsive対応。
 - PC週間表示は週間モードだけ最大1480pxのwide layoutを使い、5日×時限表、可読性を上げた文字、曜日sticky headerを実装。1024px以下では時間割領域だけ横スクロールする。
-- スマートフォン週間表示は曜日単位のaccordion。selected dateだけを初期展開し、複数日を同時に開ける。授業名・対象・group・教室をcompact表示し、タップ後に講師等と授業詳細リンクを表示する。courseIdを持たないspecial等にも対応。
+- 日表示・PC週間はcourseId付き授業名を正式な`<a href="course.html?id=...">`に統一。スマートフォン週間はcourseId付きcompact行全体を同じ詳細URLの`<a>`とし、授業単位の中間詳細展開を廃止。courseIdを持たないspecial等は矢印なしの非リンク。
+- スマートフォン週間表示は曜日単位のaccordionを維持。selected dateだけを初期展開し、複数日を同時に開ける。授業名・対象・group・教室をcompact表示し、授業行の1タップで詳細へ移動する。
+- 週間表示はURLへ`view=week`を保持し、詳細ページからブラウザで戻っても同じ日付の週間表示と日別accordionへ復帰する。
+- `data/site-version.json`を`no-cache`で確認し、CSSとページJavaScriptへ同一の安定した`?v=<version>`を付与。`courses.json`と`course-works.json`は`no-cache`で再検証する。
+- 時間割manifestは`no-cache`で取得し、既存manifest `version`を`periods.json`と月別JSONのversion queryへ利用。同一ページ内の月別メモリcacheは維持。
 
 ### Local management tool
 
@@ -75,6 +80,7 @@ ClassViewは、学生が授業内容、対象学年、授業形式、授業回�
 - 月別公開時間割JSON生成、3種Schema検証、一時ファイルからの置換、バックアップ、rollback。
 - 選択期間外のblockingを保存可否から除外しつつ、年間issue一覧へ残すserver-side/UI実装。
 - 許可ファイル限定のGit同期・commit・push、remote更新やdiverge時の停止、診断表示。
+- 公開対象データがある場合、Git公開前に`data/site-version.json`をUTC timestampで自動更新し、同じallowlist commitへ含める。
 - Windows単一起動、localhostポート選択、非console実行、終了API。
 
 ### Windows artifact
@@ -96,7 +102,7 @@ ClassViewは、学生が授業内容、対象学年、授業形式、授業回�
 
 ## 6. In progress
 
-週間表示UX改善は実装・自動テスト・ブラウザ確認まで完了。スクリーンショット確認後にcommit / pushするかはユーザー判断待ち。
+授業詳細導線、GitHub Pagesキャッシュ対策、root時間割化、授業一覧移行、スマートフォン週間の直接詳細導線はローカル実装・自動テスト・ブラウザ確認まで完了。commit / push / 公開はユーザー確認待ち。
 
 ## 7. Not implemented
 
@@ -213,23 +219,25 @@ cd tools/course-importer
 node tools/course-importer/tests/test_editor_state.js
 node tools/course-importer/tests/test_public_course_works.js
 node tools/course-importer/tests/test_public_feedback_link.js
+node tools/course-importer/tests/test_public_navigation.js
 node tools/course-importer/tests/test_public_timetable.js
+node tools/course-importer/tests/test_site_loader.js
 node tools/course-importer/tests/test_timetable_admin.js
 ```
 
-- JavaScript test files: 5 passed, 0 failed（107 assert calls）
-- `node --check`: repository内の17 JavaScript filesすべて成功
+- JavaScript test files: 7 passed, 0 failed
+- `node --check`: repository内の20 JavaScript filesすべて成功
 - JSON Schema明示検証: 57 courses + course works + timetable manifest/periods/month = 61 documents、0 errors
 
-Browser verification at `http://127.0.0.1:8765/timetable.html?date=2025-04-21`:
+Browser verification at `http://127.0.0.1:8765/`、`courses.html`、`course.html`、`timetable.html?date=2025-04-21`:
 
-- 日表示: 4/21の12件・4時限・12 course linksを確認。390pxは1列、1440pxは同時刻授業3列、週間wide classなし、従来のpage width 1080pxを維持。
-- desktop week: 4/21～4/25、5曜日、4時限、84 entries、83 course linksを確認。1440pxでpage/table幅1377px、曜日headerは実スクロール時 `top: 0` にsticky。1024pxでは961pxの時間割領域内だけ1100px表を横スクロールし、ページ全体の横overflowなし。
-- mobile week: 5日headerと日次件数を生成。390px初期状態は4/21の12件だけ展開し、ページ高2247px（変更前約14060px）。授業compact表示・タップ詳細・リンク、`スーツメイク講座` のspecial badgeとリンクなし表示を確認。
-- `?date=2025-04-23` は水曜だけ初期展開。別日を追加展開可能で、次週empty stateから戻ると水曜だけへreset。
-- queryなしは `?date=2026-08-25` へ正規化され、範囲外の週間empty stateを表示してconsole errorなし。
-- viewport 320 / 375 / 390 / 768 / 1024 / 1440を確認。全幅でページ全体の横overflowなし。1440→390→1440→390でも1クリック1回だけ開閉し、listener重複なし。
-- screenshots: `docs/screenshots/timetable-week-desktop-1440.png`、`docs/screenshots/timetable-week-mobile-390.png`
+- rootの`?date=2025-04-21`は日表示、12 entries・12 course links、「時間割」active。`timetable.html?date=2025-04-21`も同じ日付・日表示で動作。
+- 1440px PC週間は4/21～4/25、84 entries・83 course links、wide layout、ページ全体の横overflowなし。`Photoshop[B][D]`、`ドローン概論`、`After Effects[A]`の正式URLを実データで確認。
+- `courses.html`は57 cards・57授業名links・旧`course-card__link` 0件。1440px / 390pxで表示し、ページ全体の横overflowなし。授業名リンクから詳細へ遷移し、詳細ページの一覧戻り先が`courses.html`であることを確認。
+- 390px週間は5日accordion、selected dateだけ初期展開。courseId付き83行はcompact行全体のリンク、矢印83、授業単位の詳細button / 展開DOMは0件。
+- `スーツメイク講座`は特別授業badge付きの非リンク1行で、内部link・矢印とも0件。全5日accordionは個別に開閉可能。
+- 390pxの`Photoshop[B][D]`行から1タップで詳細へ直接遷移。戻ると`?date=2025-04-21&view=week`、週間表示、selected dateのaccordion展開へ復帰。
+- asset inventoryでCSSとページJSがsite version `20260825T0626236729072Z`を使用。ブラウザconsole error / warningは0件。
 
 ## 10. Git-ignored required data
 

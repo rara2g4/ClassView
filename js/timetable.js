@@ -126,9 +126,15 @@
     return [...next];
   };
 
+  const courseDetailUrl = (courseId) =>
+    typeof courseId === "string" && courseId
+      ? `course.html?id=${encodeURIComponent(courseId)}`
+      : "";
+
   const api = {
     addDays,
     compactEntryData,
+    courseDetailUrl,
     formatDateKey,
     formatGrades,
     initialExpandedDateKey,
@@ -174,7 +180,7 @@
   const arrayText = joinTextValues;
 
   const fetchJson = async (url) => {
-    const response = await fetch(url, { cache: "no-store" });
+    const response = await fetch(url, { cache: "no-cache" });
     if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`);
     return response.json();
   };
@@ -193,7 +199,7 @@
     if (!state.monthCache.has(key)) {
       state.monthCache.set(
         key,
-        fetchJson(new URL(`${key}.json`, DATA_ROOT)).then((document) => {
+        fetchJson(new URL(`${key}.json?v=${encodeURIComponent(state.manifest.version)}`, DATA_ROOT)).then((document) => {
           if (!document || document.yearMonth !== key || typeof document.days !== "object") {
             throw new Error(`Invalid monthly timetable: ${key}`);
           }
@@ -242,9 +248,10 @@
     if (labels.childElementCount) item.append(labels);
 
     const title = element(compact ? "p" : "h4", "timetable-entry__title");
-    if (typeof entry.courseId === "string" && entry.courseId) {
+    const detailUrl = courseDetailUrl(entry.courseId);
+    if (detailUrl) {
       const link = element("a", "timetable-entry__link", entry.subjectName || "授業");
-      link.href = `course.html?id=${encodeURIComponent(entry.courseId)}`;
+      link.href = detailUrl;
       link.setAttribute("aria-label", `${entry.subjectName || "授業"}の授業詳細を見る`);
       title.append(link);
     } else {
@@ -272,43 +279,32 @@
   const createMobileWeekEntry = (entry) => {
     const data = compactEntryData(entry);
     const item = element("article", "timetable-mobile-entry");
-    const details = element("details", "timetable-mobile-entry__details");
-    const summary = element("summary", "timetable-mobile-entry__summary");
+    const detailUrl = courseDetailUrl(data.courseId);
+    const compact = element(
+      detailUrl ? "a" : "div",
+      `timetable-mobile-entry__compact${detailUrl ? " timetable-mobile-entry__compact--link" : ""}`,
+    );
+    if (detailUrl) {
+      compact.href = detailUrl;
+      compact.setAttribute("aria-label", `${data.title}の授業詳細を見る`);
+    }
     const heading = element("span", "timetable-mobile-entry__heading");
     const labels = element("span", "timetable-mobile-entry__labels");
     if (data.kind) {
       labels.append(createBadge(data.kind, "timetable-entry__badge--kind"));
     }
-    heading.append(labels, element("span", "timetable-mobile-entry__title", data.title));
-    summary.append(heading);
+    const title = element("span", "timetable-mobile-entry__title", data.title);
+    heading.append(labels, title);
+    compact.append(heading);
     if (data.meta) {
-      summary.append(element("span", "timetable-mobile-entry__meta", data.meta));
+      compact.append(element("span", "timetable-mobile-entry__meta", data.meta));
     }
-    details.append(summary);
-
-    const expanded = element("div", "timetable-mobile-entry__expanded");
-    const facts = [
-      ["対象", data.audience],
-      ["講師", data.instructor],
-      ["教室", data.room],
-    ].filter(([, value]) => value);
-    if (facts.length) {
-      const list = element("dl", "timetable-mobile-entry__facts");
-      facts.forEach(([label, value]) => {
-        const row = element("div", "timetable-mobile-entry__fact");
-        row.append(element("dt", "", label), element("dd", "", value));
-        list.append(row);
-      });
-      expanded.append(list);
+    if (detailUrl) {
+      const arrow = element("span", "timetable-mobile-entry__arrow", "→");
+      arrow.setAttribute("aria-hidden", "true");
+      compact.append(arrow);
     }
-    if (data.courseId) {
-      const link = element("a", "timetable-mobile-entry__link", "授業詳細を見る");
-      link.href = `course.html?id=${encodeURIComponent(data.courseId)}`;
-      link.setAttribute("aria-label", `${data.title}の授業詳細を見る`);
-      expanded.append(link);
-    }
-    details.append(expanded);
-    item.append(details);
+    item.append(compact);
     return item;
   };
 
@@ -541,6 +537,8 @@
   const updateUrl = (replace = false) => {
     const url = new URL(window.location.href);
     url.searchParams.set("date", formatDateKey(state.selectedDate));
+    if (state.mode === "week") url.searchParams.set("view", "week");
+    else url.searchParams.delete("view");
     window.history[replace ? "replaceState" : "pushState"]({}, "", url);
   };
 
@@ -570,16 +568,23 @@
     return parsed || fromDate(new Date());
   };
 
+  const initialMode = () => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("view") === "week" ? "week" : "day";
+  };
+
   dayButton.addEventListener("click", () => {
     if (state.mode === "day") return;
     state.mode = "day";
     updateNavigationLabels();
+    updateUrl(true);
     void render();
   });
   weekButton.addEventListener("click", () => {
     if (state.mode === "week") return;
     state.mode = "week";
     updateNavigationLabels();
+    updateUrl(true);
     void render();
   });
   previousButton.addEventListener("click", () =>
@@ -591,18 +596,24 @@
   todayButton.addEventListener("click", () => selectDate(fromDate(new Date())));
   window.addEventListener("popstate", () => {
     state.selectedDate = initialDate();
+    state.mode = initialMode();
+    updateNavigationLabels();
     void render();
   });
 
   const initialize = async () => {
     state.selectedDate = initialDate();
+    state.mode = initialMode();
     updateNavigationLabels();
     updateUrl(true);
     try {
-      const [manifest, periods] = await Promise.all([
-        fetchJson(manifestUrl),
-        fetchJson(periodsUrl),
-      ]);
+      const manifest = await fetchJson(manifestUrl);
+      if (typeof manifest?.version !== "string" || !manifest.version) {
+        throw new Error("Invalid timetable manifest version");
+      }
+      const periods = await fetchJson(
+        new URL(`periods.json?v=${encodeURIComponent(manifest.version)}`, DATA_ROOT),
+      );
       validateBaseData(manifest, periods);
       state.manifest = manifest;
       state.periods = periods;

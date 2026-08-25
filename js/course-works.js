@@ -45,7 +45,7 @@
 
   const loadForCourse = async (course) => {
     try {
-      const response = await fetch(WORKS_DATA_URL, { cache: "no-store" });
+      const response = await fetch(WORKS_DATA_URL, { cache: "no-cache" });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const documentData = await response.json();
       const works = Array.isArray(documentData.works) ? documentData.works : [];
