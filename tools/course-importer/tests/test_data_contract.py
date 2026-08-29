@@ -36,6 +36,45 @@ class CourseDataContractTests(unittest.TestCase):
             with self.subTest(course_id=course["id"]):
                 self.assertEqual(list(self.validator.iter_errors(course)), [])
 
+    def test_credits_and_total_hours_are_optional_nonnegative_numbers(self):
+        self.assertFalse(self.schema["additionalProperties"])
+        template = json.loads(
+            (REPO_ROOT / "data" / "course.template.json").read_text(encoding="utf-8")
+        )
+        for field, unit, interpretation in (
+            ("credits", "単位", None),
+            ("totalHours", "時間", "actualElapsedHours"),
+        ):
+            with self.subTest(field=field):
+                definition = self.schema["properties"][field]
+                self.assertNotIn(field, self.schema["required"])
+                self.assertEqual(definition["type"], ["number", "null"])
+                self.assertEqual(definition["minimum"], 0)
+                self.assertEqual(definition["x-classview"]["unit"], unit)
+                self.assertIsNone(template[field])
+                if interpretation:
+                    self.assertEqual(
+                        definition["x-classview"]["interpretation"], interpretation
+                    )
+                    self.assertTrue(definition["x-classview"]["provisional"])
+
+        base = dict(template)
+        base.update(
+            id="measurement-test",
+            title="測定値テスト",
+            credits=1.5,
+            totalHours=22.5,
+        )
+        self.assertEqual(list(self.validator.iter_errors(base)), [])
+        for field in ("credits", "totalHours"):
+            omitted = dict(base)
+            omitted.pop(field)
+            self.assertEqual(list(self.validator.iter_errors(omitted)), [])
+            for invalid in ("2", -1):
+                invalid_course = dict(base)
+                invalid_course[field] = invalid
+                self.assertTrue(list(self.validator.iter_errors(invalid_course)))
+
     def test_clone_handoff_contains_valid_timetable_state(self):
         courses = json.loads(
             (REPO_ROOT / "data" / "courses.json").read_text(encoding="utf-8")
@@ -134,6 +173,34 @@ class CourseDataContractTests(unittest.TestCase):
         ):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, template + script)
+
+    def test_management_forms_expose_numeric_measurement_fields(self):
+        scripts = "\n".join(
+            (REPO_ROOT / path).read_text(encoding="utf-8")
+            for path in (
+                "tools/course-importer/static/app.js",
+                "tools/course-importer/static/course-management.js",
+            )
+        )
+        for phrase in (
+            '["credits", "単位数", "number"]',
+            '["totalHours", "時間数", "number"]',
+            'input.type = "number"',
+            'input.step = "any"',
+            'input.placeholder = "未入力"',
+            "Editor.updateNumber",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertEqual(scripts.count(phrase), 2)
+
+    def test_public_detail_loads_measurement_formatter_before_renderer(self):
+        page = (REPO_ROOT / "course.html").read_text(encoding="utf-8")
+        detail = (REPO_ROOT / "js" / "course-detail.js").read_text(encoding="utf-8")
+        self.assertLess(
+            page.index("js/course-measurements.js"),
+            page.index("js/course-detail.js"),
+        )
+        self.assertIn("ClassViewCourseMeasurements", detail)
 
     def test_staff_dashboard_hides_git_terms_and_publication_is_file_limited(self):
         dashboard = (

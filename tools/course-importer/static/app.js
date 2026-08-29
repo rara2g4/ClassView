@@ -27,6 +27,8 @@
         ["academicYear", "年度", "short"],
         ["instructor", "講師名", "short"],
         ["courseType", "区分", "short"],
+        ["credits", "単位数", "number"],
+        ["totalHours", "時間数", "number"],
         ["classStyle", "授業形式", "short"],
         ["prerequisites", "前提知識", "long"],
       ],
@@ -370,6 +372,10 @@
     if (description) addText(container, "p", "editor-field__help", description);
   };
 
+  const measurementUnit = (field) => (
+    state.config.schema.properties?.[field]?.["x-classview"]?.unit || ""
+  );
+
   const renderScalarField = (field, label, control) => {
     const wrapper = document.createElement("div");
     wrapper.className = "editor-field";
@@ -381,12 +387,20 @@
     input.dataset.editorField = field;
     input.value = state.course[field] ?? "";
     if (control === "long") input.rows = field === "learningGoals" ? 6 : 3;
-    else input.type = "text";
+    else if (control === "number") {
+      input.type = "number";
+      input.min = "0";
+      input.step = "any";
+      input.placeholder = "未入力";
+      input.inputMode = "decimal";
+    } else input.type = "text";
     if (field === "id") {
       input.readOnly = true;
       input.setAttribute("aria-readonly", "true");
     }
     const suggestions = state.config.suggestions?.[field] || [];
+    const inputHost = control === "number" ? document.createElement("div") : wrapper;
+    if (control === "number") inputHost.className = "editor-measurement";
     if (suggestions.length) {
       const listId = `suggestions-${field}`;
       input.setAttribute("list", listId);
@@ -397,9 +411,13 @@
         option.value = value;
         datalist.append(option);
       });
-      wrapper.append(input, datalist);
+      inputHost.append(input, datalist);
     } else {
-      wrapper.append(input);
+      inputHost.append(input);
+    }
+    if (control === "number") {
+      addText(inputHost, "span", "editor-measurement__unit", measurementUnit(field));
+      wrapper.append(inputHost);
     }
     wrapper.append(createInferenceReason(field));
     const proposalActions = createProposalActions(field);
@@ -697,6 +715,8 @@
       ["講師", course.instructor],
       ["授業形式", course.classStyle],
       ["区分", course.courseType],
+      ["単位数", Editor.formatMeasurement(course.credits, measurementUnit("credits"))],
+      ["時間数", Editor.formatMeasurement(course.totalHours, measurementUnit("totalHours"))],
       ["前提知識", course.prerequisites],
     ].filter(([, value]) => hasText(value));
     if (facts.length) {
@@ -771,7 +791,9 @@
     const target = event.target;
     if (target.dataset.editorField && target.dataset.editorField !== "id") {
       const field = target.dataset.editorField;
-      state.course = Editor.updateScalar(state.course, field, target.value, state.config.template);
+      state.course = target.type === "number"
+        ? Editor.updateNumber(state.course, field, target.value)
+        : Editor.updateScalar(state.course, field, target.value, state.config.template);
       courseChanged(field);
       return;
     }

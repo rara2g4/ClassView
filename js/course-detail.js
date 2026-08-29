@@ -39,6 +39,7 @@
       { label: "講師", value: course.instructor },
       { label: "授業形式", value: course.classStyle },
       { label: "区分", value: course.courseType },
+      ...(globalThis.ClassViewCourseMeasurements?.facts(course) || []),
       { label: "前提知識", value: course.prerequisites, wide: true },
     ].filter(({ value }) => hasText(value));
 

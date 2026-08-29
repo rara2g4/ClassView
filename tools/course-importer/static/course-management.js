@@ -27,6 +27,8 @@
         ["academicYear", "年度", "short"],
         ["instructor", "講師名", "short"],
         ["courseType", "区分", "short"],
+        ["credits", "単位数", "number"],
+        ["totalHours", "時間数", "number"],
         ["classStyle", "授業形式", "short"],
         ["prerequisites", "前提知識", "long"],
       ],
@@ -221,6 +223,10 @@
     if (description) addText(container, "p", "editor-field__help", description);
   };
 
+  const measurementUnit = (field) => (
+    state.config.schema.properties?.[field]?.["x-classview"]?.unit || ""
+  );
+
   const fieldHeader = (field, label, id) => {
     const header = document.createElement("div");
     header.className = "editor-field__header";
@@ -245,7 +251,13 @@
     input.dataset.managementField = field;
     input.value = state.course[field] ?? "";
     if (control === "long") input.rows = field === "learningGoals" ? 6 : 3;
-    else input.type = "text";
+    else if (control === "number") {
+      input.type = "number";
+      input.min = "0";
+      input.step = "any";
+      input.placeholder = "未入力";
+      input.inputMode = "decimal";
+    } else input.type = "text";
     const readOnly = isViewMode() || (field === "id" && state.mode !== "rollover");
     input.readOnly = readOnly;
     if (readOnly) input.setAttribute("aria-readonly", "true");
@@ -255,6 +267,8 @@
       input.spellcheck = false;
     }
     const suggestions = state.config.suggestions?.[field] || [];
+    const inputHost = control === "number" ? document.createElement("div") : wrapper;
+    if (control === "number") inputHost.className = "editor-measurement";
     if (suggestions.length && !readOnly) {
       const listId = `management-suggestions-${field}`;
       input.setAttribute("list", listId);
@@ -265,9 +279,13 @@
         option.value = value;
         datalist.append(option);
       });
-      wrapper.append(input, datalist);
+      inputHost.append(input, datalist);
     } else {
-      wrapper.append(input);
+      inputHost.append(input);
+    }
+    if (control === "number") {
+      addText(inputHost, "span", "editor-measurement__unit", measurementUnit(field));
+      wrapper.append(inputHost);
     }
     appendSchemaHelp(wrapper, field);
     return wrapper;
@@ -427,6 +445,8 @@
       ["講師", course.instructor],
       ["授業形式", course.classStyle],
       ["区分", course.courseType],
+      ["単位数", Editor.formatMeasurement(course.credits, measurementUnit("credits"))],
+      ["時間数", Editor.formatMeasurement(course.totalHours, measurementUnit("totalHours"))],
       ["前提知識", course.prerequisites],
     ].filter(([, value]) => hasText(value));
     if (facts.length) {
@@ -710,7 +730,10 @@
   editorFields.addEventListener("input", (event) => {
     const target = event.target;
     if (target.dataset.managementField) {
-      state.course[target.dataset.managementField] = target.value;
+      const field = target.dataset.managementField;
+      state.course = target.type === "number"
+        ? Editor.updateNumber(state.course, field, target.value)
+        : Editor.updateScalar(state.course, field, target.value, state.config.template);
     } else if (target.dataset.managementArrayField) {
       state.course[target.dataset.managementArrayField][Number(target.dataset.index)] = target.value;
     } else if (target.dataset.managementObjectField) {

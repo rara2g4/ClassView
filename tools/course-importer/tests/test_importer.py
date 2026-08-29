@@ -79,6 +79,8 @@ class CourseImporterTests(unittest.TestCase):
             "academicYear": None,
             "instructor": None,
             "courseType": None,
+            "credits": None,
+            "totalHours": None,
             "classStyle": "演習",
             "prerequisites": None,
             "learningGoals": "基礎を学びます。",
@@ -223,6 +225,76 @@ class CourseImporterTests(unittest.TestCase):
 
         self.assertTrue(result["valid"])
         self.assertEqual(result["fieldMeta"]["instructor"]["sourceType"], "explicit")
+
+    def test_explicit_credits_and_total_hours_preserve_source_type(self):
+        preparation = self.prepare()
+        course = self.course("new-course")
+        course["credits"] = 2
+        course["totalHours"] = 30
+        meta = self.field_meta(course)
+        result = self.service.validate_submission(
+            preparation.token,
+            json.dumps({"course": course, "fieldMeta": meta}, ensure_ascii=False),
+        )
+
+        self.assertTrue(result["valid"])
+        self.assertEqual(result["course"]["credits"], 2)
+        self.assertEqual(result["course"]["totalHours"], 30)
+        self.assertEqual(result["fieldMeta"]["credits"]["sourceType"], "explicit")
+        self.assertEqual(result["fieldMeta"]["totalHours"]["sourceType"], "explicit")
+
+    def test_missing_credits_and_total_hours_remain_null(self):
+        preparation = self.prepare()
+        course = self.course("new-course")
+        meta = self.field_meta(course)
+        result = self.service.validate_submission(
+            preparation.token,
+            json.dumps({"course": course, "fieldMeta": meta}, ensure_ascii=False),
+        )
+
+        self.assertTrue(result["valid"])
+        for field in ("credits", "totalHours"):
+            self.assertIsNone(result["course"][field])
+            self.assertEqual(result["fieldMeta"][field]["sourceType"], "missing")
+
+    def test_measurements_reject_inference_and_proposal(self):
+        for field, source_type in (
+            ("credits", "inferred"),
+            ("credits", "proposed"),
+            ("totalHours", "inferred"),
+            ("totalHours", "proposed"),
+        ):
+            with self.subTest(field=field, source_type=source_type):
+                preparation = self.prepare(f"new-{field.lower()}-{source_type}")
+                course = self.course(f"new-{field.lower()}-{source_type}")
+                course[field] = 2 if field == "credits" else 30
+                meta = self.field_meta(
+                    course,
+                    **{
+                        field: {
+                            "sourceType": source_type,
+                            "reason": "授業回数から推測",
+                        }
+                    },
+                )
+                result = self.service.validate_submission(
+                    preparation.token,
+                    json.dumps({"course": course, "fieldMeta": meta}, ensure_ascii=False),
+                )
+                self.assertFalse(result["valid"])
+                expected = "AI推察" if source_type == "inferred" else "AI下書き提案"
+                self.assertTrue(any(expected in error for error in result["errors"]))
+
+    def test_measurements_reject_invalid_and_nonfinite_values(self):
+        for field in ("credits", "totalHours"):
+            for invalid in ("2", -1, float("nan"), float("inf")):
+                with self.subTest(field=field, invalid=invalid):
+                    preparation = self.prepare(f"new-{field.lower()}")
+                    course = self.course(f"new-{field.lower()}")
+                    course[field] = invalid
+                    result = self.service.validate_course(preparation.token, course)
+                    self.assertFalse(result["valid"])
+                    self.assertTrue(any(field in error for error in result["errors"]))
 
     def test_timetable_metadata_is_limited_to_safe_candidate_fields(self):
         preparation = self.prepare()
@@ -577,8 +649,10 @@ class CourseImporterTests(unittest.TestCase):
         meta = self.field_meta(course)
 
         course["classStyle"] = "講義・演習"
+        course["credits"] = 2
+        course["totalHours"] = 30
         validation = self.service.validate_course(
-            preparation.token, course, meta, ["classStyle"]
+            preparation.token, course, meta, ["classStyle", "credits", "totalHours"]
         )
 
         self.assertTrue(validation["valid"])
@@ -673,7 +747,10 @@ class CourseImporterTests(unittest.TestCase):
 
     def test_successful_append_creates_backup_and_preserves_order(self):
         preparation = self.prepare()
-        json_text = json.dumps(self.course("new-course", "追加授業"), ensure_ascii=False)
+        new_course = self.course("new-course", "追加授業")
+        new_course["credits"] = 2
+        new_course["totalHours"] = 30
+        json_text = json.dumps(new_course, ensure_ascii=False)
         validation = self.service.validate_submission(preparation.token, json_text)
         result = self.service.register(
             preparation.token, json_text, validation["validationToken"]
@@ -683,6 +760,8 @@ class CourseImporterTests(unittest.TestCase):
         self.assertEqual([item["id"] for item in document["courses"]], ["existing-course", "new-course"])
         self.assertFalse(self.courses_path.read_bytes().endswith(b"\n"))
         self.assertEqual(result["title"], "追加授業")
+        self.assertEqual(document["courses"][-1]["credits"], 2)
+        self.assertEqual(document["courses"][-1]["totalHours"], 30)
         backups = list((self.work_root / "backups").glob("courses-*.json"))
         self.assertEqual(len(backups), 1)
         backup_document = json.loads(backups[0].read_text(encoding="utf-8"))
@@ -717,6 +796,8 @@ class CourseImporterTests(unittest.TestCase):
         )
         edited = dict(self.existing_course)
         edited["summary"] = "管理画面で更新した概要です。"
+        edited["credits"] = 2
+        edited["totalHours"] = 30
         result = self.service.update_managed_course(
             "existing-course",
             edited,
@@ -726,6 +807,8 @@ class CourseImporterTests(unittest.TestCase):
         saved = json.loads(self.courses_path.read_text(encoding="utf-8"))["courses"]
         self.assertEqual(saved[0]["id"], "existing-course")
         self.assertEqual(saved[0]["summary"], edited["summary"])
+        self.assertEqual(saved[0]["credits"], 2)
+        self.assertEqual(saved[0]["totalHours"], 30)
         self.assertEqual(saved[1], other)
         self.assertEqual(len(result["backupPaths"]), 1)
         self.assertTrue(list((self.work_root / "backups").glob("courses-edit-existing-course-*.json")))
@@ -756,6 +839,8 @@ class CourseImporterTests(unittest.TestCase):
         original = self.course("basic-information-1-2026", "基本情報1")
         original["academicYear"] = "2026"
         original["instructor"] = "本多 利恵"
+        original["credits"] = 2
+        original["totalHours"] = 30
         self.courses_path.write_text(
             json.dumps({"courses": [original]}, ensure_ascii=False, indent=2),
             encoding="utf-8",
@@ -766,6 +851,8 @@ class CourseImporterTests(unittest.TestCase):
         self.assertEqual(draft["course"]["id"], "basic-information-1-2027")
         self.assertEqual(draft["course"]["academicYear"], "2027")
         self.assertEqual(draft["course"]["instructor"], "本多 利恵")
+        self.assertEqual(draft["course"]["credits"], 2)
+        self.assertEqual(draft["course"]["totalHours"], 30)
         self.assertTrue(draft["yearSuggested"])
         self.assertEqual(draft["original"], original)
 
@@ -839,6 +926,12 @@ class CourseImporterTests(unittest.TestCase):
         self.assertEqual(context.exception.code, "duplicate_id")
 
     def test_archive_restore_and_permanent_delete_flow(self):
+        self.existing_course["credits"] = 2
+        self.existing_course["totalHours"] = 30
+        self.courses_path.write_text(
+            json.dumps({"courses": [self.existing_course]}, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
         course_hash = self.service._course_hash(self.existing_course)
         archived_result = self.service.archive_managed_course(
             "existing-course", course_hash
@@ -862,6 +955,9 @@ class CourseImporterTests(unittest.TestCase):
         self.assertEqual(
             json.loads(self.archived_courses_path.read_text(encoding="utf-8"))["courses"], []
         )
+        restored = json.loads(self.courses_path.read_text(encoding="utf-8"))["courses"][0]
+        self.assertEqual(restored["credits"], 2)
+        self.assertEqual(restored["totalHours"], 30)
         self.assertEqual(len(restored_result["backupPaths"]), 2)
 
         second_hash = self.service._course_hash(self.existing_course)

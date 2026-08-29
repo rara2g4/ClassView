@@ -49,6 +49,34 @@
       "$ref": "#/$defs/nullableString",
       "description": "必修・選択などの区分です。"
     },
+    "credits": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "シラバスに明記された単位数です。単位表記を含めず数値だけを保存し、情報がなければnullまたは省略します。AIによる推測・提案は行いません。",
+      "x-classview": {
+        "label": "単位数",
+        "unit": "単位",
+        "input": "number"
+      }
+    },
+    "totalHours": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "シラバスに明記された時間数です。現行シラバスでは実時間の合計として扱い、単位表記を含めず数値だけを保存します。情報がなければnullまたは省略し、AIによる推測・提案は行いません。",
+      "x-classview": {
+        "label": "時間数",
+        "unit": "時間",
+        "input": "number",
+        "interpretation": "actualElapsedHours",
+        "provisional": true
+      }
+    },
     "classStyle": {
       "type": "string",
       "description": "講義・演習・グループワークなどの授業形式。空でない値は一覧の授業形式フィルター候補になります。情報がなければ空文字にします。"

@@ -44,7 +44,9 @@ AI下書き提案は元シラバスと矛盾してはいけません。一般論
 {
   "course": {
     "id": "programming-basic",
-    "title": "プログラミング基礎"
+    "title": "プログラミング基礎",
+    "credits": 2,
+    "totalHours": 30
   },
   "fieldMeta": {
     "title": {
@@ -62,6 +64,14 @@ AI下書き提案は元シラバスと矛盾してはいけません。一般論
     "instructor": {
       "sourceType": "missing",
       "reason": "担当者の記載がなく、事実情報のためAI提案もしない"
+    },
+    "credits": {
+      "sourceType": "explicit",
+      "reason": "単位数欄に2単位と明記されているため"
+    },
+    "totalHours": {
+      "sourceType": "explicit",
+      "reason": "時間数欄に30時間と明記されているため"
     }
   }
 }
@@ -102,6 +112,8 @@ AI下書き提案は元シラバスと矛盾してはいけません。一般論
 - `academicYear`
 - `instructor`
 - `courseType`
+- `credits`
+- `totalHours`
 - `prerequisites`
 - `learningGoals`
 - `classFlow`
@@ -116,6 +128,7 @@ AI下書き提案は元シラバスと矛盾してはいけません。一般論
 情報が存在しない任意フィールドは、ClassViewの仕様に従って次のように扱ってください。
 
 - 文字列フィールド: `null` またはフィールド自体を省略
+- 数値フィールド（`credits`、`totalHours`）: `null` またはフィールド自体を省略
 - 配列フィールド: 空配列 `[]`、`null`、またはフィールド自体を省略
 - 配列の中へ空文字だけの要素や、内容のないオブジェクトを作らない
 - `images` は、利用可能な画像パスまたはHTTPS URLがシラバスや追加入力で明示された場合だけ設定する。それ以外は `[]`、`null`、または省略する
@@ -128,6 +141,8 @@ AI下書き提案は元シラバスと矛盾してはいけません。一般論
 - `academicYear`: この授業情報の基準となる年度。PDF内に年度が明記されている場合だけ設定し、ファイル名や周辺情報から推測しない
 - `instructor`: 授業を担当する講師名。個人名ではなく「専任教員」「外部講師」などの役割だけが記載されている場合は、その記載をそのまま使用する
 - `courseType`: 必修・選択などの区分
+- `credits`: シラバスに明記された単位数。`2単位` は単位を除いた数値 `2` として保存する
+- `totalHours`: シラバスに明記された時間数。現行仕様では実時間の合計であり、`30時間` は単位を除いた数値 `30` として保存する
 - `classStyle`: 講義、演習、実習、グループワークなどの授業形式
 - `prerequisites`: 前提知識、履修条件、推奨される事前科目
 - `learningGoals`: 何を学ぶ授業なのか。授業概要・到達目標を中心に、授業の目的や学習対象を記述したもの
@@ -139,6 +154,15 @@ AI下書き提案は元シラバスと矛盾してはいけません。一般論
 - `schedule`: シラバスの回次と時系列を維持した、授業回ごとの `session`、`title`、`description`
 - `suitableFor`: シラバスに適性や推奨対象の記載がある場合に設定する。シラバス作成支援モードでは、後述の条件に従ってAI下書き提案も可能
 - `images`: `src`、必要に応じて `alt` と `caption`
+
+## 単位数・時間数の厳格な取扱い
+
+- `credits` と `totalHours` は学校の正式な事実情報です。シラバスに直接明記されている場合だけ、数値を `course` へ設定し、`fieldMeta` を `explicit` にしてください。
+- `単位`、`時間` などの表示用文字はJSONの値へ含めません。整数・小数をJSON numberとして出力します。
+- 現在の `totalHours` は実時間の合計を意味します。この解釈は現行シラバスに基づく暫定仕様であり、Schemaの `x-classview.interpretation` を正式な参照先とします。
+- 記載がない、数値化できない、複数の値が矛盾する、または意味を確定できない場合は `null` または省略とし、`fieldMeta` を `missing` にして理由を示してください。
+- 授業回数、週当たり回数、科目名、類似授業、一般的な学校制度から値を計算・推測しないでください。`inferred` と `proposed` は使用禁止です。
+- 負数、NaN、Infinity、単位付き文字列は出力しないでください。有限の0以上の数値または `null` だけを使用します。
 
 ## 根拠付き推察を許可するフィールド
 
@@ -178,6 +202,8 @@ AI下書き提案は、文章量を増やすことではなく、学生の授業
 - `academicYear`
 - `grade`
 - `courseType`
+- `credits`
+- `totalHours`
 - `tools`
 - `schedule`
 - `images`
@@ -195,6 +221,8 @@ AI下書き提案は、文章量を増やすことではなく、学生の授業
 - `academicYear`
 - `grade`
 - `courseType`
+- `credits`
+- `totalHours`
 - `classStyle`
 - `prerequisites`
 - `tools`
@@ -281,6 +309,8 @@ AI下書き提案は、文章量を増やすことではなく、学生の授業
 - 一般知識や授業の慣習を、確認済みの事実として創作していない
 - 根拠を持って判断できない項目を `missing` にしている
 - `instructor` と `academicYear` をシラバスの記載なしに推測していない
+- `credits` と `totalHours` を、シラバスの明記なしに `inferred` または `proposed` で生成していない
+- `credits` と `totalHours` は単位文字を含まない有限の0以上の数値、`null`、または省略である
 - `summary` が一覧用の短い一文で、`learningGoals` の詳細をそのまま重複させていない
 - `learningGoals` に「授業概要・到達目標」欄の重要情報が十分に残っている
 - `topics` が授業回の単純コピーではなく、主要テーマを重複なく俯瞰できる

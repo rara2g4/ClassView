@@ -12,6 +12,8 @@ const template = {
   academicYear: null,
   instructor: null,
   courseType: null,
+  credits: null,
+  totalHours: null,
   classStyle: "",
   prerequisites: null,
   learningGoals: null,
@@ -33,6 +35,8 @@ const source = {
   grade: "2",
   academicYear: "2026",
   instructor: "本多 利恵",
+  credits: 2,
+  totalHours: 30,
   classStyle: "",
   outcomes: "Pythonの基本機能を用いて簡単なプログラムを作成できる。",
   topics: ["平均値"],
@@ -57,11 +61,14 @@ const fieldMeta = {
 
 assert.strictEqual(course.title, "統計基礎");
 assert.strictEqual(course.courseType, null);
+assert.strictEqual(course.credits, 2);
+assert.strictEqual(course.totalHours, 30);
 assert.deepStrictEqual(course.assignments, []);
 assert.strictEqual(Editor.fieldStatus("title", course, initial, fieldMeta), "explicit");
 assert.strictEqual(Editor.fieldStatus("outcomes", course, initial, fieldMeta), "inferred");
 assert.strictEqual(Editor.fieldStatus("academicYear", course, initial), "explicit");
 assert.strictEqual(Editor.fieldStatus("instructor", course, initial), "explicit");
+assert.strictEqual(Editor.fieldStatus("credits", course, initial), "explicit");
 assert.strictEqual(Editor.fieldStatus("category", course, initial, fieldMeta), "missing");
 assert.strictEqual(
   Editor.fieldStatus("classFlow", course, initial, fieldMeta, { classFlow: "pending" }),
@@ -104,6 +111,23 @@ assert.strictEqual(course.academicYear, "2027");
 assert.strictEqual(course.instructor, "専任教員");
 assert.strictEqual(Editor.fieldStatus("academicYear", course, initial), "manual");
 
+course = Editor.updateNumber(course, "credits", "1.5");
+course = Editor.updateNumber(course, "totalHours", "22.5");
+assert.strictEqual(course.credits, 1.5);
+assert.strictEqual(course.totalHours, 22.5);
+assert.strictEqual(Editor.fieldStatus("credits", course, initial), "manual");
+course = Editor.updateNumber(course, "credits", "0");
+assert.strictEqual(course.credits, 0);
+course = Editor.updateNumber(course, "credits", "");
+assert.strictEqual(course.credits, null);
+course = Editor.updateNumber(course, "credits", "not-a-number");
+assert.strictEqual(course.credits, "not-a-number");
+course = Editor.updateNumber(course, "credits", "2");
+assert.strictEqual(Editor.formatMeasurement(course.credits, "単位"), "2単位");
+assert.strictEqual(Editor.formatMeasurement(course.totalHours, "時間"), "22.5時間");
+assert.strictEqual(Editor.formatMeasurement(null, "単位"), "");
+assert.strictEqual(Editor.formatMeasurement(Infinity, "時間"), "");
+
 course = Editor.updateScalar(course, "outcomes", "管理者が修正した到達像", template);
 assert.strictEqual(Editor.fieldStatus("outcomes", course, initial, fieldMeta), "manual");
 course = Editor.updateScalar(course, "outcomes", "", template);
@@ -138,6 +162,8 @@ const serialized = Editor.toCourseJson(course, template);
 assert.deepStrictEqual(serialized.topics, ["中央値"]);
 assert.deepStrictEqual(serialized.images, []);
 assert.strictEqual(serialized.prerequisites, null);
+assert.strictEqual(serialized.credits, 2);
+assert.strictEqual(serialized.totalHours, 22.5);
 assert.deepStrictEqual(Object.keys(serialized), Object.keys(template));
 
 console.log("editor-state: all assertions passed");

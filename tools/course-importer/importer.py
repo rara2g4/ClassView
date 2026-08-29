@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import re
 import shutil
@@ -59,6 +60,7 @@ class CourseImporter:
     MAX_EXTRACTED_PAGES = 20
     CONVERSION_MODES = {"strict", "support"}
     SOURCE_TYPES = {"explicit", "inferred", "proposed", "timetable", "missing"}
+    FACTUAL_NUMBER_FIELDS = {"credits", "totalHours"}
     TIMETABLE_FIELDS = {"title", "academicYear", "instructor"}
     REVIEW_STATUSES = {"pending", "accepted", "edited", "rejected"}
     INFERABLE_FIELDS = {
@@ -415,12 +417,29 @@ class CourseImporter:
                 message = "指定された形式に一致しません。"
             elif error.validator == "minLength":
                 message = "空文字にはできません。"
+            elif error.validator == "minimum":
+                message = f"{error.validator_value}以上の数値で入力してください。"
             elif error.validator == "anyOf":
                 message = "title または description のどちらかに内容が必要です。"
             else:
                 message = error.message
             full_message = message if message.startswith(path) else f"{path}: {message}"
             details.append({"field": field, "path": path, "message": full_message})
+        if isinstance(course, dict):
+            for field in sorted(self.FACTUAL_NUMBER_FIELDS):
+                value = course.get(field)
+                if (
+                    isinstance(value, (int, float))
+                    and not isinstance(value, bool)
+                    and not math.isfinite(value)
+                ):
+                    details.append(
+                        {
+                            "field": field,
+                            "path": field,
+                            "message": f"{field}: 有限の0以上の数値またはnullで入力してください。",
+                        }
+                    )
         return details[:20]
 
     def _schema_errors(self, course: Any) -> list[str]:

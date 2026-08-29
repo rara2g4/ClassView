@@ -309,12 +309,16 @@ Windows以外では同じ役割をOSのファイルロックで実現します�
 
 `instructor` は講師名、`academicYear` は授業情報の基準年度です。どちらも任意項目で、空欄のままでも登録できます。年度はファイル名から自動確定せず、AIがPDFから取得した値または管理者が確認して入力した値だけを使用します。フォームとプレビューでは「講師名」「年度」として表示し、年度のプレビューには「年度」を付加しますが、JSONの値は `"2026"` のままです。
 
+`credits`（単位数）と `totalHours`（時間数）は任意の `number | null` です。基本情報の数値入力欄で小数も入力でき、空欄は `null` として扱います。プレビューでは `2単位`、`30時間` のように表示し、JSONには単位文字を含めません。現在の `totalHours` は実時間の合計という暫定解釈で、正式な解釈と表示単位は `data/course.schema.json` の `x-classview` 注釈へ集約しています。来年度以降のシラバス形式変更時は、この定義を起点に見直します。
+
+単位数・時間数は、シラバスから直接取得した `explicit`、管理者が変更した手動修正、情報がない `missing` だけを使用します。授業回数、科目名、類似授業から `inferred` または `proposed` で補完することは、変換指示とサーバー検証の両方で禁止しています。新規登録、編集、次年度版追加、アーカイブ、復元ではcourseオブジェクト全体をSchema検証して扱うため、この2項目も保持されます。
+
 ## 変換モード
 
 - `シラバス作成支援`（標準）: シラバスの事実と合理的推察を優先し、不足部分には科目の一般的な専門知識と教育設計を使った完成形の下書きを `proposed` として提案します。
 - `厳格変換`: シラバスに直接記載された情報と、同じシラバス内から高い確度で直接導ける情報だけを使います。`proposed` は許可しません。
 
-どちらのモードでも、担当者、年度、学年、必修・選択、具体的な教材・ソフトウェア、授業回、評価割合、提出頻度、実施回数などの事実を根拠なく作成しません。元シラバスと一般知識が矛盾する場合は、元シラバスを優先します。
+どちらのモードでも、担当者、年度、学年、必修・選択、単位数、時間数、具体的な教材・ソフトウェア、授業回、評価割合、提出頻度、実施回数などの事実を根拠なく作成しません。元シラバスと一般知識が矛盾する場合は、元シラバスを優先します。
 
 ## 情報源・推察・AI下書き提案
 
@@ -351,7 +355,7 @@ ChatGPTは、どちらのモードでもシラバスに直接書かれた情報�
 
 状態、推察・提案理由、`fieldMeta`、AI提案の確認状態は管理画面内だけで使用します。プレビューには公開される授業文章だけを表示し、`courses.json` へ保存する際は `course` だけを取り出します。
 
-シラバス内からの推察を許可する主な項目は `summary`、`learningGoals`、`outcomes`、`topics`、条件を満たす `suitableFor`、`assignments`、`classFlow` です。シラバス作成支援のAI提案は `summary`、`learningGoals`、`outcomes`、`classFlow`、`prerequisites`、`suitableFor`、`assignments`、`category`、`classStyle` に限定します。`id`、`title`、`instructor`、`academicYear`、`grade`、`courseType`、`tools`、`schedule`、`images` はAI提案で設定できません。
+シラバス内からの推察を許可する主な項目は `summary`、`learningGoals`、`outcomes`、`topics`、条件を満たす `suitableFor`、`assignments`、`classFlow` です。シラバス作成支援のAI提案は `summary`、`learningGoals`、`outcomes`、`classFlow`、`prerequisites`、`suitableFor`、`assignments`、`category`、`classStyle` に限定します。`id`、`title`、`instructor`、`academicYear`、`grade`、`courseType`、`credits`、`totalHours`、`tools`、`schedule`、`images` はAI提案で設定できません。
 
 学習内容を分けて確認するときは、次の役割を使用します。
 
@@ -411,6 +415,7 @@ AI変換時は、連続する授業回の内容表記が完全に同じ場合だ
 - `proposed` の全項目が `accepted`、`edited`、`rejected` のいずれかに判断され、`pending` が残っていないこと。
 - `accepted` はAI原案から変更されておらず、`edited` は原案から変更された値が残り、`rejected` は空値になっていること。画面表示だけでなくサーバー側でも確認します。
 - `data/course.schema.json`（Draft 2020-12）に適合すること。
+- `credits` と `totalHours` が、`null` または有限の0以上の数値であること。文字列、負数、NaN、Infinityは拒否します。
 - JSONの `id` が準備時に指定した授業IDと完全に一致すること。
 - 登録済みの授業IDと重複しないこと。
 - Schemaにないフィールドが含まれていないこと（Schemaの `additionalProperties: false` による検証）。

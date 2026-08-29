@@ -61,6 +61,24 @@
     return next;
   };
 
+  const updateNumber = (course, field, value) => {
+    const next = clone(course);
+    const text = String(value ?? "").trim();
+    if (!text) {
+      next[field] = null;
+      return next;
+    }
+    const number = Number(text);
+    next[field] = Number.isFinite(number) ? number : text;
+    return next;
+  };
+
+  const formatMeasurement = (value, unit) => (
+    typeof value === "number" && Number.isFinite(value) && value >= 0
+      ? `${value}${unit}`
+      : ""
+  );
+
   const updateArrayItem = (course, field, index, value) => {
     const next = clone(course);
     next[field][index] = value;
@@ -121,11 +139,13 @@
     addArrayItem,
     clone,
     fieldStatus,
+    formatMeasurement,
     hasValue,
     normalizeCourse,
     removeArrayItem,
     toCourseJson,
     updateArrayItem,
+    updateNumber,
     updateScalar,
   };
 });
