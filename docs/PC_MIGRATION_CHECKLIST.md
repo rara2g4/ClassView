@@ -65,23 +65,14 @@ runtime configがなくても、versioned default configを初期値として使
 
 ## 5. 自動テストを実行する
 
-```powershell
-cd tools/course-importer
-.\.venv\Scripts\python.exe -m unittest discover -s tests -p "test_*.py" -v
-node tests/test_editor_state.js
-node tests/test_public_course_works.js
-node tests/test_public_feedback_link.js
-node tests/test_public_timetable.js
-node tests/test_timetable_admin.js
-```
+current canonical test list は [`DEVELOPMENT_RULES.md` の Full automated check](DEVELOPMENT_RULES.md#full-automated-check) とする。そこに記載された Python unittest と現在の全 JavaScript test file を実行する。
 
-repository内の全JavaScriptへ現在の検証方式を適用する。
+移行時には併せて次を確認する。
 
-```powershell
-node --check js/timetable.js
-```
-
-必要に応じて他の `.js` にも `node --check` を実行する。新しい大規模test frameworkは移行監査だけを理由に追加しない。
+- repository 内の対象 JavaScript へ `node --check` を実行する。
+- public JSON を UTF-8 で読み込み、対応する JSON Schema で検証する。
+- test が temporary repository/data を使用し、実運用 JSON、runtime、Excel を変更していないことを確認する。
+- 新しい大規模 test framework は移行監査だけを理由に追加しない。
 
 ## 6. 実Excelを読み取り専用で確認する
 

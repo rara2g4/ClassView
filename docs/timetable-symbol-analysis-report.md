@@ -1,5 +1,9 @@
 # ClassView 時間割Excel 記号解析・再dry-run報告
 
+> Status: **Historical snapshot**
+>
+> この文書は調査当時の実データ・実装・dry-run結果を保存した記録であり、現在状態の source of truth ではない。現在の実装状況と件数は [`PROJECT_STATUS.md`](PROJECT_STATUS.md)、現在の domain rule は [`DOMAIN_RULES.md`](DOMAIN_RULES.md) を参照する。
+
 調査日: 2026-08-22
 対象: `Timetable_edit.xlsx` / `2025通年時間割`
 実行条件: 2025-04-01〜2026-03-31、本番保存・公開なし

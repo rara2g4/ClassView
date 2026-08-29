@@ -1,5 +1,9 @@
 # ClassView 時間割未登録科目からの授業登録 実装報告
 
+> Status: **Historical snapshot**
+>
+> この文書は実装当時の調査・test・dry-run結果を保存した記録であり、現在状態の source of truth ではない。現在の実装状況と件数は [`PROJECT_STATUS.md`](PROJECT_STATUS.md)、現在の domain rule は [`DOMAIN_RULES.md`](DOMAIN_RULES.md) を参照する。
+
 ## 実装結果
 
 時間割Excelで見つかった未登録科目から、既存のシラバスインポーターを使って授業を1件ずつ作成し、保存成功後にその科目名を作成済み授業IDへ自動対応できるようにした。`After Effects[A]` と `After Effects[C]` のような授業段階は別の科目・別の対応として保持し、ベース名だけを理由に統合しない。

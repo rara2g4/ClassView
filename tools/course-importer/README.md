@@ -85,20 +85,11 @@ python tools/course-importer/app.py
 1. 公開中とアーカイブの全授業をSchema検証
 2. 接続先、ブランチ、公開側との差異を再確認
 3. 公開対象を確認
-4. 公開versionを更新し、許可された授業・制作物・公開用集計データだけを明示的に準備
+4. 公開versionを更新し、publisher allowlist内の公開dataだけを明示的に準備
 5. 人間が読める公開履歴を作成
 6. 通常のpushで公開先へ送信
 
-自動公開で許可するファイルは、コード内で明示した次のデータと、管理ツールが安全な名前で保存した制作物画像だけです。
-
-```text
-data/courses.json
-data/archived-courses.json
-data/course-feedback-summary.json
-data/course-works.json
-data/site-version.json
-assets/works/<授業ID>/<年度>/<自動生成ファイル名>.jpg|png|webp
-```
+自動公開の対象になり得るのは、course/archive、制作物dataと管理画像、公開用feedback summary、公開時間割JSON、時間割Schema、site versionである。正確なallowlistと公開手順のsource of truthは [`../../docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md#publish) と `publisher.py` とする。
 
 `data/site-version.json`は公開対象データがある場合に公開処理がUTC timestampで自動更新します。公開画面はこの値をCSSとJavaScriptのversion queryへ利用します。`git add .` は使用しません。Python、CSS、JavaScript、README、テスト、その他の作業ファイルは、職員の公開操作に含まれません。すでに別のファイルが公開準備中の場合も処理を停止します。
 
@@ -246,7 +237,7 @@ Windows以外では同じ役割をOSのファイルロックで実現します�
 8. 右側のライブプレビューで公開時の情報構造を確認します。未確認提案が含まれる場合は管理画面内だけに注意を表示します。デスクトップでは編集欄と並び、スマートフォン幅では縦に並びます。
 9. 「編集内容を最終検証」を押します。フォームからClassView用JSONを内部生成し、現在のSchema、準備時のID、ID重複を再検証します。
 10. シラバスからの推察が残っている場合は、対象一覧とフォーム上の推察根拠を読み、確認チェックを入れます。AI下書き提案はすべて判断済みでなければ最終検証を通過しません。その後「ClassViewへ追加」を押すと、追加直前にも検証済みデータとの一致、Schema、重複、確認状態を検証し、バックアップ作成後に追記されます。
-11. 登録後は `git diff -- data/courses.json` で差分を確認してください。このツールはGitのコミットやpushを行いません。
+11. 登録後は `git diff -- data/courses.json` で差分を確認してください。授業登録・編集・保存操作だけではcommit/pushしません。管理ホームで内容確認後に別操作の「ClassViewへ公開」を実行した場合だけ、publisherがallowlist対象をcommit/pushします。
 
 フォームを変更すると最終検証結果は失効し、「ClassViewへ追加」は再び無効になります。必ず再検証してください。生成されるJSONは「高度な確認：現在のJSONを見る」で読み取り専用表示できます。
 
@@ -452,12 +443,9 @@ tools/course-importer/backups/courses-YYYY-MM-DD-HHMMSS.json
 
 ## 自動テスト
 
-テストは一時ディレクトリに作成した `courses.json` と `archived-courses.json` だけを使用します。実運用の2ファイルはテスト前後のハッシュも確認し、変更しません。フォーム状態の変換は、ブラウザに依存しないJavaScriptテストでも確認します。
+通常の自動テストでは、Python unittestと現在の全JavaScript test fileを実行します。完全なcurrent command一覧は [`../../docs/DEVELOPMENT_RULES.md` の Full automated check](../../docs/DEVELOPMENT_RULES.md#full-automated-check) を参照してください。このREADMEに個別test fileの部分一覧をテスト完了条件として重複掲載しません。
 
-```text
-tools\course-importer\.venv\Scripts\python -m unittest discover -s tools/course-importer/tests -v
-node tools/course-importer/tests/test_editor_state.js
-```
+管理ツールのテストは一時ディレクトリに作成した `courses.json` と `archived-courses.json` だけを使用します。実運用の2ファイルはテスト前後のハッシュも確認し、変更しません。フォーム状態の変換は、ブラウザに依存しないJavaScriptテストでも確認します。
 
 次を確認しています。
 
@@ -491,7 +479,7 @@ node tools/course-importer/tests/test_editor_state.js
 - 各管理操作のバックアップと実運用データ非変更
 - リポジトリ・接続先・ブランチ・JSON破損の検出
 - 公開側だけ進んだ場合のfast-forwardと、両側変更時の公開停止
-- 授業・制作物・公開用集計だけの明示的なstage、公開履歴作成、push
+- 授業・制作物・公開用集計・公開時間割等、publisher allowlist内だけの明示的なstage、公開履歴作成、push
 - `shell=False`、特殊文字を含む授業名、診断情報の認証情報マスク
 - 一時Gitリポジトリとローカルのbare remoteを使った本番GitHub非接続テスト
 
@@ -550,11 +538,5 @@ tools/course-importer/
 ├─ static/works.js               制作物管理画面の操作
 ├─ static/timetable.js           時間割のdry-run、対応登録、絞り込み、保存
 ├─ static/editor-state.js        フォーム状態と授業JSONの相互変換
-├─ tests/test_importer.py        実データを使わないPythonテスト
-├─ tests/test_publisher.py       一時Git環境を使う公開・同期テスト
-├─ tests/test_single_instance.py 単一起動と終了ライフサイクルのテスト
-├─ tests/test_works.py            制作物データ・画像・管理APIのテスト
-├─ tests/test_timetable.py        Excel解析、差分、Schema、atomic保存のテスト
-├─ tests/test_public_course_works.js 公開ページの年度・URL・パス検証
-└─ tests/test_editor_state.js    フォーム状態のJavaScriptテスト
+└─ tests/                        Python/JavaScript自動テスト。完全な実行手順はDEVELOPMENT_RULES.mdを参照
 ```

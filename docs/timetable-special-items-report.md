@@ -1,5 +1,9 @@
 # ClassView 時間割インポーター 単発講座・特別授業対応 実装報告
 
+> Status: **Historical snapshot**
+>
+> この文書は実装当時の調査・test・dry-run結果を保存した記録であり、現在状態の source of truth ではない。現在の実装状況と件数は [`PROJECT_STATUS.md`](PROJECT_STATUS.md)、現在の domain rule は [`DOMAIN_RULES.md`](DOMAIN_RULES.md) を参照する。
+
 ## 実装結果
 
 時間割上の未知名称を、ClassViewの通常授業へ対応・新規登録する以外に、職員が「単発講座・特別授業」「行事・説明会」「試験」「休暇」「その他」へ明示分類できるようにした。分類済み項目は `courseId: null` のまま月別時間割へ保存でき、シラバス授業を無理に作る必要がない。

@@ -104,7 +104,7 @@ Windowsでは次のファイルをダブルクリックして起動できます�
 tools/course-importer/run-course-importer.bat
 ```
 
-起動すると職員向けの管理ホームが開きます。授業や制作物を保存した時点では「未公開の変更」としてこのPCに残り、内容確認後に「ClassViewへ公開」を押したときだけ、授業データ、制作物データと管理された制作物画像、手動生成した公開用フィードバック集計に限定してGitHub Pagesへ送信します。Python、CSS、JavaScript、README、生の回答、個別回答、職員メモなどは自動公開の対象外です。
+起動すると職員向けの管理ホームが開きます。授業、制作物、時間割等を保存した時点では「未公開の変更」としてこのPCに残り、内容確認後に「ClassViewへ公開」を押したときだけ、publisher の allowlist に含まれる course/archive、制作物と管理画像、公開用フィードバック集計、公開時間割JSONと時間割Schema、site versionを明示的にcommit/pushします。Python、CSS、JavaScript、README、Excel、生の回答、個別回答、職員メモ、runtimeなどは管理ツールの公開対象外です。正確な境界は [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md#publish) を参照してください。
 
 Google Formsの回答はGoogle SheetsからCSVをダウンロードし、「受講者フィードバック」画面で読み込みます。CSVはそのまま保存せず、必要な回答だけを安定した内部キーへ正規化してGit管理外の `tools/course-importer/feedback-data/` に保存します。授業IDと年度ごとに、学習成果・指導・教材・授業実態・確認候補・自由記述を確認できます。総合点やランキングは作成しません。
 
@@ -302,16 +302,19 @@ git clone https://github.com/rara2g4/ClassView.git
 cd ClassView
 ```
 
-変更したファイルをリポジトリ内へ配置したあと、次の手順でpushします。
+変更したファイルをリポジトリ内へ配置したあと、差分を確認し、reviewした個別ファイルだけをstageしてpushします。`data/`、`js/` 等のdirectory全体をまとめてstageしません。
 
 ```bash
-git status
-git add -- index.html courses.html course.html timetable.html css js data README.md .nojekyll
+git status --short
+git diff -- path/to/changed-file
+git add -- path/to/reviewed-file-1 path/to/reviewed-file-2
+git diff --cached --name-only
+git diff --cached
 git commit -m "Update ClassView"
 git push origin main
 ```
 
-画像を追加した場合は、確認した制作物画像の保存先（例：`assets/works/web-programming/2026/`）も明示して追加します。管理ツールの「ClassViewへ公開」は、授業データ・公開用フィードバック集計・制作物データ・管理された制作物画像だけを自動選択し、リポジトリ全体を一括追加しません。
+`path/to/...` は実際に差分をreviewした個別ファイルへ置き換えます。画像を追加した場合も、確認した画像ファイルを個別に指定します。管理ツールの「ClassViewへ公開」はpublisher allowlist内の公開dataだけを自動選択し、リポジトリ全体を一括追加しません。
 
 すでにclone済みの場合は、`git clone` は不要です。pushが拒否された場合は、リモート側の更新を確認してから取り込んでください。
 
