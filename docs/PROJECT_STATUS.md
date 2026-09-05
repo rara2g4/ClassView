@@ -2,9 +2,9 @@
 
 > Status: **Human-reviewed project documentation / current snapshot**
 >
-> Last verified: 2026-08-30 JST
+> Last verified: 2026-09-03 JST
 >
-> Feature implementation baseline: `d9525763c05d8a92044e272553032d6ad971abb7` (`feat: add course credits and total hours`)
+> Feature implementation baseline: working tree based on `69cb0451a35d0972c95d313d21ef247095f55604`（`academicYear` contract implementation、未commit）
 >
 > この snapshot は上記 baseline の実装、Git 管理 artifact、public data、直前の検証結果を確認している。branch の ahead / behind 等、commit 後すぐ変わる Git 状態は恒久記録せず、作業開始時に再確認する。
 
@@ -37,6 +37,7 @@
 - Schema、ID 一致、公開/archived ID 重複、検証後改変の拒否
 - backup と atomic write による新規登録・編集
 - 次年度版作成、archive、restore、permanent delete
+- course の `academicYear` は任意 key で、文字列値を4桁 ASCII 数字 `YYYY` に制約。`null` は維持
 
 ### Timetable management
 
@@ -53,6 +54,7 @@
 
 - public course から共通 Google Form への prefill link
 - Google Forms 回答 CSV の header 検証、UTF-8 読込、正規化、重複排除
+- feedback input の `YYYY` / `YYYY年度` を正規化し、private/public data の授業年度を4桁 ASCII 数字で検証・保存
 - course/year 別 aggregate、非受講回答の集計除外
 - 個別回答、要確認 issue、status、職員 memo
 - 3 件以上の eligible response から個人情報・自由記述を除外した public summary を生成
@@ -66,6 +68,7 @@
 - JPEG/PNG/WebP の signature、size、dimensions と保存 path 検証
 - external HTTP(S) URL と掲載確認の検証
 - rollover/archive/delete で works を暗黙に copy/delete しない
+- works の必須 `academicYear` key は `null` または4桁 ASCII 数字 `YYYY` に制約
 
 ### Windows and publish
 
@@ -85,17 +88,12 @@
 - public timetable は 2025-04 の 5 日分だけ。annual parser は実装済みだが、現 Excel 全年範囲には blocking が残る。
 - keyword classification の human-confirmation 方針は Project rule として決定済みだが、現行 parser は「説明会」「休暇」等の一部 keyword から `event` / `holiday` 等を直接確定し、専用確認 gate なしで保存可能な場合がある。
 - 学年、group、履修 course による個人時間割絞り込みは未実装。
-- `academicYear` の現行 Schema/validation は自由文字列で、決定済みの `YYYY` project rule は未実装。
 
 ## Planned / known next steps
 
 ### Formal roadmap: personal timetable
 
 個人時間割は正式 roadmap だが、現在は未実装。詳細は [`PRODUCT_VISION.md`](PRODUCT_VISION.md#personal-timetable--planned-roadmap) を参照する。
-
-### Implementation pending: academicYear
-
-授業に紐づく `academicYear` を、値が存在する場合は4桁 ASCII 数字の文字列 `YYYY` とする Project rule は決定済みだが、一部 Schema/validation は未対応。対象 contract と timetable manifest との区別は [`DOMAIN_RULES.md`](DOMAIN_RULES.md#academic-year-identifiers) を参照する。
 
 ### Planned data replacement before production
 
@@ -119,6 +117,7 @@
 | `data/archived-courses.json` | 0 courses |
 | Course fields present in data | 21 Schema fields（optional は course ごとに異なる） |
 | Current course measurement values | `credits` 0 courses / `totalHours` 0 courses（開発用仮値は除去済み） |
+| Course/works academicYear format | non-null値はすべて4桁 ASCII 数字。Schema適合 |
 | `data/course-works.json` | 8 fictional samples / 7 courses |
 | `data/course-feedback-summary.json` | 不存在 |
 | Timetable manifest | academic year `2025`, month `2025-04` |
@@ -180,30 +179,30 @@ dry-run は Excel を編集せず、public JSON の save/publish も実行して
 
 ## Tests
 
-2026-08-30、feature implementation baseline の Commit A 直前に current feature を確認。
+2026-09-03、`academicYear` contract 実装後の current working tree を確認。
 
-- Python `unittest`: 174 tests OK
+- Python `unittest`: 184 tests OK
 - JavaScript test files: 8 passed
 - repository JavaScript `node --check`: 22 files passed
 - JSON parse: 16 files passed
 - Course Schema: 57 courses passed
+- Archived course Schema: 0 courses passed
+- Course works Schema: 8 works passed
+- Timetable manifest Schema: academic year `2025` passed。`YYYY-YYYY` の別 contract も test 済み
 - Template Schema: passed
 - site-version contract: passed
-- browser validation: passed
-- management UI validation: passed
-- EXE smoke: passed
+- browser/management UI validation: `2025`、`0000`、空欄を許可し、期間表記、2桁、`年度` 付き、全角数字を拒否することを確認
+- EXE smoke: health、管理画面、同梱 UI、外部 Schema 読み込み、graceful shutdown passed
 - Python suite は course/Schema、syllabus importer、feedback、works、timetable、publisher temporary Git remote、single-instance、Windows build contract を含む
 - JavaScript suite は editor state、course measurements、works、feedback link、navigation、public timetable、site loader/cache、timetable admin を含む
-
-この documentation-only の Commit B では full feature test を再実行せず、文書 link、Markdown 構造、whitespace、stage 対象を軽量検査する。
 
 Current executable artifact:
 
 - path: `tools/course-importer/dist/ClassView管理ツール.exe`
 - tracked: yes
-- included in feature implementation baseline: yes
-- size: 14,720,886 bytes
-- SHA-256: `7F33040BCE6C3E08451C9A0A9453D0BE7667389421162EC3E359F8E78D8C445B`
+- rebuilt from current working tree: yes（未commit）
+- size: 14,723,095 bytes
+- SHA-256: `8100456885107F7BAF7D1D391F1C5533F2DE7E4CF36FB4E54748C5015F061B15`
 
 ## Known limitations
 
@@ -214,7 +213,6 @@ Current executable artifact:
 - current works は実在作品ではない。
 - keyword heuristic による一部 `event` / `holiday` 分類には、Project rule が求める専用の human-confirmation gate が未実装。
 - course variant は独立 field ではなく、course title/ID と timetable mapping の組合せで表現される。
-- `academicYear` は現在 Schema 上で自由文字列であり、決定済みの `YYYY` ruleをまだ機械的に強制できない。
 - publisher の職員向け field label に `credits` / `totalHours` が未登録で、この field だけを変更した場合は未公開変更の説明に raw key が出る。
 - favicon がなく、localhost static server の `/favicon.ico` が 404 になることがある。
 

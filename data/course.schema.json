@@ -38,8 +38,8 @@
       "description": "対象学年。情報がなければ空文字にします。"
     },
     "academicYear": {
-      "$ref": "#/$defs/nullableString",
-      "description": "この授業情報の基準となる年度です。PDFまたは管理者入力で明確な場合だけ設定します。"
+      "$ref": "#/$defs/nullableAcademicYear",
+      "description": "この授業情報の基準となる年度です。値がある場合は4桁ASCII数字の文字列（例: 2026）で保存し、PDFまたは管理者入力で明確な場合だけ設定します。"
     },
     "instructor": {
       "$ref": "#/$defs/nullableString",
@@ -135,6 +135,15 @@
     }
   },
   "$defs": {
+    "nullableAcademicYear": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 4,
+      "maxLength": 4,
+      "pattern": "^[0-9]{4}$"
+    },
     "nullableString": {
       "type": [
         "string",

@@ -413,6 +413,12 @@ class CourseImporter:
                 message = "Schemaにないフィールドがあります。フィールド名を確認してください。"
             elif error.validator == "type":
                 message = f"{path}は{self._type_label(error.validator_value)}である必要があります。"
+            elif field == "academicYear" and error.validator in {
+                "pattern",
+                "minLength",
+                "maxLength",
+            }:
+                message = "4桁の西暦を半角数字で入力してください（例: 2026）。"
             elif error.validator == "pattern":
                 message = "指定された形式に一致しません。"
             elif error.validator == "minLength":
@@ -1126,8 +1132,8 @@ class CourseImporter:
     def _academic_year_number(value: Any) -> int | None:
         if not isinstance(value, str):
             return None
-        match = re.fullmatch(r"\s*(\d{4})(?:年度)?\s*", value)
-        return int(match.group(1)) if match else None
+        match = re.fullmatch(r"[0-9]{4}", value)
+        return int(match.group(0)) if match else None
 
     @staticmethod
     def _display_path(path: Path, repo_root: Path) -> str:
@@ -1206,22 +1212,27 @@ class CourseImporter:
             _index, original = self._find_course(document, course_id)
             draft = self._clone_json(original)
             old_year = self._academic_year_number(original.get("academicYear"))
-            next_year = old_year + 1 if old_year is not None else None
+            next_year = (
+                old_year + 1
+                if old_year is not None and old_year < 9999
+                else None
+            )
             if next_year is None:
                 draft["academicYear"] = None
                 draft["id"] = ""
             else:
-                draft["academicYear"] = str(next_year)
-                old_suffix = f"-{old_year}"
+                next_year_text = f"{next_year:04d}"
+                draft["academicYear"] = next_year_text
+                old_suffix = f"-{old_year:04d}"
                 base_id = (
                     course_id[: -len(old_suffix)]
                     if course_id.endswith(old_suffix)
                     else course_id
                 )
-                candidate = f"{base_id}-{next_year}"
+                candidate = f"{base_id}-{next_year_text}"
                 counter = 2
                 while self.duplicate_id(candidate, include_archived=True):
-                    candidate = f"{base_id}-{next_year}-{counter}"
+                    candidate = f"{base_id}-{next_year_text}-{counter}"
                     counter += 1
                 draft["id"] = candidate
             return {

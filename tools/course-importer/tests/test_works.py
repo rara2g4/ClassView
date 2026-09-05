@@ -205,6 +205,22 @@ class CourseWorksServiceTests(unittest.TestCase):
         self.assertEqual(self.service.works_for(self.course["id"], "2027"), [])
         self.assertEqual(self.service.works_for(self.next_course["id"], "2027"), [])
 
+    def test_work_producer_rejects_noncanonical_course_year(self):
+        for value in ("2026\n", "2026 ", " 2026", "2026年度", "２０２６"):
+            with self.subTest(value=value):
+                self.course["academicYear"] = value
+                self.write_json(
+                    "courses.json", {"courses": [self.course, self.next_course]}
+                )
+
+                with self.assertRaises(WorksError) as caught:
+                    self.service.add(self.course["id"], self.form("link"), None)
+
+                self.assertEqual(
+                    caught.exception.code, "invalid_course_academic_year"
+                )
+                self.assertEqual(self.service.load_document()["works"], [])
+
     def test_archive_keeps_works_and_permanent_delete_does_not_remove_them(self):
         work = self.service.add(
             self.course["id"], self.form("link"), None

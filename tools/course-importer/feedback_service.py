@@ -51,6 +51,7 @@ class FeedbackService:
 
     DATA_VERSION = 1
     PUBLIC_PATH = Path("data/course-feedback-summary.json")
+    ACADEMIC_YEAR_PATTERN = re.compile(r"^[0-9]{4}$")
 
     def __init__(self, repo_root: Path, work_root: Path, course_importer: Any):
         self.repo_root = Path(repo_root).resolve()
@@ -85,6 +86,16 @@ class FeedbackService:
                 status=500,
                 code="feedback_store_invalid",
             )
+        if any(
+            not isinstance(record, dict)
+            or not self._is_academic_year(record.get("academic_year"))
+            for record in value["records"]
+        ):
+            raise FeedbackError(
+                "保存済みの受講者フィードバックに不正な年度があります。管理担当者へ確認してください。",
+                status=500,
+                code="feedback_store_invalid",
+            )
         value.setdefault("issues", {})
         return value
 
@@ -105,6 +116,31 @@ class FeedbackService:
     @staticmethod
     def _clean(value: Any) -> str:
         return unicodedata.normalize("NFKC", str(value or "")).strip()
+
+    @classmethod
+    def _is_academic_year(cls, value: Any) -> bool:
+        return isinstance(value, str) and cls.ACADEMIC_YEAR_PATTERN.fullmatch(value) is not None
+
+    @classmethod
+    def _require_academic_year(cls, value: Any) -> str:
+        if not cls._is_academic_year(value):
+            raise FeedbackError(
+                "年度は4桁の半角数字で指定してください。",
+                code="invalid_academic_year",
+            )
+        return value
+
+    @classmethod
+    def _course_academic_year(cls, value: Any) -> str | None:
+        if value is None:
+            return None
+        if not cls._is_academic_year(value):
+            raise FeedbackError(
+                "登録済み授業の年度が保存形式に適合していません。管理担当者へ確認してください。",
+                status=500,
+                code="invalid_course_academic_year",
+            )
+        return value
 
     @staticmethod
     def _canonical_text(value: Any) -> str:
@@ -232,15 +268,18 @@ class FeedbackService:
                 f"{row_number}行目の授業ID「{course_id}」はClassViewに登録されていません。",
                 code="unknown_course_id",
             )
-        year_match = re.fullmatch(r"(\d{4})(?:年度)?", self._clean(raw["academic_year"]))
+        year_match = re.fullmatch(
+            r"([0-9]{4})(?:年度)?",
+            self._clean(raw["academic_year"]),
+        )
         if year_match is None:
             raise FeedbackError(
                 f"{row_number}行目の年度を確認してください。4桁の西暦で入力してください。",
                 code="invalid_academic_year",
             )
         academic_year = year_match.group(1)
-        registered_year = self._clean(course.get("academicYear"))
-        if registered_year and registered_year.removesuffix("年度") != academic_year:
+        registered_year = self._course_academic_year(course.get("academicYear"))
+        if registered_year is not None and registered_year != academic_year:
             raise FeedbackError(
                 f"{row_number}行目の年度（{academic_year}）は、登録済み授業の年度（{registered_year}）と一致しません。",
                 code="unexpected_academic_year",
@@ -469,6 +508,7 @@ class FeedbackService:
         ]
 
     def aggregate(self, course_id: str, academic_year: str) -> dict[str, Any]:
+        academic_year = self._require_academic_year(academic_year)
         store = self._load_store()
         records = [record for record in store["records"] if record.get("course_id") == course_id and record.get("academic_year") == academic_year]
         if not records:
@@ -607,6 +647,7 @@ class FeedbackService:
         return {"success": True, "message": "確認状態と職員メモを保存しました。", "issue": issue}
 
     def save_public_summary(self, course_id: str, academic_year: str) -> dict[str, Any]:
+        academic_year = self._require_academic_year(academic_year)
         summary = self.aggregate(course_id, academic_year)
         if not summary["summary_available"]:
             raise FeedbackError(
@@ -632,6 +673,20 @@ class FeedbackService:
                 current = json.loads(self.public_path.read_text(encoding="utf-8"))
             except (OSError, json.JSONDecodeError) as error:
                 raise FeedbackError("公開用フィードバック集計を読み込めません。", status=500, code="public_feedback_invalid") from error
+            if (
+                not isinstance(current, dict)
+                or not isinstance(current.get("courses"), list)
+                or any(
+                    not isinstance(item, dict)
+                    or not self._is_academic_year(item.get("academicYear"))
+                    for item in current["courses"]
+                )
+            ):
+                raise FeedbackError(
+                    "公開用フィードバック集計に不正な年度があります。",
+                    status=500,
+                    code="public_feedback_invalid",
+                )
         timestamp = datetime.now().astimezone().strftime("%Y%m%d-%H%M%S")
         if self.public_path.exists():
             backup = self.backups_root / f"course-feedback-summary-{timestamp}.json"

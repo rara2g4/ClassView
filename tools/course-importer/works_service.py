@@ -48,6 +48,7 @@ class CourseWorksService:
         "image/webp": "webp",
     }
     DISPLAY_MODES = {"image", "link", "both"}
+    ACADEMIC_YEAR_PATTERN = re.compile(r"^[0-9]{4}$")
 
     def __init__(
         self,
@@ -84,7 +85,15 @@ class CourseWorksService:
     @staticmethod
     def _academic_year(course: dict[str, Any]) -> str | None:
         value = course.get("academicYear")
-        return value.strip() if isinstance(value, str) and value.strip() else None
+        if value is None:
+            return None
+        if not isinstance(value, str) or not CourseWorksService.ACADEMIC_YEAR_PATTERN.fullmatch(value):
+            raise WorksError(
+                "授業の年度は4桁の半角数字である必要があります。管理担当者へ確認してください。",
+                status=500,
+                code="invalid_course_academic_year",
+            )
+        return value
 
     def _course(self, course_id: str) -> tuple[dict[str, Any], str]:
         for source, document in (

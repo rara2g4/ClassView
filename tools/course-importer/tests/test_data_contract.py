@@ -75,6 +75,68 @@ class CourseDataContractTests(unittest.TestCase):
                 invalid_course[field] = invalid
                 self.assertTrue(list(self.validator.iter_errors(invalid_course)))
 
+    def test_course_and_works_academic_years_use_nullable_ascii_yyyy(self):
+        template = json.loads(
+            (REPO_ROOT / "data" / "course.template.json").read_text(encoding="utf-8")
+        )
+        works_schema = json.loads(
+            (REPO_ROOT / "data" / "course-works.schema.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        works_validator = Draft202012Validator(works_schema)
+        work = json.loads(
+            (REPO_ROOT / "data" / "course-works.json").read_text(encoding="utf-8")
+        )["works"][0]
+
+        for value in ("2025", "0000", None):
+            with self.subTest(contract="course", value=value):
+                course = dict(template)
+                course["academicYear"] = value
+                self.assertEqual(list(self.validator.iter_errors(course)), [])
+            with self.subTest(contract="work", value=value):
+                document = {"works": [{**work, "academicYear": value}]}
+                self.assertEqual(list(works_validator.iter_errors(document)), [])
+
+        for value in (
+            "2025\n",
+            "2025 ",
+            " 2025",
+            "2025-2026",
+            "25",
+            "2025年度",
+            "２０２５",
+        ):
+            with self.subTest(contract="course", value=value):
+                course = dict(template)
+                course["academicYear"] = value
+                self.assertTrue(list(self.validator.iter_errors(course)))
+            with self.subTest(contract="work", value=value):
+                document = {"works": [{**work, "academicYear": value}]}
+                self.assertTrue(list(works_validator.iter_errors(document)))
+
+    def test_timetable_manifest_keeps_its_separate_academic_year_contract(self):
+        schema = json.loads(
+            (REPO_ROOT / "data" / "timetable-manifest.schema.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        validator = Draft202012Validator(schema)
+        manifest = json.loads(
+            (REPO_ROOT / "data" / "timetable" / "manifest.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        for value in ("2025", "2025-2026"):
+            with self.subTest(value=value):
+                self.assertEqual(
+                    list(validator.iter_errors({**manifest, "academicYear": value})),
+                    [],
+                )
+        self.assertTrue(
+            list(validator.iter_errors({**manifest, "academicYear": "0000"}))
+        )
+
     def test_clone_handoff_contains_valid_timetable_state(self):
         courses = json.loads(
             (REPO_ROOT / "data" / "courses.json").read_text(encoding="utf-8")
@@ -189,6 +251,23 @@ class CourseDataContractTests(unittest.TestCase):
             'input.step = "any"',
             'input.placeholder = "未入力"',
             "Editor.updateNumber",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertEqual(scripts.count(phrase), 2)
+
+    def test_management_forms_expose_academic_year_format(self):
+        scripts = "\n".join(
+            (REPO_ROOT / path).read_text(encoding="utf-8")
+            for path in (
+                "tools/course-importer/static/app.js",
+                "tools/course-importer/static/course-management.js",
+            )
+        )
+        for phrase in (
+            'input.pattern = "[0-9]{4}"',
+            "input.maxLength = 4",
+            'input.inputMode = "numeric"',
+            'input.placeholder = "2026"',
         ):
             with self.subTest(phrase=phrase):
                 self.assertEqual(scripts.count(phrase), 2)
@@ -365,18 +444,16 @@ class CourseDataContractTests(unittest.TestCase):
             with self.subTest(phrase=phrase):
                 self.assertIn(phrase, prompt)
 
-    def test_new_optional_fields_follow_the_nullable_string_contract(self):
+    def test_instructor_keeps_the_nullable_string_contract(self):
         template = json.loads(
             (REPO_ROOT / "data" / "course.template.json").read_text(encoding="utf-8")
         )
-        for field in ("instructor", "academicYear"):
-            with self.subTest(field=field):
-                self.assertNotIn(field, self.schema["required"])
-                self.assertEqual(
-                    self.schema["properties"][field]["$ref"],
-                    "#/$defs/nullableString",
-                )
-                self.assertIsNone(template[field])
+        self.assertNotIn("instructor", self.schema["required"])
+        self.assertEqual(
+            self.schema["properties"]["instructor"]["$ref"],
+            "#/$defs/nullableString",
+        )
+        self.assertIsNone(template["instructor"])
 
     def test_conversion_prompt_contains_identity_year_and_schedule_compression_rules(self):
         prompt = (REPO_ROOT / "docs" / "syllabus-conversion-prompt.md").read_text(

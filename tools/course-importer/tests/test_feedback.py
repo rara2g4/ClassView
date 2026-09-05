@@ -251,6 +251,97 @@ class FeedbackServiceTests(unittest.TestCase):
             self.import_rows([self.base_row(academic_year="2027")])
         self.assertEqual(caught.exception.code, "unexpected_academic_year")
 
+    def test_academic_year_input_is_normalized_before_storage(self):
+        self.course["academicYear"] = None
+        (self.repo / "data" / "courses.json").write_text(
+            json.dumps({"courses": [self.course]}, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        inputs = ("2025", "2025年度", "２０２５", "２０２５年度", "0000")
+        self.import_rows(
+            [
+                self.base_row(timestamp=f"normalized-{index}", academic_year=value)
+                for index, value in enumerate(inputs)
+            ]
+        )
+        self.assertEqual(
+            [record["academic_year"] for record in self.service._load_store()["records"]],
+            ["2025", "2025", "2025", "2025", "0000"],
+        )
+
+    def test_stored_course_academic_year_is_validated_without_normalization(self):
+        valid_inputs = (("2025", "2025"), ("0000", "0000"), (None, "2025"))
+        for stored_year, csv_year in valid_inputs:
+            with self.subTest(contract="valid", stored_year=stored_year):
+                self.course["academicYear"] = stored_year
+                (self.repo / "data" / "courses.json").write_text(
+                    json.dumps({"courses": [self.course]}, ensure_ascii=False),
+                    encoding="utf-8",
+                )
+                result = self.import_rows(
+                    [
+                        self.base_row(
+                            timestamp=f"valid-{stored_year!r}",
+                            academic_year=csv_year,
+                        )
+                    ]
+                )
+                self.assertEqual(result["added"], 1)
+
+        for stored_year in ("２０２５", " 2025", "2025 ", "2025\n", "2025年度"):
+            with self.subTest(contract="invalid", stored_year=stored_year):
+                self.course["academicYear"] = stored_year
+                (self.repo / "data" / "courses.json").write_text(
+                    json.dumps({"courses": [self.course]}, ensure_ascii=False),
+                    encoding="utf-8",
+                )
+                with self.assertRaises(FeedbackError) as caught:
+                    self.import_rows(
+                        [
+                            self.base_row(
+                                timestamp=f"invalid-{stored_year!r}",
+                                academic_year="2025",
+                            )
+                        ]
+                    )
+                self.assertEqual(
+                    caught.exception.code, "invalid_course_academic_year"
+                )
+
+    def test_feedback_rejects_invalid_year_input_and_stored_contracts(self):
+        self.course["academicYear"] = None
+        (self.repo / "data" / "courses.json").write_text(
+            json.dumps({"courses": [self.course]}, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        for value in ("2025-2026", "25"):
+            with self.subTest(source="csv", value=value):
+                with self.assertRaises(FeedbackError) as caught:
+                    self.import_rows([self.base_row(academic_year=value)])
+                self.assertEqual(caught.exception.code, "invalid_academic_year")
+
+        self.service.private_root.mkdir(parents=True, exist_ok=True)
+        for value in ("2025-2026", "25", "2025年度", "２０２５", None):
+            with self.subTest(source="stored", value=value):
+                self.service.store_path.write_text(
+                    json.dumps(
+                        {
+                            "version": 1,
+                            "records": [{"academic_year": value}],
+                            "issues": {},
+                        },
+                        ensure_ascii=False,
+                    ),
+                    encoding="utf-8",
+                )
+                with self.assertRaises(FeedbackError) as caught:
+                    self.service._load_store()
+                self.assertEqual(caught.exception.code, "feedback_store_invalid")
+
+        with self.assertRaises(FeedbackError) as caught:
+            self.service.aggregate("web-programming", "2025年度")
+        self.assertEqual(caught.exception.code, "invalid_academic_year")
+
     def test_different_years_are_kept_in_separate_groups(self):
         self.course["academicYear"] = None
         (self.repo / "data" / "courses.json").write_text(
@@ -354,7 +445,11 @@ class FeedbackServiceTests(unittest.TestCase):
 
     def test_public_summary_excludes_free_text_and_personal_data(self):
         rows = [
-            self.base_row(timestamp=str(index), content_concern_text="<script>alert(1)</script>")
+            self.base_row(
+                timestamp=str(index),
+                academic_year="２０２６年度",
+                content_concern_text="<script>alert(1)</script>",
+            )
             for index in range(3)
         ]
         self.import_rows(rows)
@@ -364,6 +459,33 @@ class FeedbackServiceTests(unittest.TestCase):
         self.assertNotIn("script", published)
         self.assertNotIn("student@example", published)
         self.assertIn("eligibleResponseCount", published)
+        self.assertEqual(
+            json.loads(published)["courses"][0]["academicYear"],
+            "2026",
+        )
+
+    def test_public_summary_rejects_noncanonical_existing_years(self):
+        self.import_rows(
+            [self.base_row(timestamp=str(index)) for index in range(3)]
+        )
+        for value in ("2025-2026", "25", "2025年度", "２０２５", None):
+            with self.subTest(value=value):
+                self.service.public_path.write_text(
+                    json.dumps(
+                        {
+                            "version": 1,
+                            "generatedAt": "2026-09-03T00:00:00+00:00",
+                            "courses": [
+                                {"courseId": "legacy", "academicYear": value}
+                            ],
+                        },
+                        ensure_ascii=False,
+                    ),
+                    encoding="utf-8",
+                )
+                with self.assertRaises(FeedbackError) as caught:
+                    self.service.save_public_summary("web-programming", "2026")
+                self.assertEqual(caught.exception.code, "public_feedback_invalid")
 
     def test_empty_optional_text_and_zero_records_do_not_break_dashboard(self):
         self.assertEqual(self.service.dashboard()["total_count"], 0)

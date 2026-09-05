@@ -41,7 +41,7 @@ Current implementation の証拠と Project rule の権威は別の判断軸で�
 - 文字列配列または `null`: `topics`、`tools`、`assignments`
 - 専用オブジェクト配列または `null`: `schedule`、`images`
 
-`academicYear` は Schema 上は文字列であり、年度形式の pattern は設定されていない。`instructor` は人名だけでなく、シラバスに記載された担当者の役割も許す記述になっている。`credits` と `totalHours` は AI 推察・提案を禁止している。`totalHours` の `actualElapsedHours` 解釈は Schema 上で `provisional: true` である。
+`academicYear` は任意 key で、値がある場合は4桁 ASCII 数字の文字列、値がない場合は `null` を許す。`instructor` は人名だけでなく、シラバスに記載された担当者の役割も許す記述になっている。`credits` と `totalHours` は AI 推察・提案を禁止している。`totalHours` の `actualElapsedHours` 解釈は Schema 上で `provisional: true` である。
 
 `data/archived-courses.json` は同じ course Schema を使う。アーカイブは公開 `courses` から archive へ移動し、復元は逆方向へ移動する。次年度版は前年度版を残したまま別 ID の course として追加する。
 
@@ -49,9 +49,9 @@ Current implementation の証拠と Project rule の権威は別の判断軸で�
 
 ### Current implementation
 
-- course の `academicYear` は文字列または `null` で、現在の Schema と validation は4桁年度へ制約していない。
-- course works の `academicYear` は必須 key だが、値は文字列または `null` であり、Schema に年度 pattern はない。
-- feedback import は授業年度を `YYYY` または `YYYY年度` から4桁文字列へ正規化している。
+- course の `academicYear` は任意 key で、値がある場合は `^[0-9]{4}$`、値がない場合は `null` とする Schema と importer validation がある。
+- course works の `academicYear` は必須 key だが `null` を許し、文字列値は `^[0-9]{4}$` とする Schema がある。works producer は対応する course の検証済み年度をそのまま保存する。
+- feedback CSV input は NFKC 正規化後の `YYYY` または `YYYY年度` を受け付け、private record の `academic_year` と public summary の `academicYear` には4桁 ASCII 数字だけを保存する。保存済み private/public data の年度を入力時の許容形式へ再解釈しない。
 - timetable manifest の `academicYear` は時間割全体の学年度・期間を表す別 contract で、現在の Schema は `YYYY` または `YYYY-YYYY` を許可する。
 
 ### Project rule
@@ -60,9 +60,9 @@ Current implementation の証拠と Project rule の権威は別の判断軸で�
 
 この rule は少なくとも course、course works、feedback の授業年度へ適用する。現在 `string | null` の field は、この rule だけを理由に `null` 禁止へ変更しない。timetable manifest の `academicYear` は時間割全体の学年度・期間を表す別 contract であり、同じ key 名であることを理由にこの rule を適用しない。
 
-### Implementation pending
+### Implemented contract
 
-この project rule は course/works Schema、importer validation、form validation 等へ一貫して実装されていない。feedback import は NFKC 正規化と4桁形式の検査を行うが、授業年度 contract 全体で `^[0-9]{4}$` を統一強制している状態ではない。現在の自由文字列 contract を実装済みの正式形式と誤認せず、将来の機能変更で対象ごとの producer、consumer、validation、既存データ移行をまとめて対応する。
+course/works Schema、course importer、管理 form、works producer、feedback normalization/private store/public summary validation でこの形式を強制する。`"0000"` も正規表現上は有効であり、暦上の意味を追加推測して拒否しない。timetable manifest の既存 contract は変更しない。
 
 ## totalHours — Temporary interpretation
 

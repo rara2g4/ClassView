@@ -507,12 +507,16 @@ class CourseImporterTests(unittest.TestCase):
         self.assertFalse(result["checklist"]["metadata"])
         self.assertTrue(any("fieldMeta" in error for error in result["errors"]))
 
-    def test_instructor_and_academic_year_are_optional_nullable_strings(self):
+    def test_instructor_and_academic_year_are_optional_and_nullable(self):
         preparation = self.prepare()
         course = self.course("new-course")
         course["instructor"] = "本多 利恵"
-        course["academicYear"] = "2026"
-        self.assertTrue(self.service.validate_course(preparation.token, course)["valid"])
+        for academic_year in ("2025", "0000"):
+            with self.subTest(academic_year=academic_year):
+                course["academicYear"] = academic_year
+                self.assertTrue(
+                    self.service.validate_course(preparation.token, course)["valid"]
+                )
 
         course["instructor"] = None
         course["academicYear"] = None
@@ -521,6 +525,29 @@ class CourseImporterTests(unittest.TestCase):
         course.pop("instructor")
         course.pop("academicYear")
         self.assertTrue(self.service.validate_course(preparation.token, course)["valid"])
+
+    def test_academic_year_rejects_noncanonical_saved_formats(self):
+        preparation = self.prepare()
+        for academic_year in (
+            "2025\n",
+            "2025 ",
+            " 2025",
+            "2025-2026",
+            "25",
+            "2025年度",
+            "２０２５",
+        ):
+            with self.subTest(academic_year=academic_year):
+                course = self.course("new-course")
+                course["academicYear"] = academic_year
+                validation = self.service.validate_course(preparation.token, course)
+                self.assertFalse(validation["valid"])
+                field_error = next(
+                    error
+                    for error in validation["fieldErrors"]
+                    if error["field"] == "academicYear"
+                )
+                self.assertIn("4桁の西暦", field_error["message"])
 
     def test_instructor_and_academic_year_reject_non_strings(self):
         preparation = self.prepare()
@@ -858,7 +885,7 @@ class CourseImporterTests(unittest.TestCase):
 
     def test_rollover_without_year_suffix_appends_new_year(self):
         original = self.course("basic-information-1", "基本情報1")
-        original["academicYear"] = "2026年度"
+        original["academicYear"] = "2026"
         self.courses_path.write_text(
             json.dumps({"courses": [original]}, ensure_ascii=False, indent=2),
             encoding="utf-8",
@@ -866,6 +893,19 @@ class CourseImporterTests(unittest.TestCase):
         draft = self.service.rollover_draft("basic-information-1")
         self.assertEqual(draft["course"]["id"], "basic-information-1-2027")
         self.assertEqual(draft["course"]["academicYear"], "2027")
+
+    def test_rollover_preserves_four_digits_after_year_zero(self):
+        original = self.course("historical-course-0000", "年度境界テスト")
+        original["academicYear"] = "0000"
+        self.courses_path.write_text(
+            json.dumps({"courses": [original]}, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+
+        draft = self.service.rollover_draft(original["id"])
+
+        self.assertEqual(draft["course"]["id"], "historical-course-0001")
+        self.assertEqual(draft["course"]["academicYear"], "0001")
 
     def test_rollover_preserves_previous_year_and_allows_partial_change(self):
         original = self.course("basic-information-1-2026", "基本情報1")

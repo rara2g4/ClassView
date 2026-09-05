@@ -258,6 +258,13 @@
       input.placeholder = "未入力";
       input.inputMode = "decimal";
     } else input.type = "text";
+    if (field === "academicYear") {
+      input.pattern = "[0-9]{4}";
+      input.maxLength = 4;
+      input.inputMode = "numeric";
+      input.placeholder = "2026";
+      input.title = "4桁の西暦を半角数字で入力してください（例: 2026）";
+    }
     const readOnly = isViewMode() || (field === "id" && state.mode !== "rollover");
     input.readOnly = readOnly;
     if (readOnly) input.setAttribute("aria-readonly", "true");

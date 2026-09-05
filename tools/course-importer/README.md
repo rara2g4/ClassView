@@ -135,7 +135,7 @@ Google Formsの質問文と内部キーの対応は `feedback_config.py` の `FE
 
 タイムスタンプ、授業ID、授業名、年度、受講確認と集計に使う選択式質問は必須列です。「できるようになったこと」「特に役立ったこと」「改善してほしいこと」「専門内容について気になった点」「その他」の自由記述5列は任意です。任意列そのものがない場合は警告して、その項目を空として読み込みます。列が存在して全回答セルが空の場合は正常です。必須列がない場合は短い項目名で読み込みを停止し、画面の折りたたみ「技術情報」で検出列と内部キーへの解決結果を確認できます。
 
-CSVの各行は `feedback_service.py` で、`course_id`、`academic_year`、`content_understanding`、`explanation_clarity`、`difficulty`、`gained_skills_text` などの安定したキーへ正規化されます。将来Google Sheets APIを導入する場合は、API取得結果を同じ正規化レコードへ変換する入力アダプターを追加し、集計と画面を再利用できます。
+CSVの各行は `feedback_service.py` で、`course_id`、`academic_year`、`content_understanding`、`explanation_clarity`、`difficulty`、`gained_skills_text` などの安定したキーへ正規化されます。年度入力はNFKC正規化後の `YYYY` または `YYYY年度` を受け付けますが、保存する `academic_year` と公開用 `academicYear` は4桁ASCII数字の `YYYY` だけです。将来Google Sheets APIを導入する場合は、API取得結果を同じ正規化レコードへ変換する入力アダプターを追加し、集計と画面を再利用できます。
 
 回答IDは、タイムスタンプ、授業ID、年度、正規化した回答内容を含むレコード全体のSHA-256から生成します。同じCSVを繰り返し読み込んでも、同じ回答は追加されません。授業識別は授業名ではなく `course_id + academic_year` を使用し、授業名が違う場合は警告して現在のClassView上の名前を表示します。
 
@@ -272,7 +272,7 @@ Windows以外では同じ役割をOSのファイルロックで実現します�
 新しいIDを持つ新年度版として追加
 ```
 
-`academicYear` が `2026` または `2026年度` のように解釈できる場合は、初期値を `2027` にします。元IDが `basic-information-1-2026` なら `basic-information-1-2027`、年度を含まない `basic-information-1` なら `basic-information-1-2027` を候補にします。候補が公開中またはアーカイブに存在する場合は、`-2` などを付けた未使用候補を提示します。年度を解釈できない場合はIDと年度を空欄にし、管理者の入力を求めます。
+`academicYear` が4桁ASCII数字の `2026` のような有効値である場合は、初期値を `2027` にします。元IDが `basic-information-1-2026` なら `basic-information-1-2027`、年度を含まない `basic-information-1` なら `basic-information-1-2027` を候補にします。候補が公開中またはアーカイブに存在する場合は、`-2` などを付けた未使用候補を提示します。年度を解釈できない場合はIDと年度を空欄にし、管理者の入力を求めます。
 
 講師、概要、授業計画などは前年度版からすべてコピーされます。管理者は新年度版のフォームで自由に修正できます。変更点欄には、年度や講師などの変更前後、配列項目の変更件数が表示されます。年度以外の内容が同じでも、新しいIDと年度があれば別授業として登録できます。保存直前に前年度版の内容が変わっていないことを再確認し、新年度版だけを `courses.json` へ追記します。
 
@@ -298,7 +298,7 @@ Windows以外では同じ役割をOSのファイルロックで実現します�
 
 `data/course.template.json` は、AIのJSONで省略された項目をフォーム状態へ補うときと、空欄を最終JSONへ戻すときの基準です。`category`、`grade`、`academicYear`、`instructor`、`courseType`、`classStyle` の入力候補は、起動時に現在の `data/courses.json` から重複を除いて生成します。候補外の値も入力できます。
 
-`instructor` は講師名、`academicYear` は授業情報の基準年度です。どちらも任意項目で、空欄のままでも登録できます。年度はファイル名から自動確定せず、AIがPDFから取得した値または管理者が確認して入力した値だけを使用します。フォームとプレビューでは「講師名」「年度」として表示し、年度のプレビューには「年度」を付加しますが、JSONの値は `"2026"` のままです。
+`instructor` は講師名、`academicYear` は授業情報の基準年度です。どちらも任意項目で、空欄のままでも登録できます。年度はファイル名から自動確定せず、AIがPDFから取得した値または管理者が確認して入力した値だけを使用します。値がある場合は4桁ASCII数字の `YYYY`（例: `"2026"`）で入力・保存します。`"2026年度"`、全角数字、期間表記は保存できません。フォームとプレビューでは「年度」として表示し、プレビューに「年度」を付加しますが、JSONの値は `"2026"` のままです。
 
 `credits`（単位数）と `totalHours`（時間数）は任意の `number | null` です。基本情報の数値入力欄で小数も入力でき、空欄は `null` として扱います。プレビューでは `2単位`、`30時間` のように表示し、JSONには単位文字を含めません。現在の `totalHours` は実時間の合計という暫定解釈で、正式な解釈と表示単位は `data/course.schema.json` の `x-classview` 注釈へ集約しています。来年度以降のシラバス形式変更時は、この定義を起点に見直します。
 
@@ -470,7 +470,7 @@ tools/course-importer/backups/courses-YYYY-MM-DD-HHMMSS.json
 - `fieldMeta`、`sourceType`、`reason`、`reviewStatus`、`proposalReviews` が保存データへ混入しないこと
 - PDFページ番号の範囲外
 - 単一ページと2ページ以上の連続範囲、抽出順序、不正範囲
-- `instructor`、`academicYear` の文字列・`null`・省略・不正型
+- `instructor` の文字列・`null`・省略・不正型と、`academicYear` の `YYYY`・`null`・省略・不正形式
 - AI変換指示に含まれる連続同一scheduleの圧縮条件と禁止条件
 - バックアップ付きの正常な追記と並び順
 - 既存授業編集時のID固定、Schema違反拒否、他授業の保護
