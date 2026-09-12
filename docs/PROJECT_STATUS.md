@@ -2,9 +2,9 @@
 
 > Status: **Human-reviewed project documentation / current snapshot**
 >
-> Last verified: 2026-09-03 JST
+> Last verified: 2026-09-11 JST
 >
-> Feature implementation baseline: working tree based on `69cb0451a35d0972c95d313d21ef247095f55604`（`academicYear` contract implementation、未commit）
+> Feature implementation baseline: `38d6cadcfc2efe18a6f21ddddd923062816c9e44`（`feat: enforce academic year contract`）
 >
 > この snapshot は上記 baseline の実装、Git 管理 artifact、public data、直前の検証結果を確認している。branch の ahead / behind 等、commit 後すぐ変わる Git 状態は恒久記録せず、作業開始時に再確認する。
 
@@ -93,7 +93,9 @@
 
 ### Formal roadmap: personal timetable
 
-個人時間割は正式 roadmap だが、現在は未実装。詳細は [`PRODUCT_VISION.md`](PRODUCT_VISION.md#personal-timetable--planned-roadmap) を参照する。
+個人時間割は正式 roadmap だが、現在は未実装。学年・所属組、学年度 + 前期 / 後期単位の履修設定、必修自動反映、複数時限 conflict、学校全体時間割との切替、対象学年・正式10 category filter、Desktop / Mobile の UI 方向は人間 review 済みで、production implementation pending である。詳細な Project rule は [`DOMAIN_RULES.md`](DOMAIN_RULES.md#personal-timetable--project-rule--implementation-pending)、製品上の位置づけは [`PRODUCT_VISION.md`](PRODUCT_VISION.md#personal-timetable--planned-roadmap)、planned architecture は [`ARCHITECTURE.md`](ARCHITECTURE.md#personal-timetable--planned--implementation-pending) を参照する。
+
+Human UX review 用 prototype は production の Current implementation ではない。所属組と A/B/C 等の授業内 group を区別する public contract、正式 category の管理・validation、最終 `localStorage` contract は実装時の設計・検証が必要である。
 
 ### Planned data replacement before production
 
@@ -200,7 +202,7 @@ Current executable artifact:
 
 - path: `tools/course-importer/dist/ClassView管理ツール.exe`
 - tracked: yes
-- rebuilt from current working tree: yes（未commit）
+- rebuilt from implementation baseline: yes
 - size: 14,723,095 bytes
 - SHA-256: `8100456885107F7BAF7D1D391F1C5533F2DE7E4CF36FB4E54748C5015F061B15`
 
@@ -221,5 +223,5 @@ Current executable artifact:
 - feedbackを学生へ還元する場合の具体的公開内容、匿名化基準、最小回答数、review手順、公開判断者。
 - 実在制作物の卒業後の自動保持期間、一律の保存年限、詳細な権利処理手順。
 - 実在制作物の `academicYear` 必須ruleをSchema、管理画面validation、運用手順のどこで強制するか。
-- 個人時間割の具体的なUI、設定変更、端末移行、localStorage消去時のUXと実装時期。
+- 個人時間割における A/B/C 等の授業内 group の詳細運用と、所属組から分離した選択・表示方法。
 - 本番course datasetへの全面置換時期、担当者、review手順、公開切替手順。

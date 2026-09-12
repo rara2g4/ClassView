@@ -2,7 +2,7 @@
 
 > Status: **Human-reviewed project documentation**
 >
-> Last evidence review: 2026-08-28
+> Last evidence review: 2026-09-09
 >
 > この文書は、現在実装済みの役割と、人間レビューで決定した製品方針・roadmapを区別して記録する。未確認の製品判断は `Unknown / needs confirmation` に残す。
 
@@ -93,15 +93,34 @@ feedback の第一目的は、**学校職員が、学生から観測できる学
 
 ## Personal timetable — Planned roadmap
 
-個人時間割を正式 roadmap に含める。現時点では未実装である。
+個人時間割を正式 roadmap に含める。仕様と UI prototype の人間 review は進んでいるが、production 実装は未着手であり、現時点では未実装である。
 
-基本方針:
+### Project rule: role and first-use behavior
 
 - public site の static 構成を維持する。
-- 学年、group、履修 course 等の個人設定を browser `localStorage` へ保存する。
+- 学生は学年を1つ、所属組を1つ設定する。
+- 個人時間割の履修設定は「学年度 + 前期 / 後期」単位で扱い、期間が変わった場合は前期間の履修 course を自動移植せず、再設定を案内する。
+- 未設定端末では学校全体時間割を通常表示し、「自分の時間割を設定」する導線を示す。初回設定は強制しない。
+- 設定済み端末では個人時間割を標準表示する。
+- 設定の有無にかかわらず、「自分の時間割」と「学校全体」を切り替えられるようにする。
+- 個人時間割は、必修授業の自動反映と本人が選んだ履修 course を基に、日常的に確認する授業を絞り込む。
+
+### Project rule: UI direction
+
+- Desktop は、人間 review 済み prototype C の「曜日 × 時限を高密度な週間 grid で一覧する」考え方を基準にする。
+- Mobile は、人間 review 済み prototype E の「1コマへ集中しながら週間内の位置を把握する」考え方を基準にし、PC 用週間表を単純縮小しない。
+- 1コマ最大8件程度の履修 candidate を想定し、高密度時も courseType より授業名を優先する。
+- conflict の説明内容が変わっても週間時間割を上下させず、Desktop の情報領域で layout shift を起こさない。
+- prototype は interaction と layout の検討材料であり、production の Current implementation ではない。
+
+### Planned storage boundary
+
+- 学年、所属組、履修期間、本人が選んだ履修 course 等の個人設定を browser `localStorage` へ保存する。
 - 学校全体の時間割から、保存した設定に合う自分向け表示へ絞り込む。
-- 名前、login、password 等の個人識別情報を要求しない。
+- 氏名、学籍番号、email、login、password 等の個人識別情報を要求・保存しない。
 - 当面、account 同期と server-side personalization は非目標とする。
+
+`localStorage` の最終 contract、versioning、破損・利用不能時の詳細 UX は production 実装時に code と canonical docs を整合させて確定する。
 
 ## 現在確認できる非目標・境界
 
@@ -124,4 +143,4 @@ feedback の第一目的は、**学校職員が、学生から観測できる学
 
 - feedback を学生へ還元する場合の具体的な公開内容、匿名化基準、最小回答数、review 手順、公開判断者
 - 授業・時間割以外の機能を日常利用の情報基盤へ追加する際の具体的な優先順位と範囲
-- 個人時間割の UI、設定変更、端末移行、localStorage 消去時の具体的な UX
+- 所属組とは別に存在する A/B/C 等の授業内 group の詳細運用と、個人時間割での選択・表示方法

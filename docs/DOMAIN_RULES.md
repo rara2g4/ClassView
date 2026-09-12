@@ -2,7 +2,7 @@
 
 > Status: **Human-reviewed project documentation**
 >
-> Last evidence review: 2026-08-28
+> Last evidence review: 2026-09-11
 >
 > ここでは一般的なプログラミング知識から決められない、現行 ClassView 固有のデータ・運用ルールだけを整理する。理由や教育上の意図は、根拠がない限り補完しない。
 
@@ -109,6 +109,24 @@ group は受講対象、variant は授業の段階・区分として別データ
 - variant と group は別概念として維持する。
 - 現在の1組、2組、A組、B組は versioned default であり、永続的な学校全体の固定一覧ではない。
 
+## Timetable target grades
+
+### Current implementation
+
+- 公開月別 Schema では timetable entry の `grades` は必須の整数配列で、各値を1〜3に制約するが、空配列も許可する。
+- parser は学年欄が空の場合に `grades: []` を生成する。`全学年` は `grades: [1, 2, 3]` として生成する。
+- 現行の学校全体時間割は `grades` を理由に entry を除外しないため、`grades: []` の entry も表示対象に残る。現行 public UI は空配列に対象学年ラベルを付けない。
+
+### Project rule
+
+- `grades: []` は「全学年対象」ではなく「対象学年未確認」を意味する。
+- 学校全体時間割では、対象学年が未確認であることだけを理由に entry を非表示にしない。
+- 個人時間割では、`grades: []` を1年・2年・3年のいずれとも一致させず、必修授業の自動反映、特定学年向け candidate の自動判定、学年 filter の各学年への分類に使用しない。
+- `grades: []` の entry 自体を存在しないものとして扱わず、対象学年を限定しない「すべて」等の確認導線では「対象学年未確認」と明示して表示できるようにする。
+- 正式な対象学年が確認された場合は、個人時間割側で補完・推測せず、timetable entry の `grades` を正しい値へ修正する。
+
+個人時間割は未実装であり、上記 Project rule に対応する filtering と表示は Implementation pending である。今回の rule は空配列を許可する現行 Schema contract 自体を変更しない。
+
 ## Instructor tokens
 
 ### Current implementation
@@ -156,6 +174,93 @@ parser は `試験:`、休暇系 keyword、行事系 keyword を限定的に認�
 - Excel 全体の issue は preview に保持するが、部分保存を止めるのは指定期間内 issue と明示された global structural issue である。
 - blocking が残る期間は保存できない。warning が残る期間は確認済み指定が必要。reference は保存を止めない。
 - 保存は月別 JSON、manifest、periods を Schema 検証し、一時ファイル置換と backup/rollback を行う。保存しても自動公開しない。
+
+## Personal timetable — Project rule / implementation pending
+
+個人時間割は人間 review 済みの Project rule であるが、production には未実装である。この節の記述を Current implementation として扱わない。
+
+### Profile and enrollment period — Project rule
+
+- 学生は学年を1つ、所属組を1つ設定する。
+- 履修設定は「学年度 + 前期 / 後期」単位で管理する。例: `2026年度・後期`。
+- 期間が変わった場合、前期間の履修 course を新期間へ自動移植せず、再設定を案内する。
+- A/B/C 等の授業内 group は所属組とは別概念である。詳細運用は未確認のため Deferred とし、MVP で所属組として推測・自動判定しない。
+
+### Required courses and cohort matching — Project rule
+
+次をすべて満たす course だけを必修として自動反映する。
+
+- course の `courseType` が文字列 `必修` と厳密一致する。
+- timetable entry の対象学年が本人の学年と一致する。
+- timetable entry の対象組が本人の所属組と一致する。
+
+`courseType` が `選択`、`選択必修`、その他の値、`null`、未確認の場合は自動必修扱いせず、本人が履修 course として選択する。個人時間割のためにシラバス由来の `courseType` 表記自体を書き換えない。必修 course ID は個人設定へ保存せず、current course / timetable data から導出する方向とする。
+
+所属組の基本的な一致規則は次のとおり。
+
+- entry に所属組の指定がない場合は全組対象とする。
+- entry の所属組指定と本人の所属組が一致する場合は対象とする。
+- A/B/C 等の授業内 group を本人の所属組として解釈しない。
+
+現在の public `groupTags` は、所属組と授業内 group を完全には区別できない。所属組の machine-readable contract と公開データ表現は production 実装時に調査・設計する Implementation pending であり、この文書では新しい Schema を確定しない。
+
+### Course selection and conflicts — Project rule
+
+- 選択済み course が占有する全曜日・時限と candidate が占有する全曜日・時限を比較し、1時限でも intersection があれば conflict とする。
+- conflict する candidate は、選択操作前から選択不可であること、競合元の授業名、競合する曜日・時限を確認できるようにし、原則選択不可とする。
+- 競合元の選択 course を解除した場合は、該当 candidate を即座に再選択可能にする。
+- 必修と選択 course が競合する場合は選択 course 側を選択不可にする。
+- 必修同士が競合する場合はどちらも自動解決・自動削除せず、学校側の時間割確認が必要な異常状態として表示する。
+
+### Non-course entries — Project rule
+
+- `holiday`、`event`、`special`、`other` は、entry の対象学年・組が本人と一致する場合に個人時間割へ表示する。
+- `exam` に `courseId` がある場合は、本人がその course を履修している場合に表示する。
+- `exam` に `courseId` がない場合は、entry の対象学年・組が本人と一致する場合に表示する。
+
+この表示 rule は timetable entry の current `kind` を利用するが、keyword heuristic による現行 kind 分類を学校の正式分類 rule へ昇格させない。上記の既知の Implementation pending を維持する。
+
+### Candidate filters — Project rule
+
+- 対象学年 filter の machine-readable source は timetable entry の `grades` とする。
+- 3年生は3年生向けを中心に確認し、必要に応じて2年生・1年生向け course を追加表示できるようにする。filter は履修可能性そのものを変更しない。
+- 授業分野は1 course につき主な分野を1つとし、既存の `course.category` を正式な filter source とする方向とする。
+- 学年・分野 filter は未選択 candidate を探すための補助機能であり、必修と選択済み course を意図せず見失わせない。
+- filter 条件外の選択済み course も選択状態を維持し、conflict 判定では引き続き全占有時限を使用する。
+
+正式な `category` は次の10分類とする。
+
+1. プログラミング・Web・情報システム
+2. AI・データ
+3. ネットワーク・セキュリティ
+4. デザイン・写真・映像
+5. 3DCG・VR
+6. ゲーム制作
+7. eスポーツ・配信・イベント
+8. ドローン・ロボット・ものづくり
+9. 総合制作・プロジェクト
+10. キャリア・資格・基礎教養
+
+category の運用 rule は次のとおり。
+
+- 人間が確認して保存した category を正式値として扱う。
+- AI proposal も人間が `accepted` または `edited` として確認した後は正式 category としてよい。
+- frontend は授業名等から未確認 category を推測しない。
+- category 未確定の course も「すべて」では表示する。
+- `未分類` を11番目の正式分類として追加しない。
+
+現行 course Schema は `category` を自由な文字列として許可し、保存後の course JSON に `fieldMeta` や proposal review 状態を残さない。正式10分類と人間確認済み保存を管理画面・validation・保存処理で保証する具体的実装は Implementation pending とする。
+
+### UI direction — Project rule
+
+- Desktop は prototype C の高密度週間 grid、Mobile は prototype E の1コマ集中型 layout を基準にする。両者を同一 DOM / layout に強制しない。
+- 1コマ最大8 candidate 程度を扱えることを前提とし、授業名、選択・conflict 状態、courseType の順に情報を優先する。
+- `必修` は短い badge や lock 等で区別し、通常の `選択` 表示や長い courseType 表示で授業名を押し潰さない。
+- conflict の hover / keyboard focus 等で週間 grid の上端を動かさず、Desktop の conflict 情報領域は内容量による layout shift を起こさない。
+- 色だけに意味を依存せず、keyboard と touch の双方で状態と理由を確認できるようにする。
+- Mobile は Desktop の週間 grid を単純縮小しない。
+
+prototype C / E と統合 prototype は Human UX review 用の artifact であり、production 実装の証拠ではない。
 
 ## Syllabus AI
 
