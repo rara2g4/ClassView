@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ClassView 個人時間割のDesktop C・Mobile E統合プロトタイプです。">
+    <title>案F C/E統合・事前競合表示 | ClassView prototype</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="../personal-timetable-exploration.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+      window.prototypeErrors = [];
+      window.addEventListener("error", (event) => window.prototypeErrors.push(event.message));
+      window.addEventListener("unhandledrejection", (event) => window.prototypeErrors.push(String(event.reason)));
+    </script>
+    <script src="../personal-timetable-mock-data.js" defer></script>
+    <script src="conflict-engine.js" defer></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">本文へ移動</a>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <span class="site-name">ClassView</span>
+        <span class="header-context">最終UX prototype / 案F</span>
+      </div>
+    </header>
+
+    <main id="main-content" class="page-shell">
+      <div class="prototype-note" role="note">
+        <strong>Desktop C ＋ Mobile E</strong>
+        <span>保存されません。授業区分と追加ケースはUX確認用mockです。</span>
+      </div>
+
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">PERSONAL TIMETABLE / CONFLICT PREFLIGHT</p>
+          <h1>選ぶ前に、重なりが分かる</h1>
+          <p class="page-header__copy">Desktopは週間グリッド、Mobileは1コマ集中で、同じ占有コマ判定を表示します。</p>
+        </div>
+        <p class="idea-tag">複数時限授業は、占有するコマが1つでも選択済み授業と重なると選択不可になります。</p>
+      </header>
+
+      <section class="control-bar" aria-label="prototype設定">
+        <label class="field">
+          <span>学年</span>
+          <select id="grade-select">
+            <option value="1">1年生</option>
+            <option value="2">2年生</option>
+            <option value="3" selected>3年生</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>組</span>
+          <select id="group-select">
+            <option selected>1組</option>
+            <option>2組</option>
+          </select>
+        </label>
+        <div class="control-stats" aria-live="polite">
+          <strong id="selected-count">0</strong><span>科目</span>
+          <strong id="selected-slots">0</strong><span>占有コマ</span>
+        </div>
+      </section>
+
+      <section class="candidate-filters" aria-labelledby="candidate-filter-title">
+        <div class="filter-heading">
+          <div>
+            <strong id="candidate-filter-title">履修候補を絞り込む</strong>
+            <span>必修・選択済みはfilter条件外でも残ります。</span>
+          </div>
+          <output id="filter-result-summary" aria-live="polite"></output>
+        </div>
+
+        <div class="desktop-filter-controls">
+          <fieldset class="grade-filter">
+            <legend>対象学年</legend>
+            <div id="desktop-grade-filters" class="grade-filter__chips"></div>
+          </fieldset>
+          <label class="category-filter" for="desktop-category-filter">
+            <span>授業分野</span>
+            <select id="desktop-category-filter"></select>
+          </label>
+          <button id="desktop-filter-reset" class="filter-reset" type="button">絞り込みを解除</button>
+        </div>
+
+        <div class="mobile-filter-controls">
+          <button id="mobile-filter-open" class="mobile-filter-summary" type="button" aria-haspopup="dialog" aria-controls="mobile-filter-dialog">
+            <span>絞り込み</span>
+            <strong id="mobile-filter-summary">3年・すべて</strong>
+          </button>
+          <button id="mobile-filter-reset" class="filter-reset" type="button">解除</button>
+        </div>
+      </section>
+
+      <nav class="scenario-bar" aria-label="確認ケース">
+        <span>確認ケース</span>
+        <button type="button" data-scenario="case1">Case 1・3・4</button>
+        <button type="button" data-scenario="case2">Case 2</button>
+        <button type="button" data-scenario="required">必修との競合</button>
+        <button type="button" data-scenario="dense">火2・8候補</button>
+        <button type="button" data-scenario="required-required">必修同士の異常</button>
+      </nav>
+
+      <div class="legend" aria-label="表示の意味">
+        <span><i class="is-required"></i>必修・自動追加</span>
+        <span><i class="is-selected"></i>本人が選択済み</span>
+        <span><i></i>選択可能</span>
+        <span><i class="is-unavailable"></i>重複により選択不可</span>
+      </div>
+
+      <section class="manual-selection" aria-labelledby="manual-selection-title">
+        <strong id="manual-selection-title">本人が選択中</strong>
+        <div id="manual-selection-list"></div>
+      </section>
+
+      <div id="required-alert" class="required-alert" role="alert" hidden></div>
+
+      <section class="f-desktop" aria-label="Desktop Cベース週間グリッド">
+        <div class="surface-heading">
+          <div><span class="surface-label">DESKTOP / 761px以上</span><h2>週間グリッド</h2></div>
+          <p>候補へhoverまたはkeyboard focusすると理由欄が更新されます。</p>
+        </div>
+        <div id="desktop-inspector" class="conflict-inspector" aria-live="polite"></div>
+        <div id="desktop-grid"></div>
+        <dialog id="desktop-conflict-dialog" class="conflict-dialog" aria-labelledby="desktop-conflict-dialog-title">
+          <div class="conflict-dialog__header">
+            <h3 id="desktop-conflict-dialog-title">授業・競合の詳細</h3>
+            <button id="desktop-conflict-dialog-close" type="button" aria-label="詳細を閉じる">閉じる</button>
+          </div>
+          <div id="desktop-conflict-dialog-content" class="conflict-dialog__content"></div>
+        </dialog>
+      </section>
+
+      <section class="f-mobile" aria-label="Mobile Eベース1コマ集中">
+        <div class="surface-heading">
+          <div><span class="surface-label">MOBILE / 760px以下</span><h2>1コマ集中＋週間mini-map</h2></div>
+        </div>
+        <div id="mobile-map"></div>
+        <div class="mobile-focus-nav">
+          <button id="previous-slot" type="button" aria-label="前のコマ">←</button>
+          <div><span id="mobile-position"></span><strong id="mobile-candidate-count"></strong></div>
+          <button id="next-slot" type="button" aria-label="次のコマ">→</button>
+        </div>
+        <div id="mobile-inspector" class="conflict-inspector" aria-live="polite"></div>
+        <div id="mobile-candidates"></div>
+      </section>
+
+      <dialog id="mobile-filter-dialog" class="filter-dialog" aria-labelledby="mobile-filter-dialog-title">
+        <div class="filter-dialog__header">
+          <div><span>履修候補</span><h2 id="mobile-filter-dialog-title">絞り込み</h2></div>
+          <button id="mobile-filter-dialog-close" type="button" aria-label="絞り込みを閉じる">閉じる</button>
+        </div>
+        <div class="filter-dialog__body">
+          <fieldset class="filter-dialog__group">
+            <legend>対象学年</legend>
+            <p>自分の学年は常に表示します。下級学年を必要なときだけ追加できます。</p>
+            <div id="mobile-grade-filters" class="mobile-grade-options"></div>
+          </fieldset>
+          <fieldset class="filter-dialog__group">
+            <legend>授業分野</legend>
+            <p>分野未確定の授業は「すべて」でのみ表示します。</p>
+            <div id="mobile-category-filters" class="mobile-category-options"></div>
+          </fieldset>
+        </div>
+        <div class="filter-dialog__footer">
+          <button id="mobile-dialog-reset" class="filter-reset" type="button">絞り込みを解除</button>
+          <button id="mobile-dialog-apply" class="filter-apply" type="button">この条件で見る</button>
+        </div>
+      </dialog>
+      <output id="prototype-diagnostics" hidden></output>
+    </main>
+
+    <footer class="site-footer">ClassView — 個人時間割 UX prototype</footer>
+  </body>
+</html>

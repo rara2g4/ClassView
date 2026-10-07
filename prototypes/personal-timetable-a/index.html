@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ClassView 個人時間割の時間割型プロトタイプです。">
+    <title>案A 時間割型 | ClassView prototype</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="styles.css">
+    <script src="../personal-timetable-mock-data.js" defer></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">本文へ移動</a>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <span class="site-name">ClassView</span>
+        <span class="header-context">UI prototype / 案A</span>
+      </div>
+    </header>
+
+    <main id="main-content" class="page-shell">
+      <div class="prototype-note" role="note">
+        <strong>時間割型プロトタイプ</strong>
+        <span>保存されません。2026年度後期時間割（予定）の全授業を使用しています。</span>
+      </div>
+
+      <header class="page-header">
+        <p class="eyebrow">Personal timetable setup</p>
+        <h1>自分の時間割をつくる</h1>
+        <p>学校の週間時間割を見渡しながら、受ける授業を選びます。</p>
+      </header>
+
+      <ol class="stepper" aria-label="設定の進み具合">
+        <li class="is-current" data-step-indicator="1"><span>1</span>学年</li>
+        <li data-step-indicator="2"><span>2</span>組</li>
+        <li data-step-indicator="3"><span>3</span>履修授業</li>
+        <li data-step-indicator="4"><span>4</span>プレビュー</li>
+      </ol>
+
+      <section class="step-panel" data-step="1" aria-labelledby="grade-heading">
+        <p class="step-label">STEP 1</p>
+        <h2 id="grade-heading">学年を選んでください</h2>
+        <div class="choice-grid" id="grade-choices"></div>
+        <div class="panel-actions panel-actions--end">
+          <button class="button button--primary" type="button" data-next disabled>次へ：組を選ぶ</button>
+        </div>
+      </section>
+
+      <section class="step-panel" data-step="2" aria-labelledby="group-heading" hidden>
+        <p class="step-label">STEP 2</p>
+        <h2 id="group-heading">所属する組を選んでください</h2>
+        <p class="section-intro">組は1つだけ選択できます。</p>
+        <div class="choice-grid" id="group-choices"></div>
+        <div class="panel-actions">
+          <button class="button button--secondary" type="button" data-back>← 学年へ戻る</button>
+          <button class="button button--primary" type="button" data-next disabled>次へ：授業を選ぶ</button>
+        </div>
+      </section>
+
+      <section class="step-panel step-panel--wide" data-step="3" aria-labelledby="courses-heading" hidden>
+        <div class="selection-heading">
+          <div>
+            <p class="step-label">STEP 3</p>
+            <h2 id="courses-heading">週間時間割から選ぶ</h2>
+            <p class="section-intro">Excel全授業に、比較用の合成courseTypeを一部だけ重ねています。学校データではありません。</p>
+          </div>
+          <div class="selection-count" aria-live="polite"><strong id="selected-count">0</strong><span>科目選択中</span></div>
+        </div>
+        <div class="legend" aria-label="表示の意味">
+          <span><i class="legend-mark legend-mark--required"></i>必修（データがある場合）</span>
+          <span><i class="legend-mark legend-mark--selected"></i>本人が選択済み</span>
+          <span><i class="legend-mark"></i>未選択</span>
+        </div>
+        <div id="conflict-summary" class="conflict-summary" role="status" hidden></div>
+        <div class="demo-actions">
+          <button class="text-button" id="show-conflict" type="button">重複警告の例を表示</button>
+        </div>
+        <div id="schedule-a" aria-live="polite"></div>
+        <div class="panel-actions">
+          <button class="button button--secondary" type="button" data-back>← 組へ戻る</button>
+          <button class="button button--primary" type="button" data-next>時間割を確認する</button>
+        </div>
+      </section>
+
+      <section class="step-panel step-panel--wide" data-step="4" aria-labelledby="preview-heading" hidden>
+        <p class="step-label">STEP 4</p>
+        <div class="preview-heading">
+          <div>
+            <h2 id="preview-heading">個人時間割のプレビュー</h2>
+            <p class="section-intro" id="profile-summary"></p>
+          </div>
+          <span class="prototype-pill">未保存</span>
+        </div>
+        <div id="preview-conflicts"></div>
+        <div id="preview-a"></div>
+        <div class="panel-actions">
+          <button class="button button--secondary" type="button" data-back>← 選択を修正する</button>
+          <button class="button button--primary" type="button" disabled>この内容で保存（prototype）</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">ClassView — 個人時間割 UI prototype</footer>
+  </body>
+</html>

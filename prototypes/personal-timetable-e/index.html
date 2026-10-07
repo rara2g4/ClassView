@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ClassView 個人時間割の1コマ集中型プロトタイプです。">
+    <title>案E 1コマ集中 | ClassView prototype</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="../personal-timetable-exploration.css">
+    <script src="../personal-timetable-mock-data.js" defer></script>
+    <script src="../personal-timetable-exploration.js" defer></script>
+  </head>
+  <body data-variant="e">
+    <a class="skip-link" href="#main-content">本文へ移動</a>
+    <header class="site-header"><div class="site-header__inner"><span class="site-name">ClassView</span><span class="header-context">UI prototype / 案E</span></div></header>
+    <main id="main-content" class="page-shell">
+      <div class="prototype-note" role="note"><strong>1コマ集中＋週間mini-map</strong><span>保存されません。courseTypeはUX確認用の合成状態です。</span></div>
+      <header class="page-header">
+        <div><p class="eyebrow">PERSONAL TIMETABLE / FOCUS MODE</p><h1>迷うコマを、順番に</h1><p class="page-header__copy">20コマのmini-mapで位置と候補数を保ち、選択操作は現在の1コマだけへ集中させます。</p></div>
+        <p class="idea-tag">候補の多いコマでも他の曜日と混ざりません。矢印で前後のコマへ順番に進めます。</p>
+      </header>
+      <section class="control-bar" aria-label="prototype設定">
+        <label class="field"><span>学年</span><select id="grade-select"><option value="1">1年生</option><option value="2">2年生</option><option value="3" selected>3年生</option></select></label>
+        <label class="field"><span>組</span><select id="group-select"><option selected>1組</option><option>2組</option></select></label>
+        <button class="button button--primary" id="stress-demo" type="button">火曜2限のstress状態</button>
+        <button class="button" id="clear-selection" type="button">選択を初期化</button>
+        <div class="control-stats" aria-live="polite"><strong id="selected-count">0</strong><span>科目 / 週間</span><strong id="selected-slots">0</strong><span>枠</span></div>
+      </section>
+      <div class="legend" aria-label="表示の意味"><span><i class="is-required"></i>必修・自動追加</span><span><i class="is-selected"></i>選択済み</span><span><i></i>未選択</span><span><i class="is-conflict"></i>時間割重複</span></div>
+      <div id="conflict-banner" class="conflict-banner" role="status" hidden></div>
+      <div id="prototype-root" class="prototype-root" aria-live="polite"></div>
+    </main>
+    <footer class="site-footer">ClassView — 個人時間割 UX exploration</footer>
+  </body>
+</html>
