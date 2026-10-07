@@ -2,7 +2,7 @@
 
 > Status: **Human-reviewed project documentation**
 >
-> Last evidence review: 2026-09-11
+> Last evidence review: 2026-09-12
 >
 > ここでは一般的なプログラミング知識から決められない、現行 ClassView 固有のデータ・運用ルールだけを整理する。理由や教育上の意図は、根拠がない限り補完しない。
 
@@ -175,9 +175,20 @@ parser は `試験:`、休暇系 keyword、行事系 keyword を限定的に認�
 - blocking が残る期間は保存できない。warning が残る期間は確認済み指定が必要。reference は保存を止めない。
 - 保存は月別 JSON、manifest、periods を Schema 検証し、一時ファイル置換と backup/rollback を行う。保存しても自動公開しない。
 
-## Personal timetable — Project rule / implementation pending
+## Personal timetable — Project rule / phased implementation
 
-個人時間割は人間 review 済みの Project rule であるが、production には未実装である。この節の記述を Current implementation として扱わない。
+個人時間割は人間 review 済みの Project rule である。Phase 1 の domain logic、state、storage は production module として実装済みだが、公開 page の本格 UI と data loading への接続は未実装である。
+
+### Phase 1 — Current implementation
+
+- `js/personal-timetable.js` は DOM に依存せず、profile validation、versioned `localStorage`、reconcile、必修導出、effective enrollment、conflict、entry visibility、grade/category filter を提供する。
+- storage key は `classview.personalTimetable.profile`、現在の `schemaVersion` は `1`。保存 field は `schemaVersion`、`academicYear`、`term`、`grade`、`homeroom`、`manualSelectedCourseIds`、`dataVersion`、`updatedAt` に限定する。
+- `dataVersion` は `site` と `timetable` の version snapshot を持つ。氏名、学籍番号、email、必修 course ID、filter UI の一時状態は保存しない。
+- profile 未設定、JSON 破損、profile 契約不適合、未対応 schema version、storage 利用不能、read/write failure を異なる state として返し、例外で学校全体時間割を停止させない。
+- period reconcile は、保存済みと current context の `academicYear + term` が異なる場合に旧 `manualSelectedCourseIds` を active selection として返さず、再設定が必要な state にする。同期間の unknown course ID は stale selection として残し、別 course へ置換しない。
+- public timetable data に `term` field は存在しない。Phase 1 module は表示文字列や日付から前期 / 後期を推測せず、呼び出し側から明示された period context だけを検証する。UI integration で利用する machine-readable term source は未決定である。
+- public `groupTags` の意味が曖昧な場合に備え、所属組として明示確認された group 集合を呼び出し側が渡す。指定のない entry は全組対象、明示集合内の完全一致は対象、それ以外の tag は `unknown` として自動一致させない。
+- module は現行 `index.html` / `timetable.html` から読み込まれておらず、学校全体時間割の表示・URL・操作は変更していない。
 
 ### Profile and enrollment period — Project rule
 
@@ -202,7 +213,7 @@ parser は `試験:`、休暇系 keyword、行事系 keyword を限定的に認�
 - entry の所属組指定と本人の所属組が一致する場合は対象とする。
 - A/B/C 等の授業内 group を本人の所属組として解釈しない。
 
-現在の public `groupTags` は、所属組と授業内 group を完全には区別できない。所属組の machine-readable contract と公開データ表現は production 実装時に調査・設計する Implementation pending であり、この文書では新しい Schema を確定しない。
+現在の public `groupTags` は、所属組と授業内 group を完全には区別できない。Phase 1 は明示確認された所属組以外を `unknown` として安全側に倒す。自動一致できる範囲を広げる場合の machine-readable contract と公開データ表現は Implementation pending であり、この変更では新しい Schema を追加しない。
 
 ### Course selection and conflicts — Project rule
 
@@ -249,7 +260,9 @@ category の運用 rule は次のとおり。
 - category 未確定の course も「すべて」では表示する。
 - `未分類` を11番目の正式分類として追加しない。
 
-現行 course Schema は `category` を自由な文字列として許可し、保存後の course JSON に `fieldMeta` や proposal review 状態を残さない。正式10分類と人間確認済み保存を管理画面・validation・保存処理で保証する具体的実装は Implementation pending とする。
+Phase 1 の frontend filter logic は、上記10分類との完全一致だけを特定 category に含め、空、`null`、missing、unknown legacy value は「すべて」でだけ残す。grade filter は entry の `grades` だけを使い、`grades: []` を1〜3年へ分類しない。必修・手動選択済み course は candidate filter の条件外でも effective enrollment から除外しない。
+
+現行 course Schema は `category` を自由な文字列として許可し、保存後の course JSON に `fieldMeta` や proposal review 状態を残さない。正式10分類と人間確認済み保存を管理画面・validation・保存処理で保証する具体的実装は引き続き Implementation pending とする。
 
 ### UI direction — Project rule
 
