@@ -2,7 +2,7 @@
 
 > Status: **Human-reviewed project documentation**
 >
-> Last evidence review: 2026-09-09
+> Last evidence review: 2026-09-12
 >
 > 現在の repository、設定、データフローを説明する。未実装の構成を記載する場合は `Planned / implementation pending` と明示し、Current implementation と区別する。
 
@@ -48,9 +48,9 @@
 
 DOM は主に `createElement` と `textContent` で構築する。course ID は `encodeURIComponent` して detail URL に入れる。制作物 URL と画像 path は public script と Schema/管理 service の両方で制約する。
 
-### Personal timetable — Planned / implementation pending
+### Personal timetable — Phase 1 current implementation / UI pending
 
-個人時間割は production 未実装であり、現行 public site に client-side personal profile、個人時間割 filter、個人用 `localStorage` contract は存在しない。Human UX review 用 prototype は Current implementation に含めない。
+`js/personal-timetable.js` に、DOM 非依存の profile、履修、必修導出、conflict、entry visibility、candidate filter、versioned `localStorage` logic がある。現行 public page はこの module をまだ読み込まず、個人時間割 UI は implementation pending である。Human UX review 用 prototype は Current implementation に含めない。
 
 MVP でも public site の static architecture を維持し、次の browser 内データフローを計画する。
 
@@ -62,14 +62,15 @@ public course / timetable JSON
   -> 個人時間割を表示
 ```
 
-- profile と履修選択は browser `localStorage` に端末内保存し、public API、DB、login、account sync、server-side personal data は追加しない。
-- 保存対象は `schemaVersion`、学年度、前期 / 後期、学年、所属 group、手動選択した course ID、reconcile に必要な version 情報を基本候補とする。
-- 必修 course ID は保存せず、current course / timetable data から毎回導出する方向とする。
+- profile と履修選択は `classview.personalTimetable.profile` に端末内保存し、public API、DB、login、account sync、server-side personal data は追加しない。
+- `schemaVersion: 1` の保存対象は、学年度、前期 / 後期、学年、所属 group、手動選択した course ID、site/timetable data version、更新時刻である。
+- 必修 course ID は保存せず、current course / timetable data から毎回導出する。
 - 氏名、学籍番号、email 等の個人識別情報は保存しない。
-- 期間変更時は前期間の手動選択を自動移植せず、再設定を案内する。
-- `localStorage` の最終 key / object contract、version migration、stale / deleted course の reconcile、破損・利用不能時の fallback は production 実装時に code、test、canonical docs を一致させて確定する。
-- 現行 public `groupTags` だけでは所属組と A/B/C 等の授業内 group を完全に区別できない。必要な public contract / Schema / producer 変更は実装時に調査・設計し、現段階では新 contract を確定しない。
-- Desktop / Mobile は異なる layout を採用してよく、未実装の具体 module 名や DOM 構造はこの段階で固定しない。
+- 期間変更時は前期間の手動選択を active state へ自動移植せず、再設定要求を返す。削除済み course ID は stale state として返す。
+- profile 未設定、破損、未対応 schema、storage failure は別 state であり、学校全体時間割の fallback を妨げない。
+- 現行 public data に machine-readable な `term` source はなく、module は前期 / 後期を推測しない。UI integration は明示 period context を供給する必要がある。
+- 現行 public `groupTags` だけでは所属組と A/B/C 等の授業内 group を完全に区別できない。Phase 1 は明示確認された所属組集合以外を自動一致させない。必要な public contract / Schema / producer 変更は別途判断する。
+- Desktop / Mobile の production DOM、data loading、表示 fallback は次 phase で実装する。
 
 ## Data
 

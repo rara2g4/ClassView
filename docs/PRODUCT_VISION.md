@@ -2,7 +2,7 @@
 
 > Status: **Human-reviewed project documentation**
 >
-> Last evidence review: 2026-09-09
+> Last evidence review: 2026-09-12
 >
 > この文書は、現在実装済みの役割と、人間レビューで決定した製品方針・roadmapを区別して記録する。未確認の製品判断は `Unknown / needs confirmation` に残す。
 
@@ -93,7 +93,7 @@ feedback の第一目的は、**学校職員が、学生から観測できる学
 
 ## Personal timetable — Planned roadmap
 
-個人時間割を正式 roadmap に含める。仕様と UI prototype の人間 review は進んでいるが、production 実装は未着手であり、現時点では未実装である。
+個人時間割を正式 roadmap に含める。Phase 1 として profile、履修、必修導出、conflict、entry 表示、candidate filter、`localStorage` の UI 非依存 logic は実装済みである。本格 UI と学校全体時間割への接続は次 phase の implementation pending である。
 
 ### Project rule: role and first-use behavior
 
@@ -113,14 +113,16 @@ feedback の第一目的は、**学校職員が、学生から観測できる学
 - conflict の説明内容が変わっても週間時間割を上下させず、Desktop の情報領域で layout shift を起こさない。
 - prototype は interaction と layout の検討材料であり、production の Current implementation ではない。
 
-### Planned storage boundary
+### Phase 1 storage boundary — Current implementation
 
-- 学年、所属組、履修期間、本人が選んだ履修 course 等の個人設定を browser `localStorage` へ保存する。
-- 学校全体の時間割から、保存した設定に合う自分向け表示へ絞り込む。
+- `js/personal-timetable.js` は、学年、所属組、学年度、前期 / 後期、本人が選んだ履修 course、data version、更新時刻を browser `localStorage` へ安全に保存・読込する契約を持つ。
+- 必修 course ID は保存せず、current course / timetable data から毎回導出する。
+- 期間変更時は旧期間の手動選択を引き継がず、再設定が必要な state を返す。削除済み course ID は別 course へ置換せず stale selection として返す。
+- JSON 破損、契約不適合、未対応 schema version、storage 利用不能、write failure は profile 未設定と区別した state になる。
 - 氏名、学籍番号、email、login、password 等の個人識別情報を要求・保存しない。
 - 当面、account 同期と server-side personalization は非目標とする。
 
-`localStorage` の最終 contract、versioning、破損・利用不能時の詳細 UX は production 実装時に code と canonical docs を整合させて確定する。
+この storage/domain module は現行 page からまだ読み込まれない。学校全体時間割から個人向け表示へ絞り込む UI、破損・利用不能時の表示文言、初回設定画面は次 phase で接続する。
 
 ## 現在確認できる非目標・境界
 
@@ -130,7 +132,7 @@ feedback の第一目的は、**学校職員が、学生から観測できる学
 - 公開サイトからの授業編集や時間割編集
 - 公開サイトのデータベース、常時稼働 API
 - 公開サイト内の口コミ投稿
-- 学年、group、履修授業による個人時間割フィルター
+- 学年、group、履修授業による個人時間割の production UI
 
 ### Current project non-goals
 
