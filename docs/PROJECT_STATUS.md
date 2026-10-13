@@ -2,11 +2,13 @@
 
 > Status: **Human-reviewed project documentation / current snapshot**
 >
-> Last verified: 2026-09-12 JST
+> Last verified: 2026-10-14 JST
 >
-> Feature implementation baseline: working tree based on `1b2f7403d49f750427d61f8138ef7d025c73404e`（personal timetable Phase 1、未commit）
+> Main / production-side baseline: `main` = `origin/main` = `1b2f7403d49f750427d61f8138ef7d025c73404e`。この baseline に personal timetable Phase 1 module と prototype は含まれない。
 >
-> この snapshot は上記 baseline の実装、Git 管理 artifact、public data、直前の検証結果を確認している。branch の ahead / behind 等、commit 後すぐ変わる Git 状態は恒久記録せず、作業開始時に再確認する。
+> Current handoff work: `handoff/personal-timetable-2026-10-07`。Phase 1 snapshot は `fc3af9884e928b08e3f762e2356a1265e460f02b`、prototype snapshot はその次の `9540ec5eca4b0ad206acef351d2445c72801afc0` で、current HEAD と upstream は後者に一致する。両 snapshot は handoff branch 上だけの WIP commit であり、`main` や production baseline ではない。再 review 修正はこの HEAD 上の未commit working-tree変更である。
+>
+> Phase 2 の production UI は未実装である。branch、refs、ahead / behind 等の可変な Git 状態は作業開始時にも再確認する。
 
 この文書は「現在どこまで実装されているか」を短時間で把握するためのもの。domain detail は [`DOMAIN_RULES.md`](DOMAIN_RULES.md)、構造は [`ARCHITECTURE.md`](ARCHITECTURE.md) を参照する。実装と矛盾する場合は Schema、code、test、Git 管理設定、実データを再確認する。
 
@@ -28,11 +30,11 @@
 
 ### Personal timetable foundation — Phase 1
 
-- DOM 非依存の profile validation、versioned `localStorage` save/load、period reconcile
+- DOM 非依存の profile validation、固定keyによるversioned `localStorage` save/load、effective enrollmentで必須のperiod reconcile
 - current course/timetable dataからの必修導出と、manual/stale/effective enrollment の区別
-- 曜日・時限単位の複数時限 conflict、required/manual conflict source、required-required data error の検出
+- 本人の学年・所属組に明示一致するentryだけを使う曜日・時限単位の複数時限 conflict、required/manual conflict source、required-required data error の検出
 - non-class entry visibility、`grades` と正式10 categoryのcandidate filter
-- profile未設定、破損、未対応schema version、storage利用不能/read/write failureの状態分離
+- profile未設定、破損・schemaVersion欠落/型不正、validな未対応future schema version、storage利用不能/read/write failureの状態分離
 - production UI、data loading、Desktop C / Mobile E layoutへの接続は未実装
 
 ### Course and syllabus management
@@ -190,11 +192,11 @@ dry-run は Excel を編集せず、public JSON の save/publish も実行して
 
 ## Tests
 
-2026-09-12、personal timetable Phase 1 実装後の current working tree で full automated check を確認。
+2026-10-14、personal timetable Phase 1 review 修正後の current working tree で full automated check を確認。
 
 - Python `unittest`: 184 tests OK
 - JavaScript test files: 9 passed（personal timetable domain/storage を含む）
-- production/test JavaScript `node --check`: 24 files passed（untracked prototype は対象外）
+- tracked JavaScript `node --check`: 31 files passed
 - JSON parse: 16 files passed
 - Course Schema: 57 courses passed
 - Archived course Schema: 0 courses passed

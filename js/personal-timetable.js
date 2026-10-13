@@ -95,9 +95,9 @@
       }
     }
 
-    if (value.schemaVersion !== SCHEMA_VERSION) {
-      errors.push("schemaVersion is unsupported");
-    }
+    const schemaVersionState = classifySchemaVersion(value);
+    if (schemaVersionState === "malformed") errors.push("schemaVersion is invalid");
+    else if (schemaVersionState === "unsupported") errors.push("schemaVersion is unsupported");
     if (
       typeof value.academicYear !== "string" ||
       !ACADEMIC_YEAR_PATTERN.test(value.academicYear)
@@ -268,22 +268,6 @@
     left.site === right.site &&
     left.timetable === right.timetable;
 
-  const reconcileManualSelections = (manualSelectedCourseIds, courses) => {
-    const knownIds = new Set(
-      (Array.isArray(courses) ? courses : [])
-        .map((course) => course && course.id)
-        .filter((courseId) => typeof courseId === "string"),
-    );
-    const selected = unique(
-      (Array.isArray(manualSelectedCourseIds) ? manualSelectedCourseIds : [])
-        .filter((courseId) => typeof courseId === "string"),
-    );
-    return {
-      validManualSelectedCourseIds: selected.filter((courseId) => knownIds.has(courseId)),
-      staleManualSelectedCourseIds: selected.filter((courseId) => !knownIds.has(courseId)),
-    };
-  };
-
   const reconcileProfile = (profile, context = {}) => {
     const validation = validateProfile(profile);
     if (!validation.valid) {
@@ -414,12 +398,14 @@
       ...(isRecord(currentPeriod) ? currentPeriod : {}),
       courses,
     });
-    const manual = reconcileManualSelections(
-      reconciliation.requiresReconfiguration
+    const manual = {
+      validManualSelectedCourseIds: reconciliation.requiresReconfiguration
         ? []
         : reconciliation.validManualSelectedCourseIds,
-      courses,
-    );
+      staleManualSelectedCourseIds: reconciliation.requiresReconfiguration
+        ? []
+        : reconciliation.staleManualSelectedCourseIds,
+    };
     const required = deriveRequiredCourses({ courses, entries, profile, knownHomeroomGroups });
     const requiredIds = new Set(required.requiredCourseIds);
     const manualIds = new Set(manual.validManualSelectedCourseIds);

@@ -85,6 +85,27 @@ assert.equal(
   false,
 );
 
+const { schemaVersion: _schemaVersion, ...profileWithoutSchemaVersion } = profile;
+const assertSchemaVersionDiagnostic = (candidate, expected) => {
+  const validation = personal.validateProfile(candidate);
+  assert.equal(validation.valid, false);
+  assert.equal(
+    validation.errors.some((error) => error.includes("unsupported")),
+    expected === "unsupported",
+  );
+  assert.equal(
+    validation.errors.some((error) => error.includes("invalid")),
+    expected === "malformed",
+  );
+};
+assertSchemaVersionDiagnostic(profileWithoutSchemaVersion, "malformed");
+assertSchemaVersionDiagnostic({ ...profile, schemaVersion: null }, "malformed");
+assertSchemaVersionDiagnostic({ ...profile, schemaVersion: "2" }, "malformed");
+assertSchemaVersionDiagnostic({ ...profile, schemaVersion: 0 }, "malformed");
+assertSchemaVersionDiagnostic({ ...profile, schemaVersion: -1 }, "malformed");
+assertSchemaVersionDiagnostic({ ...profile, schemaVersion: 1.5 }, "malformed");
+assertSchemaVersionDiagnostic({ ...profile, schemaVersion: 2 }, "unsupported");
+
 const currentCourses = [{ id: "manual-course" }, { id: "required-course" }];
 assert.equal(
   personal.reconcileProfile(profile, {
@@ -182,6 +203,8 @@ const enrollment = personal.deriveEffectiveEnrollment({
   knownHomeroomGroups,
 });
 assert.deepEqual(enrollment.requiredCourseIds, ["required-course"]);
+assert.equal(enrollment.status, "stale-selections");
+assert.equal(enrollment.requiresReconfiguration, false);
 assert.deepEqual(enrollment.validManualSelectedCourseIds, ["manual-course", "required-course"]);
 assert.deepEqual(enrollment.staleManualSelectedCourseIds, ["deleted-course"]);
 assert.deepEqual(enrollment.effectiveCourseIds, ["required-course", "manual-course"]);
@@ -226,6 +249,17 @@ const yearMismatchEnrollment = personal.deriveEffectiveEnrollment({
 assert.equal(yearMismatchEnrollment.requiresReconfiguration, true);
 assert.deepEqual(yearMismatchEnrollment.validManualSelectedCourseIds, []);
 assert.deepEqual(yearMismatchEnrollment.effectiveCourseIds, []);
+const directBypassAttempt = personal.deriveEffectiveEnrollment({
+  courses: [selectableCourse],
+  entries: [],
+  profile,
+  manualSelectedCourseIds: ["manual-course"],
+  knownHomeroomGroups,
+});
+assert.equal(directBypassAttempt.status, "invalid-context");
+assert.equal(directBypassAttempt.requiresReconfiguration, true);
+assert.deepEqual(directBypassAttempt.effectiveCourseIds, []);
+assert.equal(personal.reconcileManualSelections, undefined);
 
 const conflictCourses = [
   course("required-a", "必修"),
@@ -234,6 +268,7 @@ const conflictCourses = [
   course("manual-b"),
   course("candidate"),
   course("free"),
+  course("same-day-free"),
 ];
 const conflictEntries = [
   entry("required-a", { period: 1, dateKey: "2025-04-21" }),
@@ -245,6 +280,7 @@ const conflictEntries = [
   entry("candidate", { period: 1, dateKey: "2025-04-21" }),
   entry("candidate", { period: 2, dateKey: "2025-04-21" }),
   entry("free", { period: 1, dateKey: "2025-04-22" }),
+  entry("same-day-free", { period: 4, dateKey: "2025-04-21" }),
 ];
 const conflictEnrollment = {
   effectiveCourseIds: ["required-a", "required-b", "manual-a"],
@@ -260,6 +296,8 @@ const conflicts = personal.analyzeConflicts({
   courses: conflictCourses,
   entries: conflictEntries,
   enrollment: conflictEnrollment,
+  profile,
+  knownHomeroomGroups,
 });
 const candidateState = conflicts.candidateStates.find((state) => state.courseId === "candidate");
 assert.equal(candidateState.selectable, false);
@@ -270,10 +308,15 @@ assert.deepEqual(candidateState.conflicts[0].slots, [
 ]);
 assert.equal(candidateState.conflicts[0].source, "required");
 assert.equal(candidateState.conflicts[2].source, "manual");
+assert.deepEqual(
+  candidateState.conflicts.find((conflict) => conflict.courseId === "required-b").slots,
+  [{ weekday: 1, period: 2 }],
+);
 assert.equal(conflicts.requiredConflicts.length, 1);
 assert.equal(conflicts.requiredConflicts[0].type, "required-required");
 assert.deepEqual(conflicts.requiredConflicts[0].slots, [{ weekday: 1, period: 2 }]);
 assert.equal(conflicts.candidateStates.find((state) => state.courseId === "free").selectable, true);
+assert.equal(conflicts.candidateStates.find((state) => state.courseId === "same-day-free").selectable, true);
 
 const manualConflict = personal.analyzeConflicts({
   courses: conflictCourses,
@@ -284,6 +327,8 @@ const manualConflict = personal.analyzeConflicts({
     validManualSelectedCourseIds: ["manual-b"],
     items: [{ courseId: "manual-b", required: false, manual: true }],
   },
+  profile,
+  knownHomeroomGroups,
   candidateCourseIds: ["candidate"],
 });
 assert.equal(manualConflict.candidateStates[0].selectable, false);
@@ -292,9 +337,31 @@ const afterDeselect = personal.analyzeConflicts({
   courses: conflictCourses,
   entries: conflictEntries,
   enrollment: { effectiveCourseIds: [], items: [] },
+  profile,
+  knownHomeroomGroups,
   candidateCourseIds: ["candidate"],
 });
 assert.equal(afterDeselect.candidateStates[0].selectable, true);
+const selectedManualConflict = personal.analyzeConflicts({
+  courses: conflictCourses,
+  entries: conflictEntries,
+  enrollment: {
+    effectiveCourseIds: ["manual-a", "candidate"],
+    requiredCourseIds: [],
+    validManualSelectedCourseIds: ["manual-a", "candidate"],
+    items: [
+      { courseId: "manual-a", required: false, manual: true },
+      { courseId: "candidate", required: false, manual: true },
+    ],
+  },
+  profile,
+  knownHomeroomGroups,
+});
+assert.equal(selectedManualConflict.enrollmentConflicts.length, 1);
+assert.equal(selectedManualConflict.enrollmentConflicts[0].type, "manual-manual");
+assert.deepEqual(selectedManualConflict.enrollmentConflicts[0].slots, [
+  { weekday: 1, period: 2 },
+]);
 assert.deepEqual(personal.intersectSlots(
   [{ weekday: 1, period: 1 }, { weekday: 1, period: 2 }],
   [{ weekday: 1, period: 2 }, { weekday: 1, period: 3 }],
@@ -348,6 +415,10 @@ const unknownScopeConflicts = personal.analyzeConflicts({
 });
 assert.equal(unknownScopeConflicts.candidateStates[0].selectable, true);
 assert.equal(unknownScopeConflicts.scopeDiagnostics.unknownScopedEntries.length, 2);
+assert.equal(
+  unknownScopeConflicts.slotsByCourse.some((item) => item.courseId === "unknown-scope-course"),
+  false,
+);
 
 const audienceEntry = (kind, overrides = {}) => entry(null, {
   courseId: null,

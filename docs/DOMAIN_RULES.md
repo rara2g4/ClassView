@@ -2,7 +2,7 @@
 
 > Status: **Human-reviewed project documentation**
 >
-> Last evidence review: 2026-09-12
+> Last evidence review: 2026-10-14
 >
 > ここでは一般的なプログラミング知識から決められない、現行 ClassView 固有のデータ・運用ルールだけを整理する。理由や教育上の意図は、根拠がない限り補完しない。
 
@@ -125,7 +125,7 @@ group は受講対象、variant は授業の段階・区分として別データ
 - `grades: []` の entry 自体を存在しないものとして扱わず、対象学年を限定しない「すべて」等の確認導線では「対象学年未確認」と明示して表示できるようにする。
 - 正式な対象学年が確認された場合は、個人時間割側で補完・推測せず、timetable entry の `grades` を正しい値へ修正する。
 
-個人時間割は未実装であり、上記 Project rule に対応する filtering と表示は Implementation pending である。今回の rule は空配列を許可する現行 Schema contract 自体を変更しない。
+Phase 1 の個人時間割 domain logic は、`grades: []` を本人の対象 entry として採用せず、必修導出・slot 占有・conflict・entry visibility から除外する。学校全体時間割への production UI 接続と、未確認学年を確認する表示導線は次 phase の Implementation pending である。空配列を許可する現行 Schema contract 自体は変更していない。
 
 ## Instructor tokens
 
@@ -184,10 +184,10 @@ parser は `試験:`、休暇系 keyword、行事系 keyword を限定的に認�
 - `js/personal-timetable.js` は DOM に依存せず、profile validation、versioned `localStorage`、reconcile、必修導出、effective enrollment、conflict、entry visibility、grade/category filter を提供する。
 - storage key は `classview.personalTimetable.profile`、現在の `schemaVersion` は `1`。保存 field は `schemaVersion`、`academicYear`、`term`、`grade`、`homeroom`、`manualSelectedCourseIds`、`dataVersion`、`updatedAt` に限定する。
 - `dataVersion` は `site` と `timetable` の version snapshot を持つ。氏名、学籍番号、email、必修 course ID、filter UI の一時状態は保存しない。
-- profile 未設定、JSON 破損、profile 契約不適合、未対応 schema version、storage 利用不能、read/write failure を異なる state として返し、例外で学校全体時間割を停止させない。
-- period reconcile は、保存済みと current context の `academicYear + term` が異なる場合に旧 `manualSelectedCourseIds` を active selection として返さず、再設定が必要な state にする。同期間の unknown course ID は stale selection として残し、別 course へ置換しない。
+- profile 未設定、JSON 破損・`schemaVersion` 欠落・型不正を含む profile 契約不適合、整数の未対応 future schema version、storage 利用不能、read/write failure を異なる state として返し、例外で学校全体時間割を停止させない。
+- effective enrollment の public API は必ず current context の `academicYear + term` で period reconcile を行う。保存済み期間と異なる場合や current period がない場合、旧 `manualSelectedCourseIds` を active selection として返さず、再設定が必要な state にする。同期間の unknown course ID は stale selection として残し、別 course へ置換しない。
 - public timetable data に `term` field は存在しない。Phase 1 module は表示文字列や日付から前期 / 後期を推測せず、呼び出し側から明示された period context だけを検証する。UI integration で利用する machine-readable term source は未決定である。
-- public `groupTags` の意味が曖昧な場合に備え、所属組として明示確認された group 集合を呼び出し側が渡す。指定のない entry は全組対象、明示集合内の完全一致は対象、それ以外の tag は `unknown` として自動一致させない。
+- public `groupTags` の意味が曖昧な場合に備え、所属組として明示確認された group 集合を呼び出し側が渡す。指定のない entry は全組対象、明示集合内の完全一致は対象、それ以外の tag は `unknown` として自動一致させない。同一 `courseId` に別学年・別組の entry があっても、本人に明示一致した entry だけをcourse slotへ集約し、表示・slot占有・conflictへ使う。
 - module は現行 `index.html` / `timetable.html` から読み込まれておらず、学校全体時間割の表示・URL・操作は変更していない。
 
 ### Profile and enrollment period — Project rule
