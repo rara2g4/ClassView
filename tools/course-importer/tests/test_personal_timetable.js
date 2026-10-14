@@ -7,22 +7,22 @@ const fixedNow = "2026-09-12T00:00:00.000Z";
 const dataVersion = { site: "site-v1", timetable: "table-v1" };
 const baseProfileInput = {
   academicYear: "2026",
-  term: "前期",
+  term: "first",
   grade: 2,
-  homeroom: "1組",
+  homeroomId: "grade2-1",
   manualSelectedCourseIds: ["manual-course"],
   dataVersion,
 };
 const profileResult = personal.createProfile(baseProfileInput, { now: fixedNow });
 assert.equal(profileResult.ok, true);
 const profile = profileResult.profile;
-assert.equal(profile.schemaVersion, 1);
+assert.equal(profile.schemaVersion, 2);
 assert.equal(profile.updatedAt, fixedNow);
 assert.deepEqual(Object.keys(profile).sort(), [
   "academicYear",
   "dataVersion",
   "grade",
-  "homeroom",
+  "homeroomId",
   "manualSelectedCourseIds",
   "schemaVersion",
   "term",
@@ -50,11 +50,38 @@ assert.equal(personal.saveProfile(storage, profile).status, "saved");
 assert.equal(storage.has(personal.STORAGE_KEY), true);
 assert.deepEqual(personal.loadProfile(storage).profile, profile);
 
+const legacyProfile = {
+  schemaVersion: 1,
+  academicYear: "2026",
+  term: "前期",
+  grade: 2,
+  homeroom: "1組",
+  manualSelectedCourseIds: ["manual-course"],
+  dataVersion,
+  updatedAt: fixedNow,
+};
+const legacyStorage = { getItem: () => JSON.stringify(legacyProfile) };
+const migratedLegacy = personal.loadProfile(legacyStorage, {
+  homerooms: [{ id: "grade2-1", grade: 2, label: "1組" }],
+});
+assert.equal(migratedLegacy.status, "migrated");
+assert.equal(migratedLegacy.profile.schemaVersion, 2);
+assert.equal(migratedLegacy.profile.term, "first");
+assert.equal(migratedLegacy.profile.homeroomId, "grade2-1");
+const ambiguousLegacy = personal.loadProfile(legacyStorage, {
+  homerooms: [
+    { id: "grade2-1", grade: 2, label: "1組" },
+    { id: "grade2-one", grade: 2, label: "1組" },
+  ],
+});
+assert.equal(ambiguousLegacy.status, "needs-reconfiguration");
+assert.equal(ambiguousLegacy.requiresReconfiguration, true);
+
 const malformedJsonStorage = { getItem: () => "{" };
 assert.equal(personal.loadProfile(malformedJsonStorage).error, "malformed_json");
 const malformedProfileStorage = { getItem: () => JSON.stringify({ schemaVersion: 1 }) };
 assert.equal(personal.loadProfile(malformedProfileStorage).error, "invalid_profile");
-const futureStorage = { getItem: () => JSON.stringify({ schemaVersion: 2 }) };
+const futureStorage = { getItem: () => JSON.stringify({ schemaVersion: 3 }) };
 assert.equal(personal.loadProfile(futureStorage).status, "unsupported");
 const missingVersionStorage = { getItem: () => JSON.stringify({ ...profile, schemaVersion: undefined }) };
 assert.equal(personal.loadProfile(missingVersionStorage).status, "malformed");
@@ -62,7 +89,7 @@ const malformedVersionStorage = { getItem: () => JSON.stringify({ ...profile, sc
 assert.equal(personal.loadProfile(malformedVersionStorage).status, "malformed");
 assert.equal(personal.saveProfile(storage, { ...profile, schemaVersion: undefined }).status, "malformed");
 assert.equal(personal.saveProfile(storage, { ...profile, schemaVersion: "2" }).status, "malformed");
-assert.equal(personal.saveProfile(storage, { ...profile, schemaVersion: 2 }).status, "unsupported");
+assert.equal(personal.saveProfile(storage, { ...profile, schemaVersion: 3 }).status, "unsupported");
 assert.equal(personal.loadProfile(null).error, "storage_unavailable");
 assert.equal(personal.resolveBrowserStorage().status, "unavailable");
 assert.equal(personal.loadProfile({ getItem: () => { throw new Error("blocked"); } }).error, "read_failed");
@@ -104,13 +131,52 @@ assertSchemaVersionDiagnostic({ ...profile, schemaVersion: "2" }, "malformed");
 assertSchemaVersionDiagnostic({ ...profile, schemaVersion: 0 }, "malformed");
 assertSchemaVersionDiagnostic({ ...profile, schemaVersion: -1 }, "malformed");
 assertSchemaVersionDiagnostic({ ...profile, schemaVersion: 1.5 }, "malformed");
-assertSchemaVersionDiagnostic({ ...profile, schemaVersion: 2 }, "unsupported");
+assertSchemaVersionDiagnostic({ ...profile, schemaVersion: 3 }, "unsupported");
+
+const annualManifest = {
+  academicYear: "2026",
+  title: "表示上は後期と書かれていても解析しない",
+  filename: "前期時間割.xlsx",
+  termPeriods: [
+    { term: "first", startDate: "2026-04-01", endDate: "2026-09-30" },
+    { term: "second", startDate: "2026-10-01", endDate: "2027-03-31" },
+  ],
+};
+assert.equal(personal.resolveTermForDate("2026-04-21", annualManifest), "first");
+assert.equal(personal.resolveTermForDate("2026-10-21", annualManifest), "second");
+assert.equal(personal.resolveTermForDate("2026-03-31", annualManifest), "unresolved");
+assert.deepEqual(
+  personal.periodContextForDate("2026-04-21", annualManifest),
+  {
+    valid: true,
+    currentPeriod: { academicYear: "2026", term: "first" },
+    errors: [],
+  },
+);
+assert.equal(
+  personal.periodContextForDate("2026-04-21", { academicYear: "2026", termPeriods: [] }).valid,
+  false,
+);
+assert.equal(personal.validateTermPeriods([
+  { term: "first", startDate: "2026-04-01", endDate: "2026-10-01" },
+  { term: "second", startDate: "2026-10-01", endDate: "2027-03-31" },
+]).valid, false);
+assert.equal(personal.validateTermPeriods([
+  { term: "first", startDate: "2026-04-01", endDate: "2026-09-30" },
+  { term: "first", startDate: "2026-10-01", endDate: "2027-03-31" },
+]).valid, false);
+for (const periods of [
+  [{ term: "first", startDate: "2026-02-30", endDate: "2026-09-30" }],
+  [{ term: "first", startDate: "2026-09-30", endDate: "2026-04-01" }],
+]) {
+  assert.equal(personal.validateTermPeriods(periods).valid, false);
+}
 
 const currentCourses = [{ id: "manual-course" }, { id: "required-course" }];
 assert.equal(
   personal.reconcileProfile(profile, {
     academicYear: "2027",
-    term: "前期",
+    term: "first",
     courses: currentCourses,
   }).status,
   "period-changed",
@@ -118,7 +184,7 @@ assert.equal(
 assert.deepEqual(
   personal.reconcileProfile(profile, {
     academicYear: "2027",
-    term: "前期",
+    term: "first",
     courses: currentCourses,
   }).validManualSelectedCourseIds,
   [],
@@ -126,7 +192,7 @@ assert.deepEqual(
 assert.equal(
   personal.reconcileProfile(profile, {
     academicYear: "2026",
-    term: "後期",
+    term: "second",
     courses: currentCourses,
   }).requiresReconfiguration,
   true,
@@ -137,7 +203,7 @@ const staleProfile = {
 };
 const reconciled = personal.reconcileProfile(staleProfile, {
   academicYear: "2026",
-  term: "前期",
+  term: "first",
   courses: currentCourses,
   dataVersion: { site: "site-v2", timetable: "table-v1" },
 });
@@ -157,7 +223,8 @@ const entry = (courseId, overrides = {}) => ({
   entryId: "entry-" + courseId + "-" + String(entrySequence += 1),
   courseId,
   grades: [2],
-  groupTags: ["1組"],
+  groupTags: ["A組"],
+  homeroomIds: ["grade2-1"],
   kind: "class",
   period: 1,
   dateKey: "2025-04-21",
@@ -167,14 +234,12 @@ const requiredCourse = course("required-course", "必修");
 const selectableCourse = course("manual-course", "選択");
 const electiveRequired = course("elective-required", "選択必修");
 const nullType = course("null-type", null);
-const knownHomeroomGroups = ["1組", "2組"];
-const currentPeriod = { academicYear: "2026", term: "前期", dataVersion };
+const currentPeriod = { academicYear: "2026", term: "first", dataVersion };
 
 const requiredIds = (courses, entries) => personal.deriveRequiredCourses({
   courses,
   entries,
   profile,
-  knownHomeroomGroups,
 }).requiredCourseIds;
 
 assert.deepEqual(requiredIds([requiredCourse], [entry("required-course")]), ["required-course"]);
@@ -183,11 +248,11 @@ assert.deepEqual(requiredIds([electiveRequired], [entry("elective-required")]), 
 assert.deepEqual(requiredIds([nullType], [entry("null-type")]), []);
 assert.deepEqual(requiredIds([requiredCourse], [entry("required-course", { grades: [1] })]), []);
 assert.deepEqual(requiredIds([requiredCourse], [entry("required-course", { grades: [] })]), []);
-assert.deepEqual(requiredIds([requiredCourse], [entry("required-course", { groupTags: ["2組"] })]), []);
-assert.deepEqual(requiredIds([requiredCourse], [entry("required-course", { groupTags: [] })]), ["required-course"]);
-assert.deepEqual(requiredIds([requiredCourse], [entry("required-course", { groupTags: ["A組"] })]), []);
+assert.deepEqual(requiredIds([requiredCourse], [entry("required-course", { homeroomIds: ["grade2-2"] })]), []);
+assert.deepEqual(requiredIds([requiredCourse], [entry("required-course", { homeroomIds: [] })]), ["required-course"]);
+assert.deepEqual(requiredIds([requiredCourse], [entry("required-course", { homeroomIds: null })]), []);
 assert.equal(
-  personal.matchAudience(entry("required-course", { groupTags: ["A組"] }), profile, { knownHomeroomGroups }).group,
+  personal.matchAudience(entry("required-course", { groupTags: ["A組"], homeroomIds: null }), profile).homeroom,
   "unknown",
 );
 assert.deepEqual(requiredIds([], [entry("missing-course")]), []);
@@ -200,7 +265,6 @@ const enrollment = personal.deriveEffectiveEnrollment({
     manualSelectedCourseIds: ["manual-course", "required-course", "deleted-course"],
   },
   currentPeriod,
-  knownHomeroomGroups,
 });
 assert.deepEqual(enrollment.requiredCourseIds, ["required-course"]);
 assert.equal(enrollment.status, "stale-selections");
@@ -217,7 +281,6 @@ const manualOnly = personal.deriveEffectiveEnrollment({
   entries: [],
   profile,
   currentPeriod,
-  knownHomeroomGroups,
 });
 assert.deepEqual(manualOnly.effectiveCourseIds, ["manual-course"]);
 const requiredOnly = personal.deriveEffectiveEnrollment({
@@ -225,7 +288,6 @@ const requiredOnly = personal.deriveEffectiveEnrollment({
   entries: [entry("required-course")],
   profile: { ...profile, manualSelectedCourseIds: [] },
   currentPeriod,
-  knownHomeroomGroups,
 });
 assert.deepEqual(requiredOnly.effectiveCourseIds, ["required-course"]);
 
@@ -233,8 +295,7 @@ const termMismatchEnrollment = personal.deriveEffectiveEnrollment({
   courses: [selectableCourse],
   entries: [],
   profile,
-  currentPeriod: { ...currentPeriod, term: "後期" },
-  knownHomeroomGroups,
+  currentPeriod: { ...currentPeriod, term: "second" },
 });
 assert.equal(termMismatchEnrollment.requiresReconfiguration, true);
 assert.deepEqual(termMismatchEnrollment.validManualSelectedCourseIds, []);
@@ -244,7 +305,6 @@ const yearMismatchEnrollment = personal.deriveEffectiveEnrollment({
   entries: [],
   profile,
   currentPeriod: { ...currentPeriod, academicYear: "2027" },
-  knownHomeroomGroups,
 });
 assert.equal(yearMismatchEnrollment.requiresReconfiguration, true);
 assert.deepEqual(yearMismatchEnrollment.validManualSelectedCourseIds, []);
@@ -254,7 +314,6 @@ const directBypassAttempt = personal.deriveEffectiveEnrollment({
   entries: [],
   profile,
   manualSelectedCourseIds: ["manual-course"],
-  knownHomeroomGroups,
 });
 assert.equal(directBypassAttempt.status, "invalid-context");
 assert.equal(directBypassAttempt.requiresReconfiguration, true);
@@ -297,7 +356,6 @@ const conflicts = personal.analyzeConflicts({
   entries: conflictEntries,
   enrollment: conflictEnrollment,
   profile,
-  knownHomeroomGroups,
 });
 const candidateState = conflicts.candidateStates.find((state) => state.courseId === "candidate");
 assert.equal(candidateState.selectable, false);
@@ -328,7 +386,6 @@ const manualConflict = personal.analyzeConflicts({
     items: [{ courseId: "manual-b", required: false, manual: true }],
   },
   profile,
-  knownHomeroomGroups,
   candidateCourseIds: ["candidate"],
 });
 assert.equal(manualConflict.candidateStates[0].selectable, false);
@@ -338,7 +395,6 @@ const afterDeselect = personal.analyzeConflicts({
   entries: conflictEntries,
   enrollment: { effectiveCourseIds: [], items: [] },
   profile,
-  knownHomeroomGroups,
   candidateCourseIds: ["candidate"],
 });
 assert.equal(afterDeselect.candidateStates[0].selectable, true);
@@ -355,7 +411,6 @@ const selectedManualConflict = personal.analyzeConflicts({
     ],
   },
   profile,
-  knownHomeroomGroups,
 });
 assert.equal(selectedManualConflict.enrollmentConflicts.length, 1);
 assert.equal(selectedManualConflict.enrollmentConflicts[0].type, "manual-manual");
@@ -370,10 +425,10 @@ assert.deepEqual(personal.intersectSlots(
 const scopedCourse = course("scoped-course");
 const scopedCandidate = course("scoped-candidate");
 const scopedEntries = [
-  entry("scoped-course", { grades: [2], groupTags: ["1組"], period: 1, dateKey: "2025-04-21" }),
-  entry("scoped-course", { grades: [2], groupTags: ["2組"], period: 2, dateKey: "2025-04-22" }),
-  entry("scoped-course", { grades: [3], groupTags: ["1組"], period: 3, dateKey: "2025-04-23" }),
-  entry("scoped-candidate", { grades: [2], groupTags: ["1組"], period: 2, dateKey: "2025-04-22" }),
+  entry("scoped-course", { grades: [2], homeroomIds: ["grade2-1"], period: 1, dateKey: "2025-04-21" }),
+  entry("scoped-course", { grades: [2], homeroomIds: ["grade2-2"], period: 2, dateKey: "2025-04-22" }),
+  entry("scoped-course", { grades: [3], homeroomIds: ["grade2-1"], period: 3, dateKey: "2025-04-23" }),
+  entry("scoped-candidate", { grades: [2], homeroomIds: ["grade2-1"], period: 2, dateKey: "2025-04-22" }),
 ];
 const scopedConflicts = personal.analyzeConflicts({
   courses: [scopedCourse, scopedCandidate],
@@ -385,7 +440,6 @@ const scopedConflicts = personal.analyzeConflicts({
     items: [{ courseId: "scoped-course", required: false, manual: true }],
   },
   profile,
-  knownHomeroomGroups,
   candidateCourseIds: ["scoped-candidate"],
 });
 assert.equal(scopedConflicts.candidateStates[0].selectable, true);
@@ -399,9 +453,9 @@ const unknownScopeCandidate = course("unknown-scope-candidate");
 const unknownScopeConflicts = personal.analyzeConflicts({
   courses: [unknownScopeCourse, unknownScopeCandidate],
   entries: [
-    entry("unknown-scope-course", { grades: [], groupTags: [], period: 1 }),
-    entry("unknown-scope-course", { grades: [2], groupTags: ["A組"], period: 2 }),
-    entry("unknown-scope-candidate", { grades: [2], groupTags: ["1組"], period: 1 }),
+    entry("unknown-scope-course", { grades: [], homeroomIds: [], period: 1 }),
+    entry("unknown-scope-course", { grades: [2], groupTags: ["A組"], homeroomIds: null, period: 2 }),
+    entry("unknown-scope-candidate", { grades: [2], homeroomIds: ["grade2-1"], period: 1 }),
   ],
   enrollment: {
     effectiveCourseIds: ["unknown-scope-course"],
@@ -410,7 +464,6 @@ const unknownScopeConflicts = personal.analyzeConflicts({
     items: [{ courseId: "unknown-scope-course", required: false, manual: true }],
   },
   profile,
-  knownHomeroomGroups,
   candidateCourseIds: ["unknown-scope-candidate"],
 });
 assert.equal(unknownScopeConflicts.candidateStates[0].selectable, true);
@@ -424,37 +477,36 @@ const audienceEntry = (kind, overrides = {}) => entry(null, {
   courseId: null,
   kind,
   grades: [2],
-  groupTags: ["1組"],
+  homeroomIds: ["grade2-1"],
   ...overrides,
 });
 for (const kind of ["holiday", "event", "special", "other"]) {
   assert.equal(
-    personal.entryVisibility(audienceEntry(kind), profile, [], { knownHomeroomGroups }).visible,
+    personal.entryVisibility(audienceEntry(kind), profile, []).visible,
     true,
   );
 }
 assert.equal(
-  personal.entryVisibility(audienceEntry("holiday", { grades: [] }), profile, [], { knownHomeroomGroups }).visible,
+  personal.entryVisibility(audienceEntry("holiday", { grades: [] }), profile, []).visible,
   false,
 );
 assert.equal(
-  personal.entryVisibility(audienceEntry("exam", { courseId: "manual-course" }), profile, ["manual-course"], { knownHomeroomGroups }).visible,
+  personal.entryVisibility(audienceEntry("exam", { courseId: "manual-course" }), profile, ["manual-course"]).visible,
   true,
 );
 assert.equal(
-  personal.entryVisibility(audienceEntry("exam", { courseId: "other-course" }), profile, ["manual-course"], { knownHomeroomGroups }).visible,
+  personal.entryVisibility(audienceEntry("exam", { courseId: "other-course" }), profile, ["manual-course"]).visible,
   false,
 );
 assert.equal(
-  personal.entryVisibility(audienceEntry("exam"), profile, [], { knownHomeroomGroups }).visible,
+  personal.entryVisibility(audienceEntry("exam"), profile, []).visible,
   true,
 );
 assert.equal(
   personal.entryVisibility(
-    entry("manual-course", { groupTags: ["2組"] }),
+    entry("manual-course", { homeroomIds: ["grade2-2"] }),
     profile,
     ["manual-course"],
-    { knownHomeroomGroups },
   ).visible,
   false,
 );
@@ -463,7 +515,6 @@ assert.equal(
     entry("manual-course", { grades: [] }),
     profile,
     ["manual-course"],
-    { knownHomeroomGroups },
   ).visible,
   false,
 );

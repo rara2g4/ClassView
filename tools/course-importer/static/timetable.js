@@ -557,7 +557,28 @@
       button.textContent = "対応を登録";
       select.addEventListener("change", () => { if (select.value) input.value = ""; });
       input.addEventListener("input", () => { if (input.value) select.value = ""; });
-      row.append(selectLabel, inputLabel, button);
+      const scopeLabel = document.createElement("label");
+      scopeLabel.textContent = "学生の所属組scope";
+      const scopeSelect = document.createElement("select");
+      scopeSelect.append(
+        new Option("未確認（自動一致しない）", "unresolved"),
+        new Option("すべての所属組", "all"),
+        new Option("指定した所属組のみ", "specific"),
+      );
+      scopeLabel.append(scopeSelect);
+      const homeroomLabel = document.createElement("label");
+      homeroomLabel.textContent = "対象となる所属組";
+      const homeroomSelect = document.createElement("select");
+      homeroomSelect.multiple = true;
+      (state.status.homerooms || []).forEach((item) => homeroomSelect.append(
+        new Option(`${item.grade}年 ${item.label}`, item.id),
+      ));
+      homeroomLabel.append(homeroomSelect);
+      homeroomLabel.hidden = true;
+      scopeSelect.addEventListener("change", () => {
+        homeroomLabel.hidden = scopeSelect.value !== "specific";
+      });
+      row.append(selectLabel, inputLabel, scopeLabel, homeroomLabel, button);
       row.addEventListener("submit", async (event) => {
         event.preventDefault();
         if (!select.value && !input.value.trim()) {
@@ -567,6 +588,8 @@
         try {
           const result = await postMapping("/api/timetable/mappings/group", {
             rawToken: group.key, groupId: select.value, displayName: input.value.trim(),
+            homeroomScope: scopeSelect.value,
+            homeroomIds: [...homeroomSelect.selectedOptions].map((option) => option.value),
             previewToken: state.preview.token,
           });
           await applyMappingResult(result);

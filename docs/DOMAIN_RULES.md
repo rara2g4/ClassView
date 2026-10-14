@@ -168,7 +168,8 @@ parser は `試験:`、休暇系 keyword、行事系 keyword を限定的に認�
 ### Current implementation
 
 - 類似名や base name 一致だけで `courseId` を決めない。完全一致候補も表示用であり、人が mapping を保存する。
-- mapping は `subjectMappings`、非授業分類は `timetableItemMappings`、group は `canonicalGroups` と `groupMappings` に分離する。
+- mapping は `subjectMappings`、非授業分類は `timetableItemMappings`、表示用groupは `canonicalGroups` と `groupMappings`、所属組は `homerooms` と `homeroomMappings`、学期境界は `termPeriods` に分離する。
+- `termPeriods` と所属組catalogは学校・年度設定であり、Excelのファイル名、シート名、授業日、表示文言から推測しない。runtime設定に値がない旧環境では既存manifestの `termPeriods` を引き継ぎ、再importで不用意に消さない。
 - PC 固有の更新は `runtime/timetable/config.json` に保存する。存在しなければ Git 管理された `defaults/timetable-config.json` を初期値にする。
 - 前回 snapshot がなければ、公開済み `data/timetable/` から差分比較用 snapshot を復元する。
 - Excel 全体の issue は preview に保持するが、部分保存を止めるのは指定期間内 issue と明示された global structural issue である。
@@ -182,12 +183,13 @@ parser は `試験:`、休暇系 keyword、行事系 keyword を限定的に認�
 ### Phase 1 — Current implementation
 
 - `js/personal-timetable.js` は DOM に依存せず、profile validation、versioned `localStorage`、reconcile、必修導出、effective enrollment、conflict、entry visibility、grade/category filter を提供する。
-- storage key は `classview.personalTimetable.profile`、現在の `schemaVersion` は `1`。保存 field は `schemaVersion`、`academicYear`、`term`、`grade`、`homeroom`、`manualSelectedCourseIds`、`dataVersion`、`updatedAt` に限定する。
+- storage key は `classview.personalTimetable.profile`、現在の `schemaVersion` は `2`。保存 field は `schemaVersion`、`academicYear`、`term`、`grade`、`homeroomId`、`manualSelectedCourseIds`、`dataVersion`、`updatedAt` に限定する。`term` は `first` / `second`、`homeroomId` はmanifest catalogのstable IDである。
+- version 1 profileは、旧termを安全に変換でき、同じ学年・labelに一致する所属組がcatalog上ちょうど1件の場合だけversion 2へ移行する。該当なし・複数一致はstable IDを推測せず再設定要求にする。
 - `dataVersion` は `site` と `timetable` の version snapshot を持つ。氏名、学籍番号、email、必修 course ID、filter UI の一時状態は保存しない。
 - profile 未設定、JSON 破損・`schemaVersion` 欠落・型不正を含む profile 契約不適合、整数の未対応 future schema version、storage 利用不能、read/write failure を異なる state として返し、例外で学校全体時間割を停止させない。
 - effective enrollment の public API は必ず current context の `academicYear + term` で period reconcile を行う。保存済み期間と異なる場合や current period がない場合、旧 `manualSelectedCourseIds` を active selection として返さず、再設定が必要な state にする。同期間の unknown course ID は stale selection として残し、別 course へ置換しない。
-- public timetable data に `term` field は存在しない。Phase 1 module は表示文字列や日付から前期 / 後期を推測せず、呼び出し側から明示された period context だけを検証する。UI integration で利用する machine-readable term source は未決定である。
-- public `groupTags` の意味が曖昧な場合に備え、所属組として明示確認された group 集合を呼び出し側が渡す。指定のない entry は全組対象、明示集合内の完全一致は対象、それ以外の tag は `unknown` として自動一致させない。同一 `courseId` に別学年・別組の entry があっても、本人に明示一致した entry だけをcourse slotへ集約し、表示・slot占有・conflictへ使う。
+- manifestの `termPeriods` は `first` / `second` の明示日付範囲であり、同じ年度datasetに両方を持てる。`resolveTermForDate(date, manifest)` は指定日が範囲内ならtermを、未設定範囲・学期外・不正設定なら `unresolved` を返す。ファイル名、シート名、title、存在する授業日、月から推測しない。
+- manifestはstable ID・学年・表示labelからなる `homerooms` catalogを持つ。entryの `homeroomIds` は `[]` が全所属組、非空配列が明示対象、`null` が未確認であり自動一致しない。`groupTags` は表示・授業内group・compatibility用で、所属組判定には使用しない。同一 `courseId` に別学年・別所属組のentryがあっても、本人に明示一致したentryだけを表示・slot占有・conflictへ使う。
 - module は現行 `index.html` / `timetable.html` から読み込まれておらず、学校全体時間割の表示・URL・操作は変更していない。
 
 ### Profile and enrollment period — Project rule
@@ -209,11 +211,12 @@ parser は `試験:`、休暇系 keyword、行事系 keyword を限定的に認�
 
 所属組の基本的な一致規則は次のとおり。
 
-- entry に所属組の指定がない場合は全組対象とする。
-- entry の所属組指定と本人の所属組が一致する場合は対象とする。
+- `homeroomIds: []` は全所属組対象とする。
+- 非空の `homeroomIds` に本人の `homeroomId` が含まれる場合は対象とする。
+- `homeroomIds: null` は未確認として自動一致させない。
 - A/B/C 等の授業内 group を本人の所属組として解釈しない。
 
-現在の public `groupTags` は、所属組と授業内 group を完全には区別できない。Phase 1 は明示確認された所属組以外を `unknown` として安全側に倒す。自動一致できる範囲を広げる場合の machine-readable contract と公開データ表現は Implementation pending であり、この変更では新しい Schema を追加しない。
+`groupTags` と `homeroomIds` は別contractである。表示文字列が `1組` に見えてもそれだけで所属組へ変換せず、明示した `homeroomMappings` だけをproducerが使用する。A/B/C等の授業内groupの個人割当方法は引き続きDeferredである。
 
 ### Course selection and conflicts — Project rule
 

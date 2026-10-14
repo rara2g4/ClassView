@@ -7,10 +7,10 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function (environmentRoot) {
   "use strict";
 
-  const SCHEMA_VERSION = 1;
+  const SCHEMA_VERSION = 2;
   const STORAGE_KEY = "classview.personalTimetable.profile";
   const ALL_FILTER = "all";
-  const TERMS = Object.freeze(["前期", "後期"]);
+  const TERMS = Object.freeze(["first", "second"]);
   const OFFICIAL_CATEGORIES = Object.freeze([
     "プログラミング・Web・情報システム",
     "AI・データ",
@@ -25,13 +25,14 @@
   ]);
   const ACADEMIC_YEAR_PATTERN = /^[0-9]{4}$/;
   const COURSE_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+  const HOMEROOM_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
   const VERSION_PATTERN = /^[A-Za-z0-9._:-]{1,128}$/;
   const PROFILE_KEYS = new Set([
     "schemaVersion",
     "academicYear",
     "term",
     "grade",
-    "homeroom",
+    "homeroomId",
     "manualSelectedCourseIds",
     "dataVersion",
     "updatedAt",
@@ -107,12 +108,11 @@
     if (!TERMS.includes(value.term)) errors.push("term is invalid");
     if (![1, 2, 3].includes(value.grade)) errors.push("grade is invalid");
     if (
-      typeof value.homeroom !== "string" ||
-      !value.homeroom ||
-      value.homeroom !== value.homeroom.trim() ||
-      value.homeroom.length > 64
+      typeof value.homeroomId !== "string" ||
+      !HOMEROOM_ID_PATTERN.test(value.homeroomId) ||
+      value.homeroomId.length > 64
     ) {
-      errors.push("homeroom is invalid");
+      errors.push("homeroomId is invalid");
     }
 
     if (!Array.isArray(value.manualSelectedCourseIds)) {
@@ -153,7 +153,7 @@
       academicYear: input.academicYear,
       term: input.term,
       grade: input.grade,
-      homeroom: input.homeroom,
+      homeroomId: input.homeroomId,
       manualSelectedCourseIds: Array.isArray(input.manualSelectedCourseIds)
         ? [...input.manualSelectedCourseIds]
         : input.manualSelectedCourseIds,
@@ -168,6 +168,64 @@
       : { ok: false, profile: null, errors: validation.errors };
   };
 
+  const migrateLegacyProfile = (value, options = {}) => {
+    if (!isRecord(value) || value.schemaVersion !== 1) {
+      return { status: "malformed", profile: null, error: "invalid_profile" };
+    }
+    const legacyKeys = new Set([
+      "schemaVersion", "academicYear", "term", "grade", "homeroom",
+      "manualSelectedCourseIds", "dataVersion", "updatedAt",
+    ]);
+    if (
+      Object.keys(value).some((key) => !legacyKeys.has(key)) ||
+      [...legacyKeys].some((key) => !Object.prototype.hasOwnProperty.call(value, key))
+    ) {
+      return { status: "malformed", profile: null, error: "invalid_profile" };
+    }
+    const term = value.term === "前期" ? "first" : value.term === "後期" ? "second" : null;
+    if (!term || ![1, 2, 3].includes(value.grade) || typeof value.homeroom !== "string") {
+      return { status: "malformed", profile: null, error: "invalid_profile" };
+    }
+    const homerooms = Array.isArray(options.homerooms) ? options.homerooms : [];
+    const matches = homerooms.filter(
+      (item) => isRecord(item) && item.grade === value.grade &&
+        item.label === value.homeroom && typeof item.id === "string" &&
+        HOMEROOM_ID_PATTERN.test(item.id),
+    );
+    if (matches.length !== 1) {
+      return {
+        status: "needs-reconfiguration",
+        profile: null,
+        error: "profile_migration_required",
+        requiresReconfiguration: true,
+      };
+    }
+    const migrated = createProfile({
+      academicYear: value.academicYear,
+      term,
+      grade: value.grade,
+      homeroomId: matches[0].id,
+      manualSelectedCourseIds: value.manualSelectedCourseIds,
+      dataVersion: value.dataVersion,
+      updatedAt: value.updatedAt,
+    }, { now: value.updatedAt });
+    if (!migrated.ok) {
+      return {
+        status: "malformed",
+        profile: null,
+        error: "invalid_profile",
+        errors: migrated.errors,
+      };
+    }
+    return {
+      status: "migrated",
+      profile: migrated.profile,
+      error: null,
+      migratedFromSchemaVersion: 1,
+      requiresReconfiguration: false,
+    };
+  };
+
   const resolveBrowserStorage = (browserRoot = environmentRoot) => {
     try {
       const storage = browserRoot && browserRoot.localStorage;
@@ -180,7 +238,9 @@
     }
   };
 
-  const loadProfile = (storage, key = STORAGE_KEY) => {
+  const loadProfile = (storage, keyOrOptions = STORAGE_KEY, migrationOptions = {}) => {
+    const key = typeof keyOrOptions === "string" ? keyOrOptions : STORAGE_KEY;
+    const options = isRecord(keyOrOptions) ? keyOrOptions : migrationOptions;
     if (!storage || typeof storage.getItem !== "function") {
       return { status: "unavailable", profile: null, error: "storage_unavailable" };
     }
@@ -197,6 +257,9 @@
       value = JSON.parse(raw);
     } catch (_error) {
       return { status: "malformed", profile: null, error: "malformed_json" };
+    }
+    if (isRecord(value) && value.schemaVersion === 1) {
+      return migrateLegacyProfile(value, options);
     }
     const schemaVersionState = classifySchemaVersion(value);
     if (schemaVersionState === "unsupported") {
@@ -268,6 +331,72 @@
     left.site === right.site &&
     left.timetable === right.timetable;
 
+  const validateTermPeriods = (value) => {
+    if (!Array.isArray(value)) return { valid: false, errors: ["termPeriods must be an array"] };
+    const errors = [];
+    const seenTerms = new Set();
+    const normalized = [];
+    for (const item of value) {
+      if (!isRecord(item) || Object.keys(item).some(
+        (key) => !["term", "startDate", "endDate"].includes(key),
+      )) {
+        errors.push("term period is malformed");
+        continue;
+      }
+      if (!TERMS.includes(item.term) || seenTerms.has(item.term)) {
+        errors.push("term is invalid or duplicated");
+      }
+      const start = parseDateKey(item.startDate);
+      const end = parseDateKey(item.endDate);
+      if (!start || !end) {
+        errors.push("term period date is invalid");
+      } else if (item.startDate > item.endDate) {
+        errors.push("term period end precedes start");
+      } else {
+        normalized.push(item);
+      }
+      seenTerms.add(item.term);
+    }
+    const sorted = [...normalized].sort((left, right) => left.startDate.localeCompare(right.startDate));
+    for (let index = 1; index < sorted.length; index += 1) {
+      if (sorted[index].startDate <= sorted[index - 1].endDate) {
+        errors.push("term periods overlap");
+      }
+    }
+    return { valid: errors.length === 0, errors };
+  };
+
+  const resolveTermForDate = (dateKey, manifest) => {
+    if (!parseDateKey(dateKey) || !isRecord(manifest)) return "unresolved";
+    const validation = validateTermPeriods(manifest.termPeriods);
+    if (!validation.valid) return "unresolved";
+    const matching = manifest.termPeriods.filter(
+      (period) => period.startDate <= dateKey && dateKey <= period.endDate,
+    );
+    return matching.length === 1 ? matching[0].term : "unresolved";
+  };
+
+  const periodContextForDate = (dateKey, manifest) => {
+    const term = resolveTermForDate(dateKey, manifest);
+    if (
+      term === "unresolved" ||
+      !isRecord(manifest) ||
+      typeof manifest.academicYear !== "string" ||
+      !ACADEMIC_YEAR_PATTERN.test(manifest.academicYear)
+    ) {
+      return {
+        valid: false,
+        currentPeriod: null,
+        errors: ["manifest academicYear and resolved term are required"],
+      };
+    }
+    return {
+      valid: true,
+      currentPeriod: { academicYear: manifest.academicYear, term },
+      errors: [],
+    };
+  };
+
   const reconcileProfile = (profile, context = {}) => {
     const validation = validateProfile(profile);
     if (!validation.valid) {
@@ -329,36 +458,31 @@
     return entry.grades.includes(grade) ? "match" : "mismatch";
   };
 
-  const matchHomeroom = (entry, homeroom, options = {}) => {
-    const groupTags = entry && entry.groupTags;
-    if (!Array.isArray(groupTags)) return "unknown";
-    if (groupTags.length === 0) return "all";
-    if (typeof homeroom !== "string" || !homeroom) return "invalid-profile";
-
-    const known = new Set(
-      options.knownHomeroomGroups instanceof Set
-        ? [...options.knownHomeroomGroups]
-        : Array.isArray(options.knownHomeroomGroups)
-          ? options.knownHomeroomGroups
-          : [],
-    );
-    if (!known.has(homeroom) || groupTags.some((tag) => !known.has(tag))) {
-      return "unknown";
-    }
-    return groupTags.includes(homeroom) ? "match" : "mismatch";
+  const matchHomeroom = (entry, homeroomId) => {
+    const homeroomIds = entry && entry.homeroomIds;
+    if (homeroomIds === null || !Array.isArray(homeroomIds)) return "unknown";
+    if (homeroomIds.length === 0) return "all";
+    if (
+      typeof homeroomId !== "string" ||
+      !HOMEROOM_ID_PATTERN.test(homeroomId)
+    ) return "invalid-profile";
+    if (homeroomIds.some(
+      (value) => typeof value !== "string" || !HOMEROOM_ID_PATTERN.test(value),
+    )) return "unknown";
+    return homeroomIds.includes(homeroomId) ? "match" : "mismatch";
   };
 
-  const matchAudience = (entry, profile, options = {}) => {
+  const matchAudience = (entry, profile) => {
     const grade = matchGrade(entry, profile && profile.grade);
-    const group = matchHomeroom(entry, profile && profile.homeroom, options);
+    const homeroom = matchHomeroom(entry, profile && profile.homeroomId);
     return {
-      matches: grade === "match" && (group === "match" || group === "all"),
+      matches: grade === "match" && (homeroom === "match" || homeroom === "all"),
       grade,
-      group,
+      homeroom,
     };
   };
 
-  const deriveRequiredCourses = ({ courses = [], entries = [], profile, knownHomeroomGroups = [] } = {}) => {
+  const deriveRequiredCourses = ({ courses = [], entries = [], profile } = {}) => {
     const entryList = Array.isArray(entries) ? entries : [];
     const requiredCourses = [];
     for (const course of Array.isArray(courses) ? courses : []) {
@@ -369,7 +493,7 @@
         (entry) =>
           isRecord(entry) &&
           entry.courseId === course.id &&
-          matchAudience(entry, profile, { knownHomeroomGroups }).matches,
+          matchAudience(entry, profile).matches,
       );
       if (!matchingEntries.length) continue;
       requiredCourses.push({
@@ -392,7 +516,6 @@
     entries = [],
     profile,
     currentPeriod,
-    knownHomeroomGroups = [],
   } = {}) => {
     const reconciliation = reconcileProfile(profile, {
       ...(isRecord(currentPeriod) ? currentPeriod : {}),
@@ -406,7 +529,7 @@
         ? []
         : reconciliation.staleManualSelectedCourseIds,
     };
-    const required = deriveRequiredCourses({ courses, entries, profile, knownHomeroomGroups });
+    const required = deriveRequiredCourses({ courses, entries, profile });
     const requiredIds = new Set(required.requiredCourseIds);
     const manualIds = new Set(manual.validManualSelectedCourseIds);
     const effectiveCourseIds = [];
@@ -504,25 +627,25 @@
       : "manual",
   });
 
-  const scopeEntriesForProfile = (entries, profile, options = {}) => {
+  const scopeEntriesForProfile = (entries, profile) => {
     const applicableEntries = [];
     const unknownScopedEntries = [];
     const nonMatchingEntries = [];
     for (const entry of Array.isArray(entries) ? entries : []) {
       if (!isRecord(entry)) continue;
-      const audience = matchAudience(entry, profile, options);
+      const audience = matchAudience(entry, profile);
       const diagnostic = {
         entryId: typeof entry.entryId === "string" ? entry.entryId : null,
         courseId: typeof entry.courseId === "string" ? entry.courseId : null,
         grade: audience.grade,
-        group: audience.group,
+        homeroom: audience.homeroom,
       };
       if (audience.matches) applicableEntries.push(entry);
       else if (
         audience.grade === "unknown" ||
         audience.grade === "invalid-profile" ||
-        audience.group === "unknown" ||
-        audience.group === "invalid-profile"
+        audience.homeroom === "unknown" ||
+        audience.homeroom === "invalid-profile"
       ) {
         unknownScopedEntries.push(diagnostic);
       } else {
@@ -538,7 +661,6 @@
     enrollment = {},
     candidateCourseIds,
     profile,
-    knownHomeroomGroups = [],
   } = {}) => {
     const effectiveIds = unique(
       Array.isArray(enrollment.effectiveCourseIds) ? enrollment.effectiveCourseIds : [],
@@ -572,7 +694,7 @@
         .filter((course) => isRecord(course) && typeof course.id === "string")
         .map((course) => [course.id, course]),
     );
-    const scopedEntries = scopeEntriesForProfile(entries, profile, { knownHomeroomGroups });
+    const scopedEntries = scopeEntriesForProfile(entries, profile);
     const slotsByCourse = courseSlots(scopedEntries.applicableEntries);
     const detailsFor = (courseId) => {
       const item = enrollmentItems.get(courseId) || { courseId, required: false, manual: true };
@@ -650,14 +772,14 @@
       if (typeof entry.courseId !== "string" || !enrolled.has(entry.courseId)) {
         return { visible: false, reason: "course-not-enrolled", audience: null };
       }
-      const audience = matchAudience(entry, profile, options);
+      const audience = matchAudience(entry, profile);
       if (audience.matches) {
         return { visible: true, reason: "enrolled-course", audience };
       }
       const unresolved = audience.grade === "unknown" ||
         audience.grade === "invalid-profile" ||
-        audience.group === "unknown" ||
-        audience.group === "invalid-profile";
+        audience.homeroom === "unknown" ||
+        audience.homeroom === "invalid-profile";
       return {
         visible: false,
         reason: unresolved ? "schedule-scope-unresolved" : "audience-no-match",
@@ -669,7 +791,7 @@
       return { visible, reason: visible ? "enrolled-exam" : "course-not-enrolled", audience: null };
     }
     if (entry.kind === "exam" || AUDIENCE_KINDS.has(entry.kind)) {
-      const audience = matchAudience(entry, profile, options);
+      const audience = matchAudience(entry, profile);
       return {
         visible: audience.matches,
         reason: audience.matches ? "audience-match" : "audience-no-match",
@@ -743,14 +865,18 @@
     matchAudience,
     matchGrade,
     matchHomeroom,
+    migrateLegacyProfile,
     matchesCategoryFilter,
     matchesCourseGradeFilter,
     matchesGradeFilter,
     parseDateKey,
+    periodContextForDate,
     reconcileProfile,
+    resolveTermForDate,
     resolveBrowserStorage,
     saveProfile,
     slotFromEntry,
     validateProfile,
+    validateTermPeriods,
   });
 });

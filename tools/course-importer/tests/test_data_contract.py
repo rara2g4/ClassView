@@ -136,6 +136,39 @@ class CourseDataContractTests(unittest.TestCase):
         self.assertTrue(
             list(validator.iter_errors({**manifest, "academicYear": "0000"}))
         )
+        self.assertEqual(manifest["termPeriods"], [])
+        self.assertTrue(list(validator.iter_errors({**manifest, "term": "first"})))
+
+    def test_public_timetable_homeroom_contract_and_migration_counts(self):
+        manifest = json.loads(
+            (REPO_ROOT / "data" / "timetable" / "manifest.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        month = json.loads(
+            (REPO_ROOT / "data" / "timetable" / "2025-04.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        manifest_schema = json.loads(
+            (REPO_ROOT / "data" / "timetable-manifest.schema.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        month_schema = json.loads(
+            (REPO_ROOT / "data" / "timetable-month.schema.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(list(Draft202012Validator(manifest_schema).iter_errors(manifest)), [])
+        self.assertEqual(list(Draft202012Validator(month_schema).iter_errors(month)), [])
+        entries = [entry for day in month["days"].values() for entry in day]
+        counts = {
+            "all": sum(entry["homeroomIds"] == [] for entry in entries),
+            "explicit": sum(isinstance(entry["homeroomIds"], list) and bool(entry["homeroomIds"]) for entry in entries),
+            "unresolved": sum(entry["homeroomIds"] is None for entry in entries),
+        }
+        self.assertEqual(counts, {"all": 66, "explicit": 14, "unresolved": 4})
 
     def test_clone_handoff_contains_valid_timetable_state(self):
         courses = json.loads(

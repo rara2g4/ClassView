@@ -408,6 +408,10 @@ class ClassViewPublisherTests(unittest.TestCase):
             json.dumps({
                 "schemaVersion": 1,
                 "academicYear": "2025",
+                "termPeriods": [],
+                "homerooms": [
+                    {"id": "grade1-1", "grade": 1, "label": "1組"},
+                ],
                 "updatedAt": "2025-04-21T00:00:00Z",
                 "version": "0123456789ab",
                 "months": ["2025-04"],
@@ -442,6 +446,7 @@ class ClassViewPublisherTests(unittest.TestCase):
                         "grades": [1],
                         "gradeRaw": "1",
                         "groupTags": [],
+                        "homeroomIds": [],
                         "instructors": [],
                         "rooms": ["721"],
                         "kind": "class",

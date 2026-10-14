@@ -43,6 +43,7 @@ KIND_LABELS = {
     "other": "その他",
 }
 STATUSES = {"confirmed", "tentative"}
+TERMS = {"first", "second"}
 ISSUE_LABELS = {
     "date_parse_failed": "日付を解析できない箇所",
     "duplicate_entry": "重複の可能性",
@@ -186,6 +187,9 @@ class TimetableService:
                 "timetableItemMappings": {},
                 "canonicalGroups": {},
                 "groupMappings": {},
+                "termPeriods": [],
+                "homerooms": {},
+                "homeroomMappings": {},
                 "legacyGroupTags": {},
             },
         )
@@ -200,6 +204,33 @@ class TimetableService:
         value.setdefault("timetableItemMappings", {})
         value.setdefault("canonicalGroups", {})
         value.setdefault("groupMappings", {})
+        existing_manifest = self._load_json(self.public_root / "manifest.json", {})
+        if not self.config_path.exists() or "termPeriods" not in value:
+            default_term_periods = default_config.get("termPeriods", [])
+            manifest_term_periods = (
+                existing_manifest.get("termPeriods", [])
+                if isinstance(existing_manifest, dict) else []
+            )
+            value["termPeriods"] = copy.deepcopy(
+                manifest_term_periods or default_term_periods
+            )
+        if not self.config_path.exists() or "homerooms" not in value:
+            manifest_homerooms = (
+                existing_manifest.get("homerooms", [])
+                if isinstance(existing_manifest, dict) else []
+            )
+            manifest_catalog = {
+                item["id"]: {"grade": item.get("grade"), "label": item.get("label")}
+                for item in manifest_homerooms
+                if isinstance(item, dict) and isinstance(item.get("id"), str)
+            }
+            value["homerooms"] = copy.deepcopy(
+                manifest_catalog or default_config.get("homerooms", {})
+            )
+        value.setdefault(
+            "homeroomMappings",
+            copy.deepcopy(default_config.get("homeroomMappings", {})),
+        )
         legacy_group_tags = value.setdefault("legacyGroupTags", {})
         old_group_tags = value.get("groupTags", {})
         if isinstance(old_group_tags, dict):
@@ -210,9 +241,34 @@ class TimetableService:
                 legacy_group_tags.setdefault(key, display_name)
         if not all(isinstance(value[key], dict) for key in (
             "subjectMappings", "timetableItemMappings", "canonicalGroups",
-            "groupMappings", "legacyGroupTags"
+            "groupMappings", "homerooms", "homeroomMappings", "legacyGroupTags"
         )):
             raise TimetableError("時間割の対応設定が不正です。", status=500)
+        try:
+            value["termPeriods"] = self._validated_term_periods(value["termPeriods"])
+        except ValueError as error:
+            raise TimetableError("学期期間の設定が不正です。", status=500) from error
+        for homeroom_id, homeroom in value["homerooms"].items():
+            if (
+                not isinstance(homeroom_id, str)
+                or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", homeroom_id)
+                or not isinstance(homeroom, dict)
+                or homeroom.get("grade") not in {1, 2, 3}
+                or not _text(homeroom.get("label"))
+            ):
+                raise TimetableError("所属組catalogの設定が不正です。", status=500)
+        for alias, homeroom_ids in value["homeroomMappings"].items():
+            if not isinstance(alias, str) or (homeroom_ids is not None and not isinstance(homeroom_ids, list)):
+                raise TimetableError("所属組scopeの対応設定が不正です。", status=500)
+            if homeroom_ids is not None and (
+                len(set(homeroom_ids)) != len(homeroom_ids)
+                or any(
+                    not isinstance(homeroom_id, str)
+                    or homeroom_id not in value["homerooms"]
+                    for homeroom_id in homeroom_ids
+                )
+            ):
+                raise TimetableError("所属組scopeの対応先が不正です。", status=500)
         for key, mapping in value["timetableItemMappings"].items():
             if (
                 not isinstance(key, str)
@@ -248,9 +304,45 @@ class TimetableService:
             "timetableItemMappings": config["timetableItemMappings"],
             "canonicalGroups": self._canonical_group_options(config),
             "groupMappings": config["groupMappings"],
+            "termPeriods": copy.deepcopy(config["termPeriods"]),
+            "homerooms": self._homeroom_options(config),
+            "homeroomMappings": config["homeroomMappings"],
             "legacyGroupTags": config["legacyGroupTags"],
             "courses": self._course_options(),
         }
+
+    @staticmethod
+    def _validated_term_periods(value: Any) -> list[dict[str, str]]:
+        if not isinstance(value, list):
+            raise ValueError("termPeriods must be an array")
+        normalized: list[dict[str, str]] = []
+        seen_terms: set[str] = set()
+        for item in value:
+            if not isinstance(item, dict) or set(item) != {"term", "startDate", "endDate"}:
+                raise ValueError("term period fields are invalid")
+            term = item.get("term")
+            if term not in TERMS or term in seen_terms:
+                raise ValueError("term is invalid or duplicated")
+            try:
+                start = date.fromisoformat(item.get("startDate", ""))
+                end = date.fromisoformat(item.get("endDate", ""))
+            except (TypeError, ValueError) as error:
+                raise ValueError("term period date is invalid") from error
+            if item["startDate"] != start.isoformat() or item["endDate"] != end.isoformat():
+                raise ValueError("term period date is not canonical")
+            if end < start:
+                raise ValueError("term period end precedes start")
+            normalized.append({
+                "term": term,
+                "startDate": start.isoformat(),
+                "endDate": end.isoformat(),
+            })
+            seen_terms.add(term)
+        sorted_periods = sorted(normalized, key=lambda item: item["startDate"])
+        for previous, current in zip(sorted_periods, sorted_periods[1:]):
+            if current["startDate"] <= previous["endDate"]:
+                raise ValueError("term periods overlap")
+        return normalized
 
     def _course_options(self) -> list[dict[str, str | None]]:
         document = self._load_json(self.courses_path, {"courses": []})
@@ -351,16 +443,46 @@ class TimetableService:
             key=lambda item: (item["displayName"], item["id"]),
         )
 
+    @staticmethod
+    def _homeroom_options(config: dict[str, Any]) -> list[dict[str, Any]]:
+        return sorted(
+            [
+                {
+                    "id": homeroom_id,
+                    "grade": value["grade"],
+                    "label": _text(value.get("label")),
+                }
+                for homeroom_id, value in config["homerooms"].items()
+            ],
+            key=lambda item: (item["grade"], item["label"], item["id"]),
+        )
+
     def save_group_mapping(
-        self, raw_token: str, *, group_id: str = "", display_name: str = ""
+        self, raw_token: str, *, group_id: str = "", display_name: str = "",
+        homeroom_scope: str = "unresolved", homeroom_ids: list[str] | None = None,
     ) -> dict[str, Any]:
         alias = self._group_alias(raw_token)
         normalized_group_id = _mapping_key(group_id)
         normalized_display_name = _text(display_name)
         if bool(normalized_group_id) == bool(normalized_display_name):
             raise TimetableError("既存グループを選ぶか、新しいグループ名を入力してください。")
+        if homeroom_scope not in {"unresolved", "all", "specific"}:
+            raise TimetableError("所属組scopeを選択してください。")
+        requested_homeroom_ids = homeroom_ids if isinstance(homeroom_ids, list) else []
         with self.lock:
             config = self._config()
+            if homeroom_scope == "specific":
+                if not requested_homeroom_ids:
+                    raise TimetableError("対象となる所属組を1つ以上選択してください。")
+                if (
+                    len(set(requested_homeroom_ids)) != len(requested_homeroom_ids)
+                    or any(
+                        not isinstance(homeroom_id, str)
+                        or homeroom_id not in config["homerooms"]
+                        for homeroom_id in requested_homeroom_ids
+                    )
+                ):
+                    raise TimetableError("選択した所属組は現在のcatalogにありません。")
             if normalized_group_id:
                 if normalized_group_id not in config["canonicalGroups"]:
                     raise TimetableError("選択したグループは現在の設定にありません。")
@@ -372,6 +494,11 @@ class TimetableService:
                     canonical_id, {"displayName": normalized_display_name}
                 )
             config["groupMappings"][alias] = canonical_id
+            config["homeroomMappings"][alias] = (
+                None
+                if homeroom_scope == "unresolved"
+                else [] if homeroom_scope == "all" else requested_homeroom_ids
+            )
             # Persist the old ambiguous mapping only under an explicitly
             # disabled audit key. The backup below retains its original file.
             config.pop("groupTags", None)
@@ -383,6 +510,7 @@ class TimetableService:
             "alias": alias,
             "groupId": canonical_id,
             "displayName": config["canonicalGroups"][canonical_id]["displayName"],
+            "homeroomIds": config["homeroomMappings"][alias],
         }
 
     def _backup_private_config(self) -> None:
@@ -439,6 +567,8 @@ class TimetableService:
                 "blocking", "no_entries_in_range", "指定期間内に授業・行事を見つけられませんでした。"
             ))
         previous = self._load_snapshot_entries()
+        for previous_entry in previous:
+            self._ensure_homeroom_scope(previous_entry, config)
         current_range_dates = {item["date"] for item in entries}
         old_in_range = [item for item in previous if start <= date.fromisoformat(item["date"]) <= end]
         changes = self.compare(old_in_range, entries)
@@ -900,6 +1030,7 @@ class TimetableService:
         kind = resolution["kind"]
         course_id = resolution["courseId"]
         missing_course_id = resolution["missingCourseId"]
+        homeroom_ids = self._homeroom_scope(parsed_subject, config)
         resolved_group_tags: list[str] = []
         unresolved_group_tokens: list[dict[str, str]] = []
         for token in parsed_subject["tokens"]:
@@ -925,6 +1056,7 @@ class TimetableService:
             "grades": grades,
             "gradeRaw": grade_raw,
             "groupTags": list(dict.fromkeys(resolved_group_tags)),
+            "homeroomIds": homeroom_ids,
             "instructors": parsed_subject["instructors"],
             "rooms": rooms,
             "kind": kind,
@@ -972,6 +1104,37 @@ class TimetableService:
         if room_warning:
             issues.append(self._issue("warning", "suspicious_room", room_warning, entry=entry))
         return entry, issues, parsed_subject["tokens"]
+
+    def _homeroom_scope(
+        self, parsed_subject: dict[str, Any], config: dict[str, Any]
+    ) -> list[str] | None:
+        group_tokens = [
+            token for token in parsed_subject.get("tokens", [])
+            if token.get("tokenType") == "group"
+        ]
+        if not group_tokens:
+            return []
+        resolved: list[str] = []
+        for token in group_tokens:
+            alias = self._group_alias(token["rawToken"])
+            if alias not in config["homeroomMappings"]:
+                return None
+            mapped = config["homeroomMappings"][alias]
+            if mapped is None:
+                return None
+            if mapped == []:
+                return []
+            resolved.extend(mapped)
+        return list(dict.fromkeys(resolved))
+
+    def _ensure_homeroom_scope(
+        self, entry: dict[str, Any], config: dict[str, Any]
+    ) -> None:
+        if "homeroomIds" in entry:
+            return
+        parsed_subject = self.parse_subject(entry.get("subjectRaw", ""))
+        entry["homeroomIds"] = self._homeroom_scope(parsed_subject, config)
+        entry["entryId"] = self._entry_id(entry)
 
     @staticmethod
     def parse_subject(subject_raw: str) -> dict[str, Any]:
@@ -1176,6 +1339,7 @@ class TimetableService:
             "subjectBaseName": entry.get("subjectBaseName"),
             "courseVariantTags": entry.get("courseVariantTags", []),
             "grades": entry.get("grades", []), "groupTags": entry.get("groupTags", []),
+            "homeroomIds": entry.get("homeroomIds"),
         }
         digest = hashlib.sha256(json.dumps(identity, ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()[:16]
         return f"tt-{digest}"
@@ -1186,6 +1350,7 @@ class TimetableService:
             key = (
                 entry["date"], entry["period"], entry.get("courseId"), entry["subjectName"],
                 tuple(entry.get("grades", [])), tuple(entry.get("groupTags", [])),
+                None if entry.get("homeroomIds") is None else tuple(entry.get("homeroomIds", [])),
                 tuple(entry.get("instructors", [])), tuple(entry.get("rooms", [])),
                 entry.get("kind"), entry.get("status"),
             )
@@ -1385,17 +1550,22 @@ class TimetableService:
         return (
             entry.get("courseId"), entry.get("subjectName"),
             tuple(entry.get("grades", [])), tuple(entry.get("groupTags", [])),
+            None if entry.get("homeroomIds") is None else tuple(entry.get("homeroomIds", [])),
         )
 
     @staticmethod
     def _target_identity(entry: dict[str, Any]) -> tuple[Any, ...]:
-        return (tuple(entry.get("grades", [])), tuple(entry.get("groupTags", [])))
+        return (
+            tuple(entry.get("grades", [])), tuple(entry.get("groupTags", [])),
+            None if entry.get("homeroomIds") is None else tuple(entry.get("homeroomIds", [])),
+        )
 
     @staticmethod
     def _changed_fields(before: dict[str, Any], after: dict[str, Any]) -> list[str]:
         labels = {
             "courseId": "科目", "subjectName": "科目", "rooms": "教室", "instructors": "講師",
-            "grades": "学年", "groupTags": "グループ", "kind": "授業種別", "status": "確定状態",
+            "grades": "学年", "groupTags": "グループ", "homeroomIds": "所属組scope",
+            "kind": "授業種別", "status": "確定状態",
         }
         return list(dict.fromkeys(labels[field] for field in labels if before.get(field) != after.get(field)))
 
@@ -1403,7 +1573,9 @@ class TimetableService:
     def _entry_sort_key(entry: dict[str, Any]) -> tuple[Any, ...]:
         return (
             entry["date"], entry["period"], tuple(entry.get("grades", [])),
-            tuple(entry.get("groupTags", [])), entry.get("subjectName", ""),
+            tuple(entry.get("groupTags", [])),
+            None if entry.get("homeroomIds") is None else tuple(entry.get("homeroomIds", [])),
+            entry.get("subjectName", ""),
         )
 
     def _subject_usage_summary(
@@ -1772,6 +1944,7 @@ class TimetableService:
                 entry["courseId"] = course_id
                 entry["kind"] = resolution["kind"]
                 entry["groupTags"] = list(dict.fromkeys(resolved_groups))
+                entry["homeroomIds"] = self._homeroom_scope(parsed, config)
                 entry["entryId"] = self._entry_id(entry)
             self._detect_duplicates(preview.entries, retained)
             preview.issues = self._deduplicate_issues(retained)
@@ -1795,7 +1968,13 @@ class TimetableService:
                 raise TimetableError("解決が必要な項目が残っているため保存できません。", code="blocking_issues", status=409)
             if warnings and not warnings_acknowledged:
                 raise TimetableError("確認が必要な項目を確認済みにしてから保存してください。", code="warnings_not_acknowledged", status=409)
-            documents = self._public_documents(preview.merged_snapshot, preview.periods)
+            config = self._config()
+            documents = self._public_documents(
+                preview.merged_snapshot,
+                preview.periods,
+                term_periods=config["termPeriods"],
+                homerooms=self._homeroom_options(config),
+            )
             backup_path = self._write_public_documents(documents)
             snapshot = {
                 "schemaVersion": 1,
@@ -1811,7 +1990,6 @@ class TimetableService:
                 "confirmedStartDate": preview.start_date.isoformat(),
                 "confirmedEndDate": preview.end_date.isoformat(),
             }
-            config = self._config()
             config["sheetName"] = preview.sheet_name
             try:
                 for private_path in (self.config_path, self.snapshot_path, self.metadata_path):
@@ -1853,7 +2031,16 @@ class TimetableService:
             else:
                 private_path.unlink(missing_ok=True)
 
-    def _public_documents(self, entries: list[dict[str, Any]], periods: dict[str, dict[str, str]]) -> dict[str, dict[str, Any]]:
+    def _public_documents(
+        self, entries: list[dict[str, Any]], periods: dict[str, dict[str, str]], *,
+        term_periods: list[dict[str, str]], homerooms: list[dict[str, Any]],
+    ) -> dict[str, dict[str, Any]]:
+        try:
+            normalized_term_periods = self._validated_term_periods(term_periods)
+        except ValueError as error:
+            raise TimetableError(
+                "時間割の学期期間設定が不正です。", code="schema_error", status=500
+            ) from error
         months: dict[str, dict[str, list[dict[str, Any]]]] = defaultdict(lambda: defaultdict(list))
         for entry in entries:
             public_entry = {
@@ -1863,7 +2050,12 @@ class TimetableService:
             }
             months[entry["date"][:7]][entry["date"]].append(public_entry)
         updated_at = _iso_now()
-        version_source = {"entries": entries, "periods": periods}
+        version_source = {
+            "entries": entries,
+            "periods": periods,
+            "termPeriods": normalized_term_periods,
+            "homerooms": homerooms,
+        }
         serialized_entries = json.dumps(version_source, ensure_ascii=False, sort_keys=True).encode("utf-8")
         version = hashlib.sha256(serialized_entries).hexdigest()[:12]
         academic_years = sorted({
@@ -1876,6 +2068,8 @@ class TimetableService:
             "manifest.json": {
                 "schemaVersion": 1,
                 "academicYear": academic_year,
+                "termPeriods": copy.deepcopy(normalized_term_periods),
+                "homerooms": copy.deepcopy(homerooms),
                 "updatedAt": updated_at,
                 "version": version,
                 "months": sorted(months),
@@ -1908,7 +2102,59 @@ class TimetableService:
                 code="schema_error", status=500,
             )
 
+    def _validate_public_documents(self, documents: dict[str, dict[str, Any]]) -> None:
+        for filename, document in documents.items():
+            self._validate_public_document(filename, document)
+        manifest = documents.get("manifest.json", {})
+        try:
+            self._validated_term_periods(
+                manifest.get("termPeriods") if isinstance(manifest, dict) else None
+            )
+        except ValueError as error:
+            raise TimetableError(
+                "時間割の学期期間定義が不正です。",
+                code="invalid_term_periods",
+                status=500,
+            ) from error
+        homerooms = manifest.get("homerooms", []) if isinstance(manifest, dict) else []
+        if any(
+            not isinstance(item, dict)
+            or not isinstance(item.get("label"), str)
+            or not item["label"].strip()
+            for item in homerooms
+        ):
+            raise TimetableError(
+                "所属組catalogの表示名が不正です。",
+                code="invalid_homeroom_catalog",
+                status=500,
+            )
+        homeroom_ids = [
+            item.get("id") for item in homerooms if isinstance(item, dict)
+        ]
+        if len(homeroom_ids) != len(set(homeroom_ids)):
+            raise TimetableError(
+                "所属組catalogのIDが重複しています。",
+                code="duplicate_homeroom_id",
+                status=500,
+            )
+        known_ids = set(homeroom_ids)
+        for filename, document in documents.items():
+            if not re.fullmatch(r"20[0-9]{2}-(?:0[1-9]|1[0-2])\.json", filename):
+                continue
+            for entries in document.get("days", {}).values():
+                for entry in entries:
+                    homeroom_scope = entry.get("homeroomIds")
+                    if homeroom_scope is not None and any(
+                        homeroom_id not in known_ids for homeroom_id in homeroom_scope
+                    ):
+                        raise TimetableError(
+                            f"時間割がcatalogにない所属組IDを参照しています（{filename}）。",
+                            code="unknown_homeroom_id",
+                            status=500,
+                        )
+
     def _write_public_documents(self, documents: dict[str, dict[str, Any]]) -> Path:
+        self._validate_public_documents(documents)
         self.public_root.mkdir(parents=True, exist_ok=True)
         stamp = datetime.now().strftime("%Y-%m-%d-%H%M%S-%f")
         backup = self.backups_root / f"public-{stamp}"
@@ -1919,7 +2165,6 @@ class TimetableService:
         staged: list[tuple[Path, Path]] = []
         try:
             for filename, document in documents.items():
-                self._validate_public_document(filename, document)
                 descriptor, temp_name = tempfile.mkstemp(prefix=f".{Path(filename).stem}-", suffix=".tmp", dir=self.public_root)
                 temp_path = Path(temp_name)
                 with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as handle:

@@ -63,13 +63,13 @@ public course / timetable JSON
 ```
 
 - profile と履修選択は `classview.personalTimetable.profile` に端末内保存し、public API、DB、login、account sync、server-side personal data は追加しない。
-- `schemaVersion: 1` の保存対象は、学年度、前期 / 後期、学年、所属 group、手動選択した course ID、site/timetable data version、更新時刻である。
+- `schemaVersion: 2` の保存対象は、学年度、`first` / `second`、学年、stable所属組ID、手動選択した course ID、site/timetable data version、更新時刻である。version 1はcatalog上で一意に変換できる場合だけ移行する。
 - 必修 course ID は保存せず、current course / timetable data から毎回導出する。
 - 氏名、学籍番号、email 等の個人識別情報は保存しない。
 - 期間変更時は前期間の手動選択を active state へ自動移植せず、再設定要求を返す。削除済み course ID は stale state として返す。
 - profile 未設定、破損、未対応 schema、storage failure は別 state であり、学校全体時間割の fallback を妨げない。
-- 現行 public data に machine-readable な `term` source はなく、module は前期 / 後期を推測しない。UI integration は明示 period context を供給する必要がある。
-- 現行 public `groupTags` だけでは所属組と A/B/C 等の授業内 group を完全に区別できない。Phase 1 は明示確認された所属組集合以外を自動一致させない。必要な public contract / Schema / producer 変更は別途判断する。
+- manifestの `termPeriods` を日付へ照合し、`first` / `second` / `unresolved` を解決するpure logicを持つ。年度Excel全体や表示文言へ単一termを付けず、学期境界はExcelから推測しない。
+- manifestの `homerooms` catalogとentryの `homeroomIds` を所属組判定に使う。`groupTags` は表示・授業内group・compatibility用として残るが、個人時間割の判定には使わない。
 - Desktop / Mobile の production DOM、data loading、表示 fallback は次 phase で実装する。
 
 ## Data
@@ -83,7 +83,7 @@ public course / timetable JSON
 | `data/course-works.json` | 実際の制作物 metadata | tracked/public |
 | `data/course-works.schema.json` | works document の契約 | tracked/public |
 | `assets/works/` | 管理された公開画像 | tracked/public |
-| `data/timetable/manifest.json` | 公開月一覧、更新時刻、content version | tracked/public |
+| `data/timetable/manifest.json` | 年度、明示学期期間、所属組catalog、公開月一覧、更新時刻、content version | tracked/public |
 | `data/timetable/periods.json` | 1〜4限の時刻 | tracked/public |
 | `data/timetable/YYYY-MM.json` | 日付 key ごとの時間割 entry | tracked/public |
 | `data/timetable-*.schema.json` | manifest / periods / month の契約 | tracked/public |
@@ -136,6 +136,8 @@ Excel (.xlsx/.xlsm)
 ```
 
 parser は B、E、H、K、N、Q、T 列を各曜日 block の先頭として扱い、科目・学年・教室の 3 列を読む。時限 block は 1〜4 限で、default 時刻は `09:20-10:50`、`11:00-12:30`、`13:30-15:00`、`15:10-16:40`。
+
+学校運用では前期・後期を別Excelにせず、同じ年度Excelへ後期分を追記して再importする。同一 `academicYear` のpublic datasetに両学期の日付が共存できる。学期境界はExcel由来データではなくschool configurationの `termPeriods` としてruntime/default configおよびmanifestで保持し、再import時に推測・上書きしない。境界未設定や期間外の日付は `unresolved` のままとする。
 
 ## Feedback flow
 

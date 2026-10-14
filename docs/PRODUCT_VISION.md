@@ -115,7 +115,7 @@ feedback の第一目的は、**学校職員が、学生から観測できる学
 
 ### Phase 1 storage boundary — Current implementation
 
-- `js/personal-timetable.js` は、学年、所属組、学年度、前期 / 後期、本人が選んだ履修 course、data version、更新時刻を browser `localStorage` へ安全に保存・読込する契約を持つ。
+- `js/personal-timetable.js` は、学年、stable所属組ID、学年度、前期 / 後期、本人が選んだ履修 course、data version、更新時刻を browser `localStorage` へ安全に保存・読込する契約を持つ。
 - 必修 course ID は保存せず、current course / timetable data から毎回導出する。
 - 期間変更時は旧期間の手動選択を引き継がず、再設定が必要な state を返す。削除済み course ID は別 course へ置換せず stale selection として返す。
 - JSON 破損、契約不適合、未対応 schema version、storage 利用不能、write failure は profile 未設定と区別した state になる。

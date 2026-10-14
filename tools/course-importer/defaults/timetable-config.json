@@ -74,5 +74,26 @@
     "(A組)": "group-72c86594bf8f",
     "(B組)": "group-4d151e08148d"
   },
+  "termPeriods": [],
+  "homerooms": {
+    "grade1-1": {
+      "grade": 1,
+      "label": "1組"
+    },
+    "grade1-2": {
+      "grade": 1,
+      "label": "2組"
+    }
+  },
+  "homeroomMappings": {
+    "(1組)": [
+      "grade1-1"
+    ],
+    "(2組)": [
+      "grade1-2"
+    ],
+    "(A組)": null,
+    "(B組)": null
+  },
   "legacyGroupTags": {}
 }

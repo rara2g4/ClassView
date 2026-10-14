@@ -291,6 +291,8 @@ def create_app(
             str(payload.get("rawToken", "")),
             group_id=str(payload.get("groupId", "")),
             display_name=str(payload.get("displayName", "")),
+            homeroom_scope=str(payload.get("homeroomScope", "unresolved")),
+            homeroom_ids=payload.get("homeroomIds"),
         )
         preview_token = str(payload.get("previewToken", ""))
         if preview_token:

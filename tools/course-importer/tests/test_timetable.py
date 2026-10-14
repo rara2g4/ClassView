@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import copy
 import json
 import logging
 import shutil
@@ -69,6 +70,13 @@ class TimetableServiceTests(unittest.TestCase):
                         "group-1": {"displayName": "1組"},
                     },
                     "groupMappings": {"(A組)": "group-a", "(1組)": "group-1"},
+                    "homerooms": {
+                        "grade1-1": {"grade": 1, "label": "1組"},
+                    },
+                    "homeroomMappings": {
+                        "(A組)": None,
+                        "(1組)": ["grade1-1"],
+                    },
                     "legacyGroupTags": {"A": "選択A", "C": "選択C"},
                 },
                 ensure_ascii=False,
@@ -107,6 +115,40 @@ class TimetableServiceTests(unittest.TestCase):
         self.assertEqual(config["subjectMappings"]["Webプログラミング"], "web-programming")
         self.assertFalse(self.service.config_path.exists())
 
+    def test_existing_manifest_term_periods_are_preserved_when_runtime_config_is_legacy(self):
+        self.service.public_root.mkdir(parents=True)
+        legacy_config = json.loads(self.service.config_path.read_text(encoding="utf-8"))
+        legacy_config.pop("homerooms")
+        self.service.config_path.write_text(
+            json.dumps(legacy_config, ensure_ascii=False),
+            encoding="utf-8",
+        )
+        term_periods = [
+            {"term": "first", "startDate": "2025-04-01", "endDate": "2025-09-30"},
+            {"term": "second", "startDate": "2025-10-01", "endDate": "2026-03-31"},
+        ]
+        published_homerooms = [
+            {"id": "grade1-1", "grade": 1, "label": "公開1組"},
+            {"id": "grade1-2", "grade": 1, "label": "公開2組"},
+        ]
+        (self.service.public_root / "manifest.json").write_text(
+            json.dumps({
+                "termPeriods": term_periods,
+                "homerooms": published_homerooms,
+            }),
+            encoding="utf-8",
+        )
+
+        config = self.service._config()
+        self.assertEqual(config["termPeriods"], term_periods)
+        self.assertEqual(
+            config["homerooms"],
+            {
+                "grade1-1": {"grade": 1, "label": "公開1組"},
+                "grade1-2": {"grade": 1, "label": "公開2組"},
+            },
+        )
+
     def test_clone_reconstructs_previous_snapshot_from_public_timetable(self):
         self.service.public_root.mkdir(parents=True)
         (self.service.public_root / "manifest.json").write_text(
@@ -114,6 +156,10 @@ class TimetableServiceTests(unittest.TestCase):
                 {
                     "schemaVersion": 1,
                     "academicYear": "2025",
+                    "termPeriods": [],
+                    "homerooms": [
+                        {"id": "grade1-1", "grade": 1, "label": "1組"},
+                    ],
                     "updatedAt": "2026-08-24T22:04:56Z",
                     "version": "test-version",
                     "months": ["2025-04"],
@@ -136,6 +182,7 @@ class TimetableServiceTests(unittest.TestCase):
                                 "grades": [1],
                                 "gradeRaw": "1",
                                 "groupTags": [],
+                                "homeroomIds": [],
                                 "instructors": [],
                                 "rooms": ["教室1"],
                                 "kind": "class",
@@ -307,6 +354,116 @@ class TimetableServiceTests(unittest.TestCase):
         rooms, warning = self.service.parse_rooms(721.722)
         self.assertEqual(rooms, ["721.722"])
         self.assertIn("小数点", warning)
+
+    def test_term_periods_are_configuration_and_not_filename_inference(self):
+        preview = self.service.analyze(
+            self.workbook_bytes(),
+            "2025年前期時間割.xlsx",
+            "2025-04-21",
+            "2025-04-27",
+            sheet_name="2025通年時間割",
+        )
+        stored = self.service.previews[preview["token"]]
+        term_periods = [
+            {"term": "first", "startDate": "2025-04-01", "endDate": "2025-09-30"},
+            {"term": "second", "startDate": "2025-10-01", "endDate": "2026-03-31"},
+        ]
+        documents = self.service._public_documents(
+            stored.merged_snapshot,
+            stored.periods,
+            term_periods=term_periods,
+            homerooms=self.service._homeroom_options(self.service._config()),
+        )
+        self.assertEqual(documents["manifest.json"]["termPeriods"], term_periods)
+        self.assertNotIn("term", documents["manifest.json"])
+        self.service._validate_public_documents(documents)
+
+        later_entry = copy.deepcopy(stored.merged_snapshot[0])
+        later_entry["date"] = "2025-10-21"
+        later_entry["entryId"] = self.service._entry_id(later_entry)
+        annual_documents = self.service._public_documents(
+            [stored.merged_snapshot[0], later_entry],
+            stored.periods,
+            term_periods=term_periods,
+            homerooms=self.service._homeroom_options(self.service._config()),
+        )
+        self.assertEqual(annual_documents["manifest.json"]["academicYear"], "2025")
+        self.assertEqual(annual_documents["manifest.json"]["months"], ["2025-04", "2025-10"])
+        self.service._validate_public_documents(annual_documents)
+
+        without_configuration = self.service._public_documents(
+            stored.merged_snapshot,
+            stored.periods,
+            term_periods=[],
+            homerooms=self.service._homeroom_options(self.service._config()),
+        )
+        self.assertEqual(without_configuration["manifest.json"]["termPeriods"], [])
+
+        invalid_periods = [
+            [
+                {"term": "first", "startDate": "2025-04-01", "endDate": "2025-10-01"},
+                {"term": "second", "startDate": "2025-10-01", "endDate": "2026-03-31"},
+            ],
+            [
+                {"term": "first", "startDate": "2025-04-01", "endDate": "2025-09-30"},
+                {"term": "first", "startDate": "2025-10-01", "endDate": "2026-03-31"},
+            ],
+            [{"term": "first", "startDate": "2025-02-30", "endDate": "2025-09-30"}],
+            [{"term": "first", "startDate": "2025-09-30", "endDate": "2025-04-01"}],
+        ]
+        for periods in invalid_periods:
+            candidate = copy.deepcopy(documents)
+            candidate["manifest.json"]["termPeriods"] = periods
+            with self.subTest(periods=periods):
+                with self.assertRaises(TimetableError):
+                    self.service._validate_public_documents(candidate)
+
+    def test_homeroom_scope_uses_explicit_mapping_not_group_display(self):
+        preview = self.analyze_subjects([
+            "Java（1組）【講師】",
+            "Java（A組）【講師】",
+            "Java【講師】",
+        ])
+        entries = self.service.previews[preview["token"]].entries
+        by_raw = {entry["subjectRaw"]: entry for entry in entries}
+        self.assertEqual(by_raw["Java（1組）【講師】"]["homeroomIds"], ["grade1-1"])
+        self.assertIsNone(by_raw["Java（A組）【講師】"]["homeroomIds"])
+        self.assertEqual(by_raw["Java【講師】"]["homeroomIds"], [])
+        self.assertEqual(by_raw["Java（A組）【講師】"]["groupTags"], ["A組"])
+
+    def test_homeroom_catalog_duplicate_and_unknown_reference_are_rejected(self):
+        preview = self.analyze_subjects(["Java（1組）【講師】"])
+        stored = self.service.previews[preview["token"]]
+        documents = self.service._public_documents(
+            stored.merged_snapshot,
+            stored.periods,
+            term_periods=[],
+            homerooms=self.service._homeroom_options(self.service._config()),
+        )
+        duplicate = copy.deepcopy(documents)
+        duplicate["manifest.json"]["homerooms"].append(
+            {"id": "grade1-1", "grade": 1, "label": "別表示"}
+        )
+        with self.assertRaises(TimetableError) as duplicate_error:
+            self.service._validate_public_documents(duplicate)
+        self.assertEqual(duplicate_error.exception.code, "duplicate_homeroom_id")
+
+        invalid_grade = copy.deepcopy(documents["manifest.json"])
+        invalid_grade["homerooms"][0]["grade"] = 4
+        with self.assertRaises(TimetableError):
+            self.service._validate_public_document("manifest.json", invalid_grade)
+
+        blank_label = copy.deepcopy(documents)
+        blank_label["manifest.json"]["homerooms"][0]["label"] = "   "
+        with self.assertRaises(TimetableError) as label_error:
+            self.service._validate_public_documents(blank_label)
+        self.assertEqual(label_error.exception.code, "invalid_homeroom_catalog")
+
+        unknown = copy.deepcopy(documents)
+        unknown["2025-04.json"]["days"]["2025-04-21"][0]["homeroomIds"] = ["missing-id"]
+        with self.assertRaises(TimetableError) as unknown_error:
+            self.service._validate_public_documents(unknown)
+        self.assertEqual(unknown_error.exception.code, "unknown_homeroom_id")
 
     def test_formula_dates_merged_cells_periods_and_parallel_lessons_are_parsed(self):
         preview = self.analyze()
@@ -567,6 +724,9 @@ class TimetableServiceTests(unittest.TestCase):
         self.assertIn('saveControls.warningConfirmationRequired', script)
         self.assertIn('id="issue-scope-filter"', template)
         self.assertIn('id="all-issues-summary"', template)
+        self.assertIn("homeroomScope", script)
+        self.assertIn("homeroomIds", script)
+        self.assertNotIn('id="timetable-term"', template)
 
     def test_private_write_failure_restores_public_and_snapshot(self):
         self.service.public_root.mkdir(parents=True)
@@ -749,6 +909,8 @@ class TimetableServiceTests(unittest.TestCase):
         documents = self.service._public_documents(
             self.service.previews[preview["token"]].merged_snapshot,
             self.service.previews[preview["token"]].periods,
+            term_periods=[],
+            homerooms=self.service._homeroom_options(self.service._config()),
         )
         month = documents["2025-04.json"]
         public_entry = month["days"]["2025-04-21"][0]
@@ -807,6 +969,8 @@ class TimetableServiceTests(unittest.TestCase):
         invalid_public = self.service._public_documents(
             self.service.previews[preview["token"]].merged_snapshot,
             self.service.previews[preview["token"]].periods,
+            term_periods=[],
+            homerooms=self.service._homeroom_options(self.service._config()),
         )["2025-04.json"]
         with self.assertRaises(TimetableError) as raised:
             self.service._validate_public_document("2025-04.json", invalid_public)

@@ -98,7 +98,7 @@
 - works pipeline は実装済みだが、現在 tracked の 8 件はすべて架空の表示確認 sample。実在の学生作品運用へは未移行。
 - public timetable は 2025-04 の 5 日分だけ。annual parser は実装済みだが、現 Excel 全年範囲には blocking が残る。
 - keyword classification の human-confirmation 方針は Project rule として決定済みだが、現行 parser は「説明会」「休暇」等の一部 keyword から `event` / `holiday` 等を直接確定し、専用確認 gate なしで保存可能な場合がある。
-- 個人時間割の domain/storage Phase 1 は実装済みだが、学年、group、履修 course による production UI の絞り込みは未実装。
+- 個人時間割の domain/storage Phase 1と、その前提となる `termPeriods` / `homerooms` / `homeroomIds` public contractは実装済みだが、production UIの絞り込みとdata loading接続は未実装。
 
 ## Planned / known next steps
 
@@ -106,7 +106,7 @@
 
 個人時間割は正式 roadmap であり、Phase 1 の UI 非依存 logic と storage contract は実装済みである。学校全体時間割との切替、初回設定、Desktop C / Mobile E の production UI、data loadingへの接続は次 phase の implementation pending である。詳細な Project rule は [`DOMAIN_RULES.md`](DOMAIN_RULES.md#personal-timetable--project-rule--phased-implementation)、製品上の位置づけは [`PRODUCT_VISION.md`](PRODUCT_VISION.md#personal-timetable--planned-roadmap)、構造は [`ARCHITECTURE.md`](ARCHITECTURE.md#personal-timetable--phase-1-current-implementation--ui-pending) を参照する。
 
-Human UX review 用 prototype は production の Current implementation ではない。所属組と A/B/C 等の授業内 group を区別する public contract、正式 category の管理・validation、machine-readable term source は引き続き設計・判断が必要である。
+Human UX review 用 prototype は production の Current implementation ではない。正式categoryの管理・validationと、A/B/C等の授業内groupを学生へ割り当てる方法は引き続き設計・判断が必要である。machine-readable term sourceはmanifestの明示 `termPeriods` として実装済みだが、現在年度の正式境界日は未設定である。
 
 ### Planned data replacement before production
 
@@ -133,10 +133,11 @@ Human UX review 用 prototype は production の Current implementation では�
 | Course/works academicYear format | non-null値はすべて4桁 ASCII 数字。Schema適合 |
 | `data/course-works.json` | 8 fictional samples / 7 courses |
 | `data/course-feedback-summary.json` | 不存在 |
-| Timetable manifest | academic year `2025`, month `2025-04` |
+| Timetable manifest | academic year `2025`, `termPeriods: []`、homerooms 2、month `2025-04` |
 | Public timetable range | 2025-04-21〜2025-04-25、5 日、84 entries |
 | Public timetable kinds | `class` 83、`special` 1 |
-| Default timetable mapping | subjects 45、items 1、canonical groups 4、group mappings 4 |
+| Public homeroom scope | all 66、explicit 14、unresolved 4 |
+| Default timetable mapping | subjects 45、items 1、canonical groups 4、group mappings 4、homerooms 2 |
 
 course title には `[A]`〜`[D]` を含むものがあるが、course Schema に独立 variant field はない。public timetable は variant を `courseVariantTags`、group を `groupTags` に分離する。
 
@@ -192,11 +193,11 @@ dry-run は Excel を編集せず、public JSON の save/publish も実行して
 
 ## Tests
 
-2026-10-14、personal timetable Phase 1 review 修正後の current working tree で full automated check を確認。
+2026-10-14、personal timetable Phase 1とterm periods / homeroom public contract実装後のcurrent sourceでfull automated checkを確認。
 
-- Python `unittest`: 184 tests OK
+- Python `unittest`: 189 tests OK
 - JavaScript test files: 9 passed（personal timetable domain/storage を含む）
-- tracked JavaScript `node --check`: 31 files passed
+- tracked JavaScript `node --check`: 24 files passed
 - JSON parse: 16 files passed
 - Course Schema: 57 courses passed
 - Archived course Schema: 0 courses passed
@@ -214,13 +215,14 @@ Current executable artifact:
 - path: `tools/course-importer/dist/ClassView管理ツール.exe`
 - tracked: yes
 - rebuilt from implementation baseline: yes
-- size: 14,723,095 bytes
-- SHA-256: `8100456885107F7BAF7D1D391F1C5533F2DE7E4CF36FB4E54748C5015F061B15`
+- size: 14,727,955 bytes
+- SHA-256: `C992AC0176842D366A87C3FCA0BEE22539A1EAE0797698C3B2B931596152EB2C`
 
 ## Known limitations
 
 - annual timetable save は 14 blocking の人間 review が必要。
 - public timetable data は 2025-04-21〜25 に限定される。
+- 現在のmanifestは正式な前期・後期境界日が未入力で `termPeriods: []` のため、日付からtermを解決すると `unresolved` になる。
 - public site に個人時間割の production UI・認証・server-side personalization はない。Phase 1 module は page から未読込。
 - public feedback summary の consumer がない。
 - current works は実在作品ではない。
@@ -234,5 +236,6 @@ Current executable artifact:
 - feedbackを学生へ還元する場合の具体的公開内容、匿名化基準、最小回答数、review手順、公開判断者。
 - 実在制作物の卒業後の自動保持期間、一律の保存年限、詳細な権利処理手順。
 - 実在制作物の `academicYear` 必須ruleをSchema、管理画面validation、運用手順のどこで強制するか。
+- 現在年度の正式な前期・後期の開始日・終了日。境界日が設定されるまでtermは自動推測しない。
 - 個人時間割における A/B/C 等の授業内 group の詳細運用と、所属組から分離した選択・表示方法。
 - 本番course datasetへの全面置換時期、担当者、review手順、公開切替手順。

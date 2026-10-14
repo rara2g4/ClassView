@@ -48,7 +48,7 @@
       "required": [
         "entryId", "period", "courseId", "subjectRaw", "subjectName",
         "subjectBaseName", "courseVariantTags", "grades", "gradeRaw",
-        "groupTags", "instructors", "rooms", "kind", "status"
+        "groupTags", "homeroomIds", "instructors", "rooms", "kind", "status"
       ],
       "properties": {
         "entryId": { "type": "string", "pattern": "^tt-[a-f0-9]{16}$" },
@@ -77,6 +77,21 @@
           "type": "array",
           "uniqueItems": true,
           "items": { "type": "string", "minLength": 1 }
+        },
+        "homeroomIds": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              }
+            }
+          ]
         },
         "instructors": {
           "type": "array",
