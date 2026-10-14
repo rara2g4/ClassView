@@ -125,7 +125,7 @@ group は受講対象、variant は授業の段階・区分として別データ
 - `grades: []` の entry 自体を存在しないものとして扱わず、対象学年を限定しない「すべて」等の確認導線では「対象学年未確認」と明示して表示できるようにする。
 - 正式な対象学年が確認された場合は、個人時間割側で補完・推測せず、timetable entry の `grades` を正しい値へ修正する。
 
-Phase 1 の個人時間割 domain logic は、`grades: []` を本人の対象 entry として採用せず、必修導出・slot 占有・conflict・entry visibility から除外する。学校全体時間割への production UI 接続と、未確認学年を確認する表示導線は次 phase の Implementation pending である。空配列を許可する現行 Schema contract 自体は変更していない。
+個人時間割の domain logic と production UI は、`grades: []` を本人の対象 entry として採用せず、必修導出・slot 占有・conflict・entry visibility から除外する。「すべて」の候補確認では未確認状態を表示するが、本人向けentryとして有効化しない。空配列を許可する現行 Schema contract 自体は変更していない。
 
 ## Instructor tokens
 
@@ -178,7 +178,7 @@ parser は `試験:`、休暇系 keyword、行事系 keyword を限定的に認�
 
 ## Personal timetable — Project rule / phased implementation
 
-個人時間割は人間 review 済みの Project rule である。Phase 1 の domain logic、state、storage は production module として実装済みだが、公開 page の本格 UI と data loading への接続は未実装である。
+個人時間割は人間 review 済みの Project rule である。Phase 1 の domain logic、state、storageと、Phase 2の公開時間割UI・data loading接続をproduction実装している。
 
 ### Phase 1 — Current implementation
 
@@ -190,7 +190,16 @@ parser は `試験:`、休暇系 keyword、行事系 keyword を限定的に認�
 - effective enrollment の public API は必ず current context の `academicYear + term` で period reconcile を行う。保存済み期間と異なる場合や current period がない場合、旧 `manualSelectedCourseIds` を active selection として返さず、再設定が必要な state にする。同期間の unknown course ID は stale selection として残し、別 course へ置換しない。
 - manifestの `termPeriods` は `first` / `second` の明示日付範囲であり、同じ年度datasetに両方を持てる。`resolveTermForDate(date, manifest)` は指定日が範囲内ならtermを、未設定範囲・学期外・不正設定なら `unresolved` を返す。ファイル名、シート名、title、存在する授業日、月から推測しない。
 - manifestはstable ID・学年・表示labelからなる `homerooms` catalogを持つ。entryの `homeroomIds` は `[]` が全所属組、非空配列が明示対象、`null` が未確認であり自動一致しない。`groupTags` は表示・授業内group・compatibility用で、所属組判定には使用しない。同一 `courseId` に別学年・別所属組のentryがあっても、本人に明示一致したentryだけを表示・slot占有・conflictへ使う。
-- module は現行 `index.html` / `timetable.html` から読み込まれておらず、学校全体時間割の表示・URL・操作は変更していない。
+- `index.html` / `timetable.html` はmoduleを読み込み、未設定時は従来の学校全体表示、設定済み時は個人表示を標準にする。`date`、`view=week`、日/週移動は維持し、profileはURLへ入れない。
+
+### Phase 2 public UI — Current implementation
+
+- 学年とmanifestのstable所属組IDをdialogで設定し、氏名等は要求しない。設定変更でprofile identityが変わる場合、旧manual selectionを推測移植しない。
+- Desktopは高密度な曜日×時限grid、Mobileは時限mapから1コマの候補へ集中するlayoutを使う。必修・選択済み・重複・区分未確認は文字または記号でも識別できる。
+- conflictは選択前に相手courseと曜日・時限を示し、manual candidateを無効化する。required-requiredは自動解決せず学校側data errorとして示す。
+- 学年filterはentryの`grades`、分野filterは正式10分類との`course.category`完全一致だけを使う。必修・選択済みcourseはfilterでeffective enrollmentから除外しない。
+- current termが`unresolved`の場合は旧履修を適用せず、その旨を表示する。学校全体表示への切替とprofile設定は可能である。
+- stale manual course IDは保存profileから自動削除・置換せず、件数を表示する。`homeroomIds: null`等は本人向けentryやslotへ採用せず、未確認として示す。
 
 ### Profile and enrollment period — Project rule
 

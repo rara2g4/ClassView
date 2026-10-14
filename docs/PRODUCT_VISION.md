@@ -91,9 +91,9 @@ feedback の第一目的は、**学校職員が、学生から観測できる学
 
 公開用 feedback 集計 JSON を生成・publish する処理はあるが、現在の公開 JavaScript にその集計を表示する consumer はない。
 
-## Personal timetable — Planned roadmap
+## Personal timetable — Current implementation
 
-個人時間割を正式 roadmap に含める。Phase 1 として profile、履修、必修導出、conflict、entry 表示、candidate filter、`localStorage` の UI 非依存 logic は実装済みである。本格 UI と学校全体時間割への接続は次 phase の implementation pending である。
+個人時間割を正式 roadmap に含め、Phase 1 の domain/storage logicとPhase 2の公開時間割UI接続を実装している。未設定端末では学校全体表示、設定済み端末では個人表示を標準とし、両者を常時切り替えられる。
 
 ### Project rule: role and first-use behavior
 
@@ -113,7 +113,7 @@ feedback の第一目的は、**学校職員が、学生から観測できる学
 - conflict の説明内容が変わっても週間時間割を上下させず、Desktop の情報領域で layout shift を起こさない。
 - prototype は interaction と layout の検討材料であり、production の Current implementation ではない。
 
-### Phase 1 storage boundary — Current implementation
+### Storage and public UI boundary — Current implementation
 
 - `js/personal-timetable.js` は、学年、stable所属組ID、学年度、前期 / 後期、本人が選んだ履修 course、data version、更新時刻を browser `localStorage` へ安全に保存・読込する契約を持つ。
 - 必修 course ID は保存せず、current course / timetable data から毎回導出する。
@@ -122,7 +122,7 @@ feedback の第一目的は、**学校職員が、学生から観測できる学
 - 氏名、学籍番号、email、login、password 等の個人識別情報を要求・保存しない。
 - 当面、account 同期と server-side personalization は非目標とする。
 
-この storage/domain module は現行 page からまだ読み込まれない。学校全体時間割から個人向け表示へ絞り込む UI、破損・利用不能時の表示文言、初回設定画面は次 phase で接続する。
+`index.html` と `timetable.html` はこの module を読み込み、manifestの所属組catalog、表示日から解決したcurrent period、public course/timetable dataを使って個人向けentryと授業候補をclient-sideで導出する。期間未解決・profile破損・storage利用不能時も学校全体表示を利用できる。
 
 ## 現在確認できる非目標・境界
 
@@ -132,7 +132,6 @@ feedback の第一目的は、**学校職員が、学生から観測できる学
 - 公開サイトからの授業編集や時間割編集
 - 公開サイトのデータベース、常時稼働 API
 - 公開サイト内の口コミ投稿
-- 学年、group、履修授業による個人時間割の production UI
 
 ### Current project non-goals
 

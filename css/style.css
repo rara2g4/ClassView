@@ -13,6 +13,110 @@
   --section-padding: 28px;
 }
 
+/* Personal timetable */
+.personal-timetable-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  margin: 1.25rem 0 0;
+  padding: 1rem 1.15rem;
+  border: 1px solid var(--color-border, #d7dce5);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.personal-timetable-controls h2,
+.personal-course-selector h2 { margin: .1rem 0 .25rem; }
+.personal-timetable-controls__eyebrow { margin: 0; color: #596579; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.personal-profile-summary { margin: 0; color: #596579; }
+.personal-timetable-controls__actions { display: flex; align-items: center; gap: .65rem; flex-wrap: wrap; justify-content: flex-end; }
+.personal-mode-switch { display: inline-flex; padding: .2rem; border-radius: 999px; background: #eef1f6; }
+.personal-mode-switch button { min-height: 2.35rem; padding: .45rem .8rem; border: 0; border-radius: 999px; background: transparent; color: #3a4658; }
+.personal-mode-switch button[aria-pressed="true"] { background: #fff; color: #14213d; box-shadow: 0 1px 5px rgb(25 35 58 / 16%); font-weight: 700; }
+.personal-settings-button,
+.personal-filter-button { min-height: 2.5rem; padding: .5rem .8rem; border: 1px solid #9ba8bc; border-radius: 10px; background: #fff; font-weight: 700; }
+
+.personal-timetable-status {
+  min-height: 3.3rem;
+  margin: .75rem 0 1rem;
+  padding: .75rem 1rem;
+  border-left: 4px solid #4b63d3;
+  border-radius: 8px;
+  background: #f3f5ff;
+  color: #26324b;
+}
+
+.personal-course-selector { margin: 1rem 0 1.5rem; padding: 1rem; border: 1px solid #cbd2df; border-radius: 16px; background: #f8f9fc; }
+.personal-course-selector__heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.personal-desktop-filters { display: flex; gap: .75rem; margin: .8rem 0; }
+.personal-filter-control { display: grid; gap: .2rem; color: #465168; font-size: .78rem; font-weight: 700; }
+.personal-filter-control select,
+.personal-dialog select { min-height: 2.5rem; max-width: 22rem; padding: .45rem .7rem; border: 1px solid #9ba8bc; border-radius: 8px; background: #fff; color: #182238; }
+.personal-filter-button { display: none; }
+.personal-conflict-summary { min-height: 3rem; max-height: 4.7rem; overflow: auto; margin: .7rem 0; padding: .65rem .8rem; border-radius: 8px; background: #edf4ff; }
+.personal-conflict-summary--warning { background: #fff4dc; }
+.personal-conflict-summary--error { background: #ffe7e7; color: #8a1d1d; font-weight: 700; }
+
+.personal-candidate-week { display: grid; grid-template-columns: 5rem repeat(var(--personal-days), minmax(150px, 1fr)); gap: 1px; overflow: auto; border: 1px solid #ccd3df; border-radius: 12px; background: #ccd3df; }
+.personal-candidate-week__corner,
+.personal-candidate-week__day,
+.personal-candidate-week__period { position: sticky; z-index: 2; padding: .65rem .45rem; background: #eef1f6; text-align: center; font-size: .82rem; font-weight: 800; }
+.personal-candidate-week__corner { left: 0; top: 0; z-index: 4; }
+.personal-candidate-week__day { top: 0; }
+.personal-candidate-week__period { left: 0; }
+.personal-candidate-week__cell { min-height: 104px; max-height: 190px; padding: .35rem; overflow-y: auto; background: #fff; }
+.personal-candidate-week__empty { display: block; padding: 1rem; color: #98a1b2; text-align: center; }
+.personal-candidate { display: grid; width: 100%; gap: .18rem; margin: 0 0 .35rem; padding: .48rem .52rem; border: 1px solid #d7dce7; border-radius: 8px; background: #fff; color: #172137; text-align: left; }
+.personal-candidate:hover { border-color: #5d72dd; }
+.personal-candidate--selected { border-color: #364fc7; background: #edf0ff; box-shadow: inset 3px 0 #364fc7; }
+.personal-candidate--required { border-color: #276b4c; background: #eaf7f0; box-shadow: inset 3px 0 #276b4c; }
+.personal-candidate--blocked { border-style: dashed; background: #f4f4f5; color: #626b79; cursor: not-allowed; }
+.personal-candidate__heading { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: .35rem; }
+.personal-candidate__title { overflow-wrap: anywhere; font-size: .82rem; font-weight: 800; line-height: 1.35; }
+.personal-candidate__type { flex: none; padding: .08rem .3rem; border-radius: 5px; background: #2d3950; color: #fff; font-size: .65rem; font-weight: 800; }
+.personal-candidate__type--elective-required { background: #72511b; }
+.personal-candidate__type--unknown { background: #626b79; }
+.personal-candidate__detail { font-size: .7rem; line-height: 1.35; }
+.personal-candidate-mobile { display: none; }
+
+.personal-dialog { width: min(34rem, calc(100% - 2rem)); padding: 0; border: 0; border-radius: 16px; box-shadow: 0 22px 70px rgb(17 25 45 / 28%); }
+.personal-dialog::backdrop { background: rgb(17 25 45 / 52%); }
+.personal-dialog form { display: grid; gap: 1rem; padding: 1.2rem; }
+.personal-dialog label { display: grid; gap: .35rem; font-weight: 700; }
+.personal-dialog__heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.personal-dialog__heading h2 { margin: 0; }
+.personal-dialog__close { width: 2.4rem; height: 2.4rem; border: 0; border-radius: 999px; background: #eef1f6; font-size: 1.35rem; }
+.personal-dialog__note { margin: .4rem 0 0; color: #6a4c14; font-size: .85rem; }
+.personal-dialog__actions { display: flex; justify-content: flex-end; gap: .6rem; }
+.personal-dialog__actions button { min-height: 2.5rem; padding: .45rem .8rem; border: 1px solid #9ba8bc; border-radius: 8px; background: #fff; }
+.personal-dialog__actions .button-primary { border-color: #364fc7; background: #364fc7; color: #fff; }
+.personal-selected-courses { margin-bottom: .75rem; padding: .75rem; border-radius: 10px; background: #fff; }
+.personal-selected-courses h3 { margin: 0 0 .45rem; font-size: .95rem; }
+.personal-selected-courses__chips { display: flex; gap: .35rem; overflow-x: auto; }
+.personal-selected-course { flex: none; padding: .3rem .5rem; border-radius: 999px; background: #edf0ff; font-size: .75rem; font-weight: 700; }
+
+@media (max-width: 760px) {
+  .personal-timetable-controls { align-items: stretch; flex-direction: column; }
+  .personal-timetable-controls__actions { align-items: stretch; flex-direction: column; }
+  .personal-mode-switch { display: grid; grid-template-columns: 1fr 1fr; }
+  .personal-settings-button { width: 100%; }
+  .personal-course-selector { padding: .75rem; }
+  .personal-course-selector__heading { align-items: flex-start; }
+  .personal-desktop-filters,
+  .personal-candidate-week--desktop { display: none; }
+  .personal-filter-button { display: inline-block; max-width: 12rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .personal-candidate-mobile { display: block; min-width: 0; }
+  .personal-mobile-map { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .4rem; }
+  .personal-mobile-map__slot { min-width: 0; padding: .55rem .45rem; border: 1px solid #cbd2df; border-radius: 8px; background: #fff; font-size: .78rem; }
+  .personal-mobile-map__slot[aria-pressed="true"] { border-color: #364fc7; background: #edf0ff; font-weight: 800; }
+  .personal-mobile-focus { display: grid; gap: .35rem; margin-top: .75rem; padding: .75rem; border-radius: 10px; background: #fff; }
+  .personal-mobile-focus h3 { margin: 0 0 .3rem; font-size: 1rem; }
+  .personal-conflict-summary { min-height: 4.5rem; max-height: 5.5rem; }
+  .personal-dialog { max-height: calc(100dvh - 1rem); overflow: auto; }
+  #personal-mobile-filters { display: grid; gap: .8rem; }
+}
+
 * {
   box-sizing: border-box;
 }

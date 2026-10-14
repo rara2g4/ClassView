@@ -4,11 +4,7 @@
 >
 > Last verified: 2026-10-14 JST
 >
-> Main / production-side baseline: `main` = `origin/main` = `1b2f7403d49f750427d61f8138ef7d025c73404e`。この baseline に personal timetable Phase 1 module と prototype は含まれない。
->
-> Current handoff work: `handoff/personal-timetable-2026-10-07`。Phase 1 snapshot は `fc3af9884e928b08e3f762e2356a1265e460f02b`、prototype snapshot はその次の `9540ec5eca4b0ad206acef351d2445c72801afc0` で、current HEAD と upstream は後者に一致する。両 snapshot は handoff branch 上だけの WIP commit であり、`main` や production baseline ではない。再 review 修正はこの HEAD 上の未commit working-tree変更である。
->
-> Phase 2 の production UI は未実装である。branch、refs、ahead / behind 等の可変な Git 状態は作業開始時にも再確認する。
+> Personal timetable Phase 1と`termPeriods` / homeroom contractは`1f4b3bd4cf63a3b42aebfae4c7de554e51fee416`までにmainへ統合済み。Phase 2のproduction UIもcurrent sourceへ実装した。branch、HEAD、origin/main、ahead / behind等の可変なGit状態は作業開始時にGitで再確認する。
 
 この文書は「現在どこまで実装されているか」を短時間で把握するためのもの。domain detail は [`DOMAIN_RULES.md`](DOMAIN_RULES.md)、構造は [`ARCHITECTURE.md`](ARCHITECTURE.md) を参照する。実装と矛盾する場合は Schema、code、test、Git 管理設定、実データを再確認する。
 
@@ -35,7 +31,7 @@
 - 本人の学年・所属組に明示一致するentryだけを使う曜日・時限単位の複数時限 conflict、required/manual conflict source、required-required data error の検出
 - non-class entry visibility、`grades` と正式10 categoryのcandidate filter
 - profile未設定、破損・schemaVersion欠落/型不正、validな未対応future schema version、storage利用不能/read/write failureの状態分離
-- production UI、data loading、Desktop C / Mobile E layoutへの接続は未実装
+- production pageのdata loading、profile setup、個人/学校全体切替、Desktop週間candidate grid、Mobile時限focus UIへ接続済み
 
 ### Course and syllabus management
 
@@ -98,13 +94,13 @@
 - works pipeline は実装済みだが、現在 tracked の 8 件はすべて架空の表示確認 sample。実在の学生作品運用へは未移行。
 - public timetable は 2025-04 の 5 日分だけ。annual parser は実装済みだが、現 Excel 全年範囲には blocking が残る。
 - keyword classification の human-confirmation 方針は Project rule として決定済みだが、現行 parser は「説明会」「休暇」等の一部 keyword から `event` / `holiday` 等を直接確定し、専用確認 gate なしで保存可能な場合がある。
-- 個人時間割の domain/storage Phase 1と、その前提となる `termPeriods` / `homerooms` / `homeroomIds` public contractは実装済みだが、production UIの絞り込みとdata loading接続は未実装。
+- 個人時間割のdomain/storage Phase 1、前提public contract、Phase 2のproduction UI/data loading接続を実装済み。現在の正式term境界日とcategory data整理は未完了。
 
 ## Planned / known next steps
 
 ### Formal roadmap: personal timetable
 
-個人時間割は正式 roadmap であり、Phase 1 の UI 非依存 logic と storage contract は実装済みである。学校全体時間割との切替、初回設定、Desktop C / Mobile E の production UI、data loadingへの接続は次 phase の implementation pending である。詳細な Project rule は [`DOMAIN_RULES.md`](DOMAIN_RULES.md#personal-timetable--project-rule--phased-implementation)、製品上の位置づけは [`PRODUCT_VISION.md`](PRODUCT_VISION.md#personal-timetable--planned-roadmap)、構造は [`ARCHITECTURE.md`](ARCHITECTURE.md#personal-timetable--phase-1-current-implementation--ui-pending) を参照する。
+個人時間割は正式roadmapであり、Phase 1のUI非依存logic/storage contractとPhase 2のproduction UIを実装済みである。学校全体時間割との切替、初回設定、Desktop週間grid、Mobile時限focus、conflict事前表示、candidate filterをpublic pageへ接続した。詳細なProject ruleは[`DOMAIN_RULES.md`](DOMAIN_RULES.md#personal-timetable--project-rule--phased-implementation)、製品上の位置づけは[`PRODUCT_VISION.md`](PRODUCT_VISION.md#personal-timetable--current-implementation)、構造は[`ARCHITECTURE.md`](ARCHITECTURE.md#personal-timetable--phase-1--phase-2-current-implementation)を参照する。
 
 Human UX review 用 prototype は production の Current implementation ではない。正式categoryの管理・validationと、A/B/C等の授業内groupを学生へ割り当てる方法は引き続き設計・判断が必要である。machine-readable term sourceはmanifestの明示 `termPeriods` として実装済みだが、現在年度の正式境界日は未設定である。
 
@@ -193,11 +189,11 @@ dry-run は Excel を編集せず、public JSON の save/publish も実行して
 
 ## Tests
 
-2026-10-14、personal timetable Phase 1とterm periods / homeroom public contract実装後のcurrent sourceでfull automated checkを確認。
+2026-10-14、personal timetable Phase 2 production UI接続後のcurrent sourceでfull automated checkを確認。
 
 - Python `unittest`: 189 tests OK
-- JavaScript test files: 9 passed（personal timetable domain/storage を含む）
-- tracked JavaScript `node --check`: 24 files passed
+- JavaScript test files: 10 passed（personal timetable domain/storage/UI を含む）
+- repository JavaScript `node --check`: 26 files passed
 - JSON parse: 16 files passed
 - Course Schema: 57 courses passed
 - Archived course Schema: 0 courses passed
@@ -208,7 +204,7 @@ dry-run は Excel を編集せず、public JSON の save/publish も実行して
 - browser/management UI validation: `2025`、`0000`、空欄を許可し、期間表記、2桁、`年度` 付き、全角数字を拒否することを確認
 - EXE smoke: health、管理画面、同梱 UI、外部 Schema 読み込み、graceful shutdown passed
 - Python suite は course/Schema、syllabus importer、feedback、works、timetable、publisher temporary Git remote、single-instance、Windows build contract を含む
-- JavaScript suite は editor state、course measurements、works、feedback link、navigation、personal timetable domain/storage、public timetable、site loader/cache、timetable admin を含む
+- JavaScript suite は editor state、course measurements、works、feedback link、navigation、personal timetable domain/storage/UI、public timetable、site loader/cache、timetable admin を含む
 
 Current executable artifact:
 
@@ -223,7 +219,7 @@ Current executable artifact:
 - annual timetable save は 14 blocking の人間 review が必要。
 - public timetable data は 2025-04-21〜25 に限定される。
 - 現在のmanifestは正式な前期・後期境界日が未入力で `termPeriods: []` のため、日付からtermを解決すると `unresolved` になる。
-- public site に個人時間割の production UI・認証・server-side personalization はない。Phase 1 module は page から未読込。
+- 個人時間割UIはclient-side/localStorageのみで、認証・account同期・server-side personalizationはない。
 - public feedback summary の consumer がない。
 - current works は実在作品ではない。
 - keyword heuristic による一部 `event` / `holiday` 分類には、Project rule が求める専用の human-confirmation gate が未実装。

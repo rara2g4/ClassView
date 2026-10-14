@@ -12,6 +12,8 @@
       data-site-href="css/style.css"
     >
     <script src="js/site-loader.js?v=1" defer></script>
+    <script data-site-src="js/personal-timetable.js"></script>
+    <script data-site-src="js/personal-timetable-ui.js"></script>
     <script data-site-src="js/timetable.js"></script>
   </head>
   <body>
@@ -34,6 +36,36 @@
           学校全体の授業を日別・週別に確認できます。同じ時限に行われる授業はすべて表示します。
         </p>
       </header>
+
+      <section class="personal-timetable-controls" aria-labelledby="personal-timetable-heading">
+        <div>
+          <p class="personal-timetable-controls__eyebrow">Personal timetable</p>
+          <h2 id="personal-timetable-heading">自分の時間割</h2>
+          <p id="personal-profile-summary" class="personal-profile-summary">設定を確認しています…</p>
+        </div>
+        <div class="personal-timetable-controls__actions">
+          <div class="personal-mode-switch" role="group" aria-label="時間割の対象">
+            <button id="personal-mode-button" type="button" aria-pressed="false">自分の時間割</button>
+            <button id="school-mode-button" type="button" aria-pressed="true">学校全体</button>
+          </div>
+          <button id="personal-settings-button" class="personal-settings-button" type="button">自分の時間割を設定</button>
+        </div>
+      </section>
+
+      <div id="personal-timetable-status" class="personal-timetable-status" role="status" aria-live="polite"></div>
+
+      <section id="personal-course-selector" class="personal-course-selector" aria-labelledby="personal-course-selector-heading" hidden>
+        <div class="personal-course-selector__heading">
+          <div>
+            <p class="personal-timetable-controls__eyebrow">Course selection</p>
+            <h2 id="personal-course-selector-heading">週間表から授業を選ぶ</h2>
+          </div>
+          <button id="personal-filter-button" class="personal-filter-button" type="button">絞り込み：すべて</button>
+        </div>
+        <div id="personal-desktop-filters" class="personal-desktop-filters" aria-label="授業候補の絞り込み"></div>
+        <div id="personal-conflict-summary" class="personal-conflict-summary" aria-live="polite"></div>
+        <div id="personal-course-grid"></div>
+      </section>
 
       <section class="timetable-toolbar" aria-label="時間割の表示設定">
         <div class="timetable-view-switch" role="group" aria-label="表示方法">
@@ -62,6 +94,53 @@
         <p>最新の変更については、学校からの案内も確認してください。</p>
         <p id="timetable-updated-at" class="timetable-updated-at" hidden></p>
       </aside>
+
+      <dialog id="personal-setup-dialog" class="personal-dialog">
+        <form id="personal-setup-form" method="dialog">
+          <div class="personal-dialog__heading">
+            <h2>自分の時間割を設定</h2>
+            <button class="personal-dialog__close" type="button" data-dialog-close aria-label="設定を閉じる">×</button>
+          </div>
+          <p>氏名やログインは不要です。この端末のブラウザにだけ保存します。</p>
+          <label>学年
+            <select id="personal-grade-input" required>
+              <option value="">選択してください</option>
+              <option value="1">1年</option><option value="2">2年</option><option value="3">3年</option>
+            </select>
+          </label>
+          <label>所属組
+            <select id="personal-homeroom-input" required><option value="">学年を選択してください</option></select>
+          </label>
+          <div id="personal-term-field" hidden>
+            <label>期間
+              <select id="personal-term-input">
+                <option value="">選択してください</option>
+                <option value="first">前期</option><option value="second">後期</option>
+              </select>
+            </label>
+            <p class="personal-dialog__note">現在の日付に対応する期間が未設定です。保存はできますが、期間が解決するまで個人時間割へ適用されません。</p>
+          </div>
+          <p id="personal-setup-error" class="error-message" hidden></p>
+          <div class="personal-dialog__actions">
+            <button type="button" data-dialog-close>キャンセル</button>
+            <button class="button-primary" type="submit">保存</button>
+          </div>
+        </form>
+      </dialog>
+
+      <dialog id="personal-filter-dialog" class="personal-dialog">
+        <form id="personal-filter-form" method="dialog">
+          <div class="personal-dialog__heading">
+            <h2>授業候補を絞り込む</h2>
+            <button class="personal-dialog__close" type="button" data-dialog-close aria-label="絞り込みを閉じる">×</button>
+          </div>
+          <div id="personal-mobile-filters"></div>
+          <div class="personal-dialog__actions">
+            <button id="personal-filter-reset" type="button">すべてに戻す</button>
+            <button class="button-primary" type="submit">適用</button>
+          </div>
+        </form>
+      </dialog>
     </main>
 
     <footer class="site-footer">

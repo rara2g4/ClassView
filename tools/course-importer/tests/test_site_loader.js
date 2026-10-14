@@ -34,6 +34,16 @@ for (const htmlName of ["index.html", "courses.html", "course.html", "timetable.
   assert.match(html, /data-site-src=/);
 }
 
+for (const htmlName of ["index.html", "timetable.html"]) {
+  const html = fs.readFileSync(path.join(repoRoot, htmlName), "utf8");
+  const domainIndex = html.indexOf('data-site-src="js/personal-timetable.js"');
+  const uiIndex = html.indexOf('data-site-src="js/personal-timetable-ui.js"');
+  const timetableIndex = html.indexOf('data-site-src="js/timetable.js"');
+  assert.ok(domainIndex >= 0 && domainIndex < uiIndex && uiIndex < timetableIndex);
+  assert.match(html, /id="personal-setup-dialog"/);
+  assert.match(html, /id="personal-filter-dialog"/);
+}
+
 for (const scriptName of ["course-list.js", "course-detail.js", "course-works.js"]) {
   const script = fs.readFileSync(path.join(repoRoot, "js", scriptName), "utf8");
   assert.match(script, /cache: "no-cache"/);
