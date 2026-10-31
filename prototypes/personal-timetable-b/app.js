@@ -58,6 +58,7 @@
       return `${dayFor(dayId)?.short || dayId}曜${periodText}`;
     }).join(" / ");
   };
+  const creditLabel = (course) => Number.isFinite(course.credits) ? `${course.credits}単位` : "単位数未確認";
   const formatConflictDetails = (details) => details.map((detail) => {
     const names = detail.courseIds.map(recordTitle).join("・");
     return `${formatSlot(detail.day, detail.period)}で「${names}」`;
@@ -217,7 +218,8 @@
     else if (status.key === "blocked") actionText = `${conflictText}と重なるため選択できません`;
     else if (status.selected) actionText = "選択済みです。押すと解除できます";
     else if (status.key === "conflict") actionText = `${conflictText}と重複しています。押すと解除できます`;
-    button.setAttribute("aria-label", `${course.title}。${occupancyText}。${course.instructor}。${actionText}`);
+    const creditsText = creditLabel(course);
+    button.setAttribute("aria-label", `${course.title}。${occupancyText}。講師 ${course.instructor}。${creditsText}。${actionText}`);
     button.dataset.inspectorTitle = status.mandatory
       ? `${course.title}は必修です`
       : status.overlaps.length
@@ -225,7 +227,7 @@
         : course.title;
     button.dataset.inspectorMessage = status.overlaps.length
       ? `${conflictText}と重なります。${status.mandatory ? "必修のため解除できません。時間割データの確認が必要です。" : status.selected ? "この授業を解除すると重複を解消できます。" : "競合する授業を解除してから選択してください。"}`
-      : `${occupancyText}を占有します。講師: ${course.instructor}。対象: ${course.grades.join("・")}年。区分: ${data.typeLabel(course.courseType)}。${status.mandatory ? "学年・組に一致する必修として自動追加されています。" : status.selected ? "選択済み。カードを押すとすべての時限から解除します。" : "カードを押すとすべての時限へ反映します。"}`;
+      : `${occupancyText}を占有します。講師: ${course.instructor}。${creditsText}。対象: ${course.grades.join("・")}年。区分: ${data.typeLabel(course.courseType)}。${status.mandatory ? "学年・組に一致する必修として自動追加されています。" : status.selected ? "選択済み。カードを押すとすべての時限から解除します。" : "カードを押すとすべての時限へ反映します。"}`;
     button.dataset.inspectorTone = status.overlaps.length ? "warning" : status.selected ? "selected" : "neutral";
 
     const titleRow = document.createElement("span");
@@ -238,10 +240,10 @@
     mark.setAttribute("aria-hidden", "true");
     mark.textContent = status.symbol;
     titleRow.append(title, mark);
-    const occupancy = document.createElement("span");
-    occupancy.className = "course-occupancy";
-    occupancy.textContent = occupancyText;
-    button.append(titleRow, occupancy);
+    const details = document.createElement("span");
+    details.className = "course-details";
+    details.textContent = `${occupancyText} / 講師: ${course.instructor} / ${creditsText}`;
+    button.append(titleRow, details);
     return button;
   };
 
@@ -267,16 +269,6 @@
       cards.append(empty);
     }
     dayBrowser.append(cards);
-
-    const previous = model.moveSlot({ days: data.days, periods: data.periods, day: state.day, period: state.period, offset: -1 });
-    const next = model.moveSlot({ days: data.days, periods: data.periods, day: state.day, period: state.period, offset: 1 });
-    const previousButton = document.querySelector("#previous-slot");
-    const nextButton = document.querySelector("#next-slot");
-    previousButton.disabled = !previous;
-    nextButton.disabled = !next;
-    previousButton.setAttribute("aria-label", previous ? `${formatSlot(previous.day, previous.period)}へ移動` : "前の時限はありません");
-    nextButton.setAttribute("aria-label", next ? `${formatSlot(next.day, next.period)}へ移動` : "次の時限はありません");
-    document.querySelector("#slot-position").textContent = `${day.short}曜 ${period.label} / 全20コマ`;
   };
 
   const renderMini = () => {
@@ -385,7 +377,7 @@
     const course = courseFor(id);
     state.inspector = {
       title: `${recordTitle(id)}を${result.reason === "selected" ? "選択しました" : "解除しました"}`,
-      message: `${labels}${result.reason === "selected" ? "へ選択状態を反映しました。" : "から選択状態を解除しました。"} 講師: ${course.instructor}。対象: ${course.grades.join("・")}年。区分: ${data.typeLabel(course.courseType)}。`,
+      message: `${labels}${result.reason === "selected" ? "へ選択状態を反映しました。" : "から選択状態を解除しました。"} 講師: ${course.instructor}。${creditLabel(course)}。対象: ${course.grades.join("・")}年。区分: ${data.typeLabel(course.courseType)}。`,
       tone: result.reason === "selected" ? "selected" : "neutral",
     };
     renderCourseStep({ focusCourseId: id, focusSlotKey: slotKey });
@@ -405,18 +397,6 @@
     renderCourseStep();
     dayBrowser.scrollIntoView({ behavior: "smooth", block: "start" });
   });
-
-  const moveFocusedSlot = (offset) => {
-    const next = model.moveSlot({ days: data.days, periods: data.periods, day: state.day, period: state.period, offset });
-    if (!next) return;
-    state.day = next.day;
-    state.period = next.period;
-    state.inspector = defaultInspector;
-    renderCourseStep();
-    dayBrowser.focus({ preventScroll: true });
-  };
-  document.querySelector("#previous-slot").addEventListener("click", () => moveFocusedSlot(-1));
-  document.querySelector("#next-slot").addEventListener("click", () => moveFocusedSlot(1));
 
   const showConflict = () => {
     const slots = new Map();

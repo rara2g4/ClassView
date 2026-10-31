@@ -21,15 +21,6 @@
     (records || []).filter((record) => record.day === day && record.period === Number(period))
   );
 
-  const moveSlot = ({ days, periods, day, period, offset }) => {
-    const slots = (days || []).flatMap((dayEntry) => (
-      (periods || []).map((periodEntry) => ({ day: dayEntry.id, period: periodEntry.id }))
-    ));
-    const currentIndex = slots.findIndex((slot) => slot.day === day && slot.period === Number(period));
-    if (currentIndex < 0) return null;
-    return slots[currentIndex + Number(offset)] || null;
-  };
-
   const requiredCourseIds = (records, grade) => new Set(
     uniqueCourseIds((records || []).filter((record) => (
       record.courseType === "必修" && record.grades.includes(grade)
@@ -99,7 +90,6 @@
   return {
     conflictEntries,
     conflictsForCourse,
-    moveSlot,
     recordsForCourse,
     recordsForSlot,
     requiredCourseIds,
