@@ -17,7 +17,7 @@
     day: "mon",
     period: 1,
     selected: new Set(),
-    miniExpanded: false,
+    miniExpanded: true,
     inspector: defaultInspector,
   };
   const gradeChoices = document.querySelector("#grade-choices");
