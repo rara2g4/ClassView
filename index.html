@@ -11,6 +11,22 @@
       data-site-stylesheet
       data-site-href="css/style.css"
     >
+    <script>
+      // 初回訪問だけ設定画面へ案内する。読み取り不能な保存データは設定画面で再設定する。
+      (() => {
+        try {
+          const raw = localStorage.getItem("classview.personalTimetable.profile");
+          const value = raw === null ? null : JSON.parse(raw);
+          if (value && (value.schemaVersion === 1 || value.schemaVersion === 2)) return;
+        } catch (_) {
+          // Broken storage should never block access to the school timetable.
+          return;
+        }
+        const target = new URL("onboarding.html", location.href);
+        target.search = location.search;
+        location.replace(target.href);
+      })();
+    </script>
     <script src="js/site-loader.js?v=1" defer></script>
     <script data-site-src="js/personal-timetable.js"></script>
     <script data-site-src="js/personal-timetable-ui.js"></script>
