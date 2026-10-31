@@ -16,6 +16,25 @@ assert.deepEqual(
   ["mon-1", "mon-2"],
   "the same course remains visible in every occupied slot",
 );
+assert.deepEqual(
+  model.recordsForSlot(records, "mon", 2).map((record) => record.id),
+  ["multi", "overlap"],
+  "only the focused day and period are returned",
+);
+
+const days = [{ id: "mon" }, { id: "tue" }];
+const periods = [{ id: 1 }, { id: 2 }];
+assert.deepEqual(
+  model.moveSlot({ days, periods, day: "mon", period: 2, offset: 1 }),
+  { day: "tue", period: 1 },
+  "next moves from the last period of a day to the first period of the next day",
+);
+assert.deepEqual(
+  model.moveSlot({ days, periods, day: "tue", period: 1, offset: -1 }),
+  { day: "mon", period: 2 },
+);
+assert.equal(model.moveSlot({ days, periods, day: "mon", period: 1, offset: -1 }), null);
+assert.equal(model.moveSlot({ days, periods, day: "tue", period: 2, offset: 1 }), null);
 
 const selectedMulti = model.toggleCourse({
   records,

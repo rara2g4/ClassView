@@ -65,24 +65,31 @@
       <section class="step-panel step-panel--courses" data-step="3" aria-labelledby="courses-heading" hidden>
         <div class="courses-header">
           <div>
-            <p class="eyebrow">STEP 3 / WEEK VIEW</p>
-            <h2 id="courses-heading">曜日ごとに選ぶ</h2>
+            <p class="eyebrow">STEP 3 / TIME SLOT VIEW</p>
+            <h2 id="courses-heading">曜日・時限ごとに選ぶ</h2>
             <p class="section-intro">Excel全授業に、比較用の合成courseTypeを一部だけ重ねています。学校データではありません。</p>
           </div>
           <div class="count-chip"><strong id="selected-count">0</strong><span>科目</span></div>
         </div>
 
-        <div class="week-strip" id="week-strip" role="tablist" aria-label="曜日を選ぶ"></div>
-        <div id="conflict-banner" class="conflict-banner" role="status" aria-live="polite">
-          現在、選択中の授業に時間の重複はありません。
-        </div>
-        <div id="course-inspector" class="course-inspector" aria-live="polite">
-          <strong>カード全体で選択できます</strong>
-          <span>同じ授業が複数時限にある場合も、選択状態はすべての時限へ反映されます。</span>
-        </div>
-        <button class="text-button stress-shortcut" data-show-conflict type="button">火曜2限のstress状態を表示</button>
-        <div class="selection-layout">
+        <div class="selection-workspace">
+          <div class="week-strip" id="week-strip" role="tablist" aria-label="曜日を選ぶ"></div>
+          <div class="period-strip" id="period-strip" role="tablist" aria-label="時限を選ぶ"></div>
+          <div id="conflict-banner" class="conflict-banner" role="status" aria-live="polite">
+            現在、選択中の授業に時間の重複はありません。
+          </div>
+          <div class="selection-layout">
           <section id="day-browser" class="day-browser" role="tabpanel" aria-live="polite"></section>
+          <nav class="slot-navigation" aria-label="前後の時限へ移動">
+            <button id="previous-slot" type="button">‹ 前の時限</button>
+            <span id="slot-position" aria-live="polite"></span>
+            <button id="next-slot" type="button">次の時限 ›</button>
+          </nav>
+          <div id="course-inspector" class="course-inspector" aria-live="polite">
+            <strong>カード全体で選択できます</strong>
+            <span>同じ授業が複数時限にある場合も、選択状態はすべての時限へ反映されます。</span>
+          </div>
+          <button class="text-button stress-shortcut" data-show-conflict type="button">競合表示を確認</button>
           <aside class="mini-timetable" aria-labelledby="mini-heading">
             <div class="mini-heading-row">
               <div>
@@ -90,10 +97,10 @@
                 <span id="mini-summary-count">0科目</span>
               </div>
               <button id="mini-toggle" class="mini-toggle" type="button" aria-expanded="false" aria-controls="mini-schedule">週間サマリーを開く</button>
-              <button class="text-button" data-show-conflict type="button">重複例</button>
             </div>
             <div id="mini-schedule"></div>
           </aside>
+          </div>
         </div>
         <div class="bottom-actions">
           <button class="button button--ghost" type="button" data-back>← 組へ戻る</button>

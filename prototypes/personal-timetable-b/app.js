@@ -15,8 +15,8 @@
     grade: "",
     group: "",
     day: "mon",
+    period: 1,
     selected: new Set(),
-    expandedSlots: new Set(),
     miniExpanded: false,
     inspector: defaultInspector,
   };
@@ -38,12 +38,26 @@
   const dayFor = (dayId) => data.days.find((day) => day.id === dayId);
   const periodFor = (periodId) => data.periods.find((period) => period.id === Number(periodId));
   const formatSlot = (dayId, periodId) => `${dayFor(dayId)?.label || dayId}${periodFor(periodId)?.label || `${periodId}限`}`;
+  const courseFor = (courseId) => eligible().find((course) => course.id === courseId);
   const recordTitle = (courseId) => eligible().find((course) => course.id === courseId)?.title || courseId;
   const occupiedSlots = (courseId) => model.recordsForCourse(eligible(), courseId)
     .sort((left, right) => (
       data.days.findIndex((day) => day.id === left.day) - data.days.findIndex((day) => day.id === right.day)
       || left.period - right.period
     ));
+  const compactOccupancy = (courseId) => {
+    const byDay = new Map();
+    occupiedSlots(courseId).forEach((record) => {
+      byDay.set(record.day, [...(byDay.get(record.day) || []), record.period]);
+    });
+    return [...byDay.entries()].map(([dayId, periods]) => {
+      const sorted = [...new Set(periods)].sort((left, right) => left - right);
+      const periodText = sorted.length > 1 && sorted.every((value, index) => index === 0 || value === sorted[index - 1] + 1)
+        ? `${sorted[0]}〜${sorted[sorted.length - 1]}限`
+        : `${sorted.join("・")}限`;
+      return `${dayFor(dayId)?.short || dayId}曜${periodText}`;
+    }).join(" / ");
+  };
   const formatConflictDetails = (details) => details.map((detail) => {
     const names = detail.courseIds.map(recordTitle).join("・");
     return `${formatSlot(detail.day, detail.period)}で「${names}」`;
@@ -104,20 +118,29 @@
     if (focusTab) document.querySelector(`#day-tab-${dayId}`)?.focus({ preventScroll: true });
   };
 
+  const selectPeriod = (periodId, { focusTab = false } = {}) => {
+    state.period = Number(periodId);
+    state.inspector = defaultInspector;
+    renderCourseStep();
+    if (focusTab) document.querySelector(`#period-tab-${periodId}`)?.focus({ preventScroll: true });
+  };
+
   const renderTabs = () => {
     const root = document.querySelector("#week-strip");
     root.replaceChildren();
     data.days.forEach((day, index) => {
       const button = document.createElement("button");
       button.type = "button";
-      button.className = "day-tab";
+      const selectedCount = new Set(selectedCourses().filter((course) => course.day === day.id).map((course) => course.id)).size;
+      const hasConflict = conflictEntries().some((entry) => entry.day === day.id);
+      button.className = `day-tab${selectedCount ? " has-selection" : ""}${hasConflict ? " has-conflict" : ""}`;
       button.id = `day-tab-${day.id}`;
       button.role = "tab";
       button.tabIndex = state.day === day.id ? 0 : -1;
       button.setAttribute("aria-selected", String(state.day === day.id));
       button.setAttribute("aria-controls", "day-browser");
-      const count = new Set(selectedCourses().filter((course) => course.day === day.id).map((course) => course.id)).size;
-      button.innerHTML = `${day.short}<span>${count ? `${count}科目` : "未選択"}</span>`;
+      button.setAttribute("aria-label", `${day.label}${selectedCount ? `、${selectedCount}科目選択済み` : ""}${hasConflict ? "、競合あり" : ""}`);
+      button.innerHTML = `<span class="tab-label">${day.short}</span><span class="tab-indicator" aria-hidden="true"></span>`;
       button.addEventListener("click", () => selectDay(day.id));
       button.addEventListener("keydown", (event) => {
         const keyOffsets = { ArrowLeft: -1, ArrowRight: 1 };
@@ -133,12 +156,43 @@
     });
   };
 
+  const renderPeriods = () => {
+    const root = document.querySelector("#period-strip");
+    root.replaceChildren();
+    data.periods.forEach((period, index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.id = `period-tab-${period.id}`;
+      button.role = "tab";
+      button.tabIndex = state.period === period.id ? 0 : -1;
+      const selectedCount = new Set(selectedCourses().filter((course) => course.day === state.day && course.period === period.id).map((course) => course.id)).size;
+      const hasConflict = conflictEntries().some((entry) => entry.day === state.day && entry.period === period.id);
+      button.className = `period-tab${selectedCount ? " has-selection" : ""}${hasConflict ? " has-conflict" : ""}`;
+      button.setAttribute("aria-selected", String(state.period === period.id));
+      button.setAttribute("aria-controls", "day-browser");
+      button.setAttribute("aria-label", `${period.label}${selectedCount ? `、${selectedCount}科目選択済み` : ""}${hasConflict ? "、競合あり" : ""}`);
+      button.innerHTML = `<span class="tab-label">${period.label}</span><span class="tab-indicator" aria-hidden="true"></span>`;
+      button.addEventListener("click", () => selectPeriod(period.id));
+      button.addEventListener("keydown", (event) => {
+        const keyOffsets = { ArrowLeft: -1, ArrowRight: 1 };
+        if (!(event.key in keyOffsets) && !["Home", "End"].includes(event.key)) return;
+        event.preventDefault();
+        let nextIndex = index;
+        if (event.key === "Home") nextIndex = 0;
+        else if (event.key === "End") nextIndex = data.periods.length - 1;
+        else nextIndex = (index + keyOffsets[event.key] + data.periods.length) % data.periods.length;
+        selectPeriod(data.periods[nextIndex].id, { focusTab: true });
+      });
+      root.append(button);
+    });
+  };
+
   const cardStatus = (course) => {
     const selected = state.selected.has(course.id);
     const mandatory = requiredIds().has(course.id);
     const overlaps = model.conflictsForCourse(eligible(), course.id, state.selected);
     if (mandatory && overlaps.length) return { key: "conflict", label: "必修・重複", symbol: "!", selected, mandatory, overlaps };
-    if (mandatory) return { key: "required", label: "必修・自動", symbol: "●", selected, mandatory, overlaps };
+    if (mandatory) return { key: "required", label: "必修・自動", symbol: "必", selected, mandatory, overlaps };
     if (selected && overlaps.length) return { key: "conflict", label: "重複あり", symbol: "!", selected, mandatory, overlaps };
     if (selected) return { key: "selected", label: "選択済み", symbol: "✓", selected, mandatory, overlaps };
     if (overlaps.length) return { key: "blocked", label: "競合あり", symbol: "!", selected, mandatory, overlaps };
@@ -155,7 +209,7 @@
     button.setAttribute("aria-pressed", String(status.selected));
     button.setAttribute("aria-disabled", String(status.mandatory || status.key === "blocked"));
 
-    const slotLabels = occupiedSlots(course.id).map((record) => formatSlot(record.day, record.period));
+    const occupancyText = compactOccupancy(course.id);
     const conflictText = formatConflictDetails(status.overlaps);
     let actionText = "押すと選択できます";
     if (status.mandatory && status.overlaps.length) actionText = `必修として自動選択されていますが、${conflictText}と重複しています`;
@@ -163,7 +217,7 @@
     else if (status.key === "blocked") actionText = `${conflictText}と重なるため選択できません`;
     else if (status.selected) actionText = "選択済みです。押すと解除できます";
     else if (status.key === "conflict") actionText = `${conflictText}と重複しています。押すと解除できます`;
-    button.setAttribute("aria-label", `${course.title}。${formatSlot(course.day, course.period)}。${course.instructor}。${actionText}`);
+    button.setAttribute("aria-label", `${course.title}。${occupancyText}。${course.instructor}。${actionText}`);
     button.dataset.inspectorTitle = status.mandatory
       ? `${course.title}は必修です`
       : status.overlaps.length
@@ -171,7 +225,7 @@
         : course.title;
     button.dataset.inspectorMessage = status.overlaps.length
       ? `${conflictText}と重なります。${status.mandatory ? "必修のため解除できません。時間割データの確認が必要です。" : status.selected ? "この授業を解除すると重複を解消できます。" : "競合する授業を解除してから選択してください。"}`
-      : `${slotLabels.join("・")}を占有します。${status.mandatory ? "学年・組に一致する必修として自動追加されています。" : status.selected ? "選択済み。カードを押すとすべての時限から解除します。" : "カードを押すとすべての時限へ反映します。"}`;
+      : `${occupancyText}を占有します。講師: ${course.instructor}。対象: ${course.grades.join("・")}年。区分: ${data.typeLabel(course.courseType)}。${status.mandatory ? "学年・組に一致する必修として自動追加されています。" : status.selected ? "選択済み。カードを押すとすべての時限から解除します。" : "カードを押すとすべての時限へ反映します。"}`;
     button.dataset.inspectorTone = status.overlaps.length ? "warning" : status.selected ? "selected" : "neutral";
 
     const titleRow = document.createElement("span");
@@ -184,65 +238,45 @@
     mark.setAttribute("aria-hidden", "true");
     mark.textContent = status.symbol;
     titleRow.append(title, mark);
-    const meta = document.createElement("span");
-    meta.className = "course-meta";
-    meta.textContent = `${course.instructor} / ${course.grades.join("・")}年${course.note ? ` / ${course.note}` : ""}`;
     const occupancy = document.createElement("span");
     occupancy.className = "course-occupancy";
-    occupancy.textContent = slotLabels.join("・");
-    const foot = document.createElement("span");
-    foot.className = "card-foot";
-    const stateLabel = document.createElement("span");
-    stateLabel.className = `state-chip is-${status.key}`;
-    stateLabel.textContent = status.label;
-    const badge = document.createElement("span");
-    badge.className = `type-badge${course.courseType ? "" : " is-unconfirmed"}`;
-    badge.textContent = data.typeLabel(course.courseType);
-    foot.append(stateLabel, badge);
-    button.append(titleRow, meta, occupancy, foot);
+    occupancy.textContent = occupancyText;
+    button.append(titleRow, occupancy);
     return button;
   };
 
   const renderDayBrowser = () => {
     dayBrowser.replaceChildren();
-    dayBrowser.setAttribute("aria-labelledby", `day-tab-${state.day}`);
+    dayBrowser.tabIndex = -1;
+    dayBrowser.setAttribute("aria-labelledby", `day-tab-${state.day} period-tab-${state.period}`);
     const day = dayFor(state.day);
+    const period = periodFor(state.period);
+    const courses = stableCourseOrder(model.recordsForSlot(eligible(), day.id, period.id));
     const titleRow = document.createElement("div");
     titleRow.className = "day-title-row";
-    titleRow.innerHTML = `<h3>${day.label}</h3><span>カード全体を押して選択・解除</span>`;
+    titleRow.innerHTML = `<h3>${day.label}・${period.label}</h3><span>${courses.length}件の候補</span>`;
     dayBrowser.append(titleRow);
-    data.periods.forEach((period) => {
-      const courses = stableCourseOrder(eligible().filter((course) => course.day === day.id && course.period === period.id));
-      const slotKey = `${day.id}-${period.id}`;
-      const isExpanded = state.expandedSlots.has(slotKey);
-      const section = document.createElement("section");
-      section.className = "period-section";
-      const heading = document.createElement("div");
-      heading.className = "period-title";
-      heading.innerHTML = `<strong>${period.label}</strong><span>${period.time}${courses.length ? ` / ${courses.length}件` : ""}</span>`;
-      const cards = document.createElement("div");
-      cards.id = `course-cards-${slotKey}`;
-      cards.className = `course-cards${courses.length >= 6 ? " is-dense" : ""}${courses.length > 3 && !isExpanded ? " is-collapsed" : ""}`;
-      if (courses.length) courses.forEach((course) => cards.append(courseCard(course)));
-      else {
-        const empty = document.createElement("p");
-        empty.className = "empty-period";
-        empty.textContent = "この時限に候補はありません。";
-        cards.append(empty);
-      }
-      section.append(heading, cards);
-      if (courses.length > 3) {
-        const more = document.createElement("button");
-        more.type = "button";
-        more.className = "dense-toggle";
-        more.dataset.expandSlot = slotKey;
-        more.setAttribute("aria-controls", cards.id);
-        more.setAttribute("aria-expanded", String(isExpanded));
-        more.textContent = isExpanded ? "候補を3件に戻す" : `すべて表示（残り${courses.length - 3}件）`;
-        section.append(more);
-      }
-      dayBrowser.append(section);
-    });
+    const cards = document.createElement("div");
+    cards.id = `course-cards-${day.id}-${period.id}`;
+    cards.className = "course-cards";
+    if (courses.length) courses.forEach((course) => cards.append(courseCard(course)));
+    else {
+      const empty = document.createElement("p");
+      empty.className = "empty-period";
+      empty.textContent = "この曜日・時限に候補はありません。";
+      cards.append(empty);
+    }
+    dayBrowser.append(cards);
+
+    const previous = model.moveSlot({ days: data.days, periods: data.periods, day: state.day, period: state.period, offset: -1 });
+    const next = model.moveSlot({ days: data.days, periods: data.periods, day: state.day, period: state.period, offset: 1 });
+    const previousButton = document.querySelector("#previous-slot");
+    const nextButton = document.querySelector("#next-slot");
+    previousButton.disabled = !previous;
+    nextButton.disabled = !next;
+    previousButton.setAttribute("aria-label", previous ? `${formatSlot(previous.day, previous.period)}へ移動` : "前の時限はありません");
+    nextButton.setAttribute("aria-label", next ? `${formatSlot(next.day, next.period)}へ移動` : "次の時限はありません");
+    document.querySelector("#slot-position").textContent = `${day.short}曜 ${period.label} / 全20コマ`;
   };
 
   const renderMini = () => {
@@ -267,6 +301,7 @@
           item.type = "button";
           item.className = `mini-item${conflictKeys.has(model.slotKey(course)) ? " is-conflict" : ""}`;
           item.dataset.miniDay = day.id;
+          item.dataset.miniPeriod = String(course.period);
           item.setAttribute("aria-label", `${day.label}${course.period}限の${course.title}を候補一覧で確認`);
           item.innerHTML = `<span>${course.period}限</span><span>${course.title}</span>`;
           section.append(item);
@@ -309,6 +344,7 @@
 
   const renderCourseStep = ({ focusCourseId = "", focusSlotKey = "" } = {}) => {
     renderTabs();
+    renderPeriods();
     renderDayBrowser();
     renderMini();
     renderInspector();
@@ -335,14 +371,6 @@
     if (card && !card.contains(event.relatedTarget)) inspectCard(card);
   });
   dayBrowser.addEventListener("click", (event) => {
-    const expandButton = event.target.closest("[data-expand-slot]");
-    if (expandButton) {
-      const key = expandButton.dataset.expandSlot;
-      if (state.expandedSlots.has(key)) state.expandedSlots.delete(key); else state.expandedSlots.add(key);
-      renderCourseStep();
-      document.querySelector(`[data-expand-slot="${key}"]`)?.focus({ preventScroll: true });
-      return;
-    }
     const button = event.target.closest("[data-course-id]");
     if (!button) return;
     const id = button.dataset.courseId;
@@ -353,10 +381,11 @@
       return;
     }
     state.selected = result.selectedIds;
-    const labels = occupiedSlots(id).map((record) => formatSlot(record.day, record.period)).join("・");
+    const labels = compactOccupancy(id);
+    const course = courseFor(id);
     state.inspector = {
       title: `${recordTitle(id)}を${result.reason === "selected" ? "選択しました" : "解除しました"}`,
-      message: `${labels}${result.reason === "selected" ? "へ選択状態を反映しました。" : "から選択状態を解除しました。"}`,
+      message: `${labels}${result.reason === "selected" ? "へ選択状態を反映しました。" : "から選択状態を解除しました。"} 講師: ${course.instructor}。対象: ${course.grades.join("・")}年。区分: ${data.typeLabel(course.courseType)}。`,
       tone: result.reason === "selected" ? "selected" : "neutral",
     };
     renderCourseStep({ focusCourseId: id, focusSlotKey: slotKey });
@@ -370,9 +399,24 @@
   document.querySelector("#mini-schedule").addEventListener("click", (event) => {
     const item = event.target.closest("[data-mini-day]");
     if (!item) return;
-    selectDay(item.dataset.miniDay);
+    state.day = item.dataset.miniDay;
+    state.period = Number(item.dataset.miniPeriod);
+    state.inspector = defaultInspector;
+    renderCourseStep();
     dayBrowser.scrollIntoView({ behavior: "smooth", block: "start" });
   });
+
+  const moveFocusedSlot = (offset) => {
+    const next = model.moveSlot({ days: data.days, periods: data.periods, day: state.day, period: state.period, offset });
+    if (!next) return;
+    state.day = next.day;
+    state.period = next.period;
+    state.inspector = defaultInspector;
+    renderCourseStep();
+    dayBrowser.focus({ preventScroll: true });
+  };
+  document.querySelector("#previous-slot").addEventListener("click", () => moveFocusedSlot(-1));
+  document.querySelector("#next-slot").addEventListener("click", () => moveFocusedSlot(1));
 
   const showConflict = () => {
     const slots = new Map();
@@ -390,9 +434,9 @@
       ? preferredIds
       : model.uniqueCourseIds(candidates).filter((id) => !requiredIds().has(id)).slice(0, 2);
     selectedIds.forEach((id) => state.selected.add(id));
-    const [day] = key.split("-");
+    const [day, periodRaw] = key.split("-");
     state.day = day;
-    state.expandedSlots.add(key);
+    state.period = Number(periodRaw);
     state.inspector = {
       title: "競合表示の確認用状態です",
       message: "この操作だけはUX確認のため重複選択を作っています。実際のカード操作では、競合理由を確認してから選択を見直せます。",
