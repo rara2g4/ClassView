@@ -73,6 +73,55 @@
     });
   };
 
+  const conflictAnalysis = ({ records, selectedIds, requiredIds, courseId }) => {
+    const required = requiredIds instanceof Set ? requiredIds : new Set(requiredIds || []);
+    const conflicts = conflictsForCourse(records, courseId, selectedIds);
+    const conflictingCourseIds = uniqueCourseIds(conflicts.flatMap((entry) => entry.records));
+    return {
+      conflicts,
+      conflictingCourseIds,
+      manualConflictIds: conflictingCourseIds.filter((id) => !required.has(id)),
+      requiredConflictIds: conflictingCourseIds.filter((id) => required.has(id)),
+    };
+  };
+
+  const replaceCourse = ({ records, selectedIds, requiredIds, courseId }) => {
+    const selected = new Set(selectedIds || []);
+    const required = requiredIds instanceof Set ? requiredIds : new Set(requiredIds || []);
+    if (required.has(courseId)) return { changed: false, reason: "required", selectedIds: selected };
+    if (selected.has(courseId)) return { changed: false, reason: "already-selected", selectedIds: selected };
+
+    const analysis = conflictAnalysis({ records, selectedIds: selected, requiredIds: required, courseId });
+    if (!analysis.conflicts.length) {
+      selected.add(courseId);
+      return { changed: true, reason: "selected", removedCourseIds: [], selectedIds: selected };
+    }
+    if (analysis.requiredConflictIds.length) {
+      return { changed: false, reason: "required-conflict", ...analysis, selectedIds: selected };
+    }
+
+    const proposed = new Set(selected);
+    analysis.manualConflictIds.forEach((id) => proposed.delete(id));
+    proposed.add(courseId);
+    const remainingConflicts = conflictsForCourse(records, courseId, proposed);
+    if (remainingConflicts.length) {
+      return {
+        changed: false,
+        reason: "remaining-conflict",
+        ...analysis,
+        remainingConflicts,
+        selectedIds: selected,
+      };
+    }
+    return {
+      changed: true,
+      reason: "replaced",
+      removedCourseIds: analysis.manualConflictIds,
+      conflicts: analysis.conflicts,
+      selectedIds: proposed,
+    };
+  };
+
   const toggleCourse = ({ records, selectedIds, requiredIds, courseId }) => {
     const selected = new Set(selectedIds || []);
     const required = requiredIds instanceof Set ? requiredIds : new Set(requiredIds || []);
@@ -81,18 +130,20 @@
       selected.delete(courseId);
       return { changed: true, reason: "deselected", selectedIds: selected };
     }
-    const conflicts = conflictsForCourse(records, courseId, selected);
-    if (conflicts.length) return { changed: false, reason: "conflict", conflicts, selectedIds: selected };
+    const analysis = conflictAnalysis({ records, selectedIds: selected, requiredIds: required, courseId });
+    if (analysis.conflicts.length) return { changed: false, reason: "conflict", ...analysis, selectedIds: selected };
     selected.add(courseId);
     return { changed: true, reason: "selected", selectedIds: selected };
   };
 
   return {
+    conflictAnalysis,
     conflictEntries,
     conflictsForCourse,
     recordsForCourse,
     recordsForSlot,
     requiredCourseIds,
+    replaceCourse,
     slotKey,
     toggleCourse,
     uniqueCourseIds,

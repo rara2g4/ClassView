@@ -19,11 +19,13 @@
     selected: new Set(),
     miniExpanded: true,
     inspector: defaultInspector,
+    pendingSwap: null,
   };
   const gradeChoices = document.querySelector("#grade-choices");
   const groupChoices = document.querySelector("#group-choices");
   const dayBrowser = document.querySelector("#day-browser");
   const miniTimetable = document.querySelector(".mini-timetable");
+  const conflictDialog = document.querySelector("#conflict-dialog");
 
   const gradeIsEligible = (course) => state.grade === "3"
     ? course.grades.some((grade) => ["1", "2", "3"].includes(grade))
@@ -140,7 +142,7 @@
       button.tabIndex = state.day === day.id ? 0 : -1;
       button.setAttribute("aria-selected", String(state.day === day.id));
       button.setAttribute("aria-controls", "day-browser");
-      button.setAttribute("aria-label", `${day.label}${selectedCount ? `、${selectedCount}科目選択済み` : ""}${hasConflict ? "、競合あり" : ""}`);
+      button.setAttribute("aria-label", `${day.label}${selectedCount ? `、${selectedCount}科目選択済み` : ""}${hasConflict ? "、要確認の重複あり" : ""}`);
       button.innerHTML = `<span class="tab-label">${day.short}</span><span class="tab-indicator" aria-hidden="true"></span>`;
       button.addEventListener("click", () => selectDay(day.id));
       button.addEventListener("keydown", (event) => {
@@ -171,7 +173,7 @@
       button.className = `period-tab${selectedCount ? " has-selection" : ""}${hasConflict ? " has-conflict" : ""}`;
       button.setAttribute("aria-selected", String(state.period === period.id));
       button.setAttribute("aria-controls", "day-browser");
-      button.setAttribute("aria-label", `${period.label}${selectedCount ? `、${selectedCount}科目選択済み` : ""}${hasConflict ? "、競合あり" : ""}`);
+      button.setAttribute("aria-label", `${period.label}${selectedCount ? `、${selectedCount}科目選択済み` : ""}${hasConflict ? "、要確認の重複あり" : ""}`);
       button.innerHTML = `<span class="tab-label">${period.label}</span><span class="tab-indicator" aria-hidden="true"></span>`;
       button.addEventListener("click", () => selectPeriod(period.id));
       button.addEventListener("keydown", (event) => {
@@ -191,13 +193,19 @@
   const cardStatus = (course) => {
     const selected = state.selected.has(course.id);
     const mandatory = requiredIds().has(course.id);
-    const overlaps = model.conflictsForCourse(eligible(), course.id, state.selected);
-    if (mandatory && overlaps.length) return { key: "conflict", label: "必修・重複", symbol: "!", selected, mandatory, overlaps };
-    if (mandatory) return { key: "required", label: "必修・自動", symbol: "必", selected, mandatory, overlaps };
-    if (selected && overlaps.length) return { key: "conflict", label: "重複あり", symbol: "!", selected, mandatory, overlaps };
-    if (selected) return { key: "selected", label: "選択済み", symbol: "✓", selected, mandatory, overlaps };
-    if (overlaps.length) return { key: "blocked", label: "競合あり", symbol: "!", selected, mandatory, overlaps };
-    return { key: "available", label: "未選択", symbol: "○", selected, mandatory, overlaps };
+    const analysis = model.conflictAnalysis({
+      records: eligible(),
+      selectedIds: state.selected,
+      requiredIds: requiredIds(),
+      courseId: course.id,
+    });
+    const overlaps = analysis.conflicts;
+    if (mandatory && overlaps.length) return { key: "data-error", label: "要確認", symbol: "!", selected, mandatory, overlaps, analysis };
+    if (mandatory) return { key: "required", label: "必修・自動", symbol: "必", selected, mandatory, overlaps, analysis };
+    if (selected && overlaps.length) return { key: "data-error", label: "要確認", symbol: "!", selected, mandatory, overlaps, analysis };
+    if (selected) return { key: "selected", label: "選択済み", symbol: "✓", selected, mandatory, overlaps, analysis };
+    if (overlaps.length) return { key: "blocked", label: "時間重複で選択不可", symbol: "", selected, mandatory, overlaps, analysis };
+    return { key: "available", label: "未選択", symbol: "○", selected, mandatory, overlaps, analysis };
   };
 
   const courseCard = (course) => {
@@ -208,14 +216,15 @@
     button.dataset.courseId = course.id;
     button.dataset.slotKey = model.slotKey(course);
     button.setAttribute("aria-pressed", String(status.selected));
-    button.setAttribute("aria-disabled", String(status.mandatory || status.key === "blocked"));
+    button.setAttribute("aria-disabled", String(status.mandatory));
+    if (status.key === "blocked") button.setAttribute("aria-haspopup", "dialog");
 
     const occupancyText = compactOccupancy(course.id);
     const conflictText = formatConflictDetails(status.overlaps);
     let actionText = "押すと選択できます";
     if (status.mandatory && status.overlaps.length) actionText = `必修として自動選択されていますが、${conflictText}と重複しています`;
     else if (status.mandatory) actionText = "必修として自動選択されており変更できません";
-    else if (status.key === "blocked") actionText = `${conflictText}と重なるため選択できません`;
+    else if (status.key === "blocked") actionText = `${conflictText}と重なるため現在は選択できません。押すと理由と入れ替え方法を確認できます`;
     else if (status.selected) actionText = "選択済みです。押すと解除できます";
     else if (status.key === "conflict") actionText = `${conflictText}と重複しています。押すと解除できます`;
     const creditsText = creditLabel(course);
@@ -223,12 +232,12 @@
     button.dataset.inspectorTitle = status.mandatory
       ? `${course.title}は必修です`
       : status.overlaps.length
-        ? `${course.title}の時間競合`
+        ? `${course.title}の選択制約`
         : course.title;
     button.dataset.inspectorMessage = status.overlaps.length
-      ? `${conflictText}と重なります。${status.mandatory ? "必修のため解除できません。時間割データの確認が必要です。" : status.selected ? "この授業を解除すると重複を解消できます。" : "競合する授業を解除してから選択してください。"}`
+      ? `${conflictText}と重なります。${status.mandatory ? "必修のため解除できません。時間割データの確認が必要です。" : status.selected ? "選択済み同士の重複です。解除して重複を解消してください。" : status.analysis.requiredConflictIds.length ? "必修授業は解除できないため、この授業は選択できません。" : "カードを押すと、競合相手を確認して入れ替えられます。"}`
       : `${occupancyText}を占有します。講師: ${course.instructor}。${creditsText}。対象: ${course.grades.join("・")}年。区分: ${data.typeLabel(course.courseType)}。${status.mandatory ? "学年・組に一致する必修として自動追加されています。" : status.selected ? "選択済み。カードを押すとすべての時限から解除します。" : "カードを押すとすべての時限へ反映します。"}`;
-    button.dataset.inspectorTone = status.overlaps.length ? "warning" : status.selected ? "selected" : "neutral";
+    button.dataset.inspectorTone = status.key === "data-error" ? "warning" : status.key === "blocked" ? "constraint" : status.selected ? "selected" : "neutral";
 
     const titleRow = document.createElement("span");
     titleRow.className = "card-title-row";
@@ -238,7 +247,13 @@
     const mark = document.createElement("span");
     mark.className = "selection-mark";
     mark.setAttribute("aria-hidden", "true");
-    mark.textContent = status.symbol;
+    if (status.key === "blocked") {
+      const lock = document.createElement("span");
+      lock.className = "lock-glyph";
+      mark.append(lock);
+    } else {
+      mark.textContent = status.symbol;
+    }
     titleRow.append(title, mark);
     const details = document.createElement("span");
     details.className = "course-details";
@@ -331,7 +346,7 @@
       const names = entry.courseIds.map(recordTitle).join("・");
       return `${formatSlot(entry.day, entry.period)}：${names}`;
     }).join(" / ");
-    banner.textContent = `⚠ ${entries.length}つの時間帯で重複しています。${summary}${entries.length > 2 ? " ほか" : ""}`;
+    banner.textContent = `⚠ 選択済み授業同士の重複が${entries.length}つあります。${summary}${entries.length > 2 ? " ほか" : ""}。時間割データまたは選択状態を確認してください。`;
   };
 
   const renderCourseStep = ({ focusCourseId = "", focusSlotKey = "" } = {}) => {
@@ -357,6 +372,64 @@
     renderInspector();
   };
 
+  const closeConflictDialog = () => {
+    if (conflictDialog.open) conflictDialog.close();
+  };
+
+  const renderConflictDialog = (courseId, returnTarget) => {
+    const analysis = model.conflictAnalysis({
+      records: eligible(),
+      selectedIds: state.selected,
+      requiredIds: requiredIds(),
+      courseId,
+    });
+    if (!analysis.conflicts.length) return false;
+
+    state.pendingSwap = { courseId, slotKey: returnTarget.dataset.slotKey, returnTarget };
+    const targetTitle = recordTitle(courseId);
+    const dialogTitle = document.querySelector("#conflict-dialog-title");
+    const description = document.querySelector("#conflict-dialog-description");
+    const list = document.querySelector("#conflict-dialog-list");
+    const note = document.querySelector("#conflict-dialog-note");
+    const replaceButton = document.querySelector("#conflict-dialog-replace");
+    list.replaceChildren();
+
+    analysis.conflictingCourseIds.forEach((conflictingId) => {
+      const item = document.createElement("div");
+      item.className = "conflict-dialog-item";
+      const title = document.createElement("strong");
+      title.textContent = recordTitle(conflictingId);
+      const slots = analysis.conflicts
+        .filter((entry) => entry.courseIds.includes(conflictingId))
+        .map((entry) => formatSlot(entry.day, entry.period));
+      const detail = document.createElement("span");
+      const status = analysis.requiredConflictIds.includes(conflictingId) ? "必修・解除不可" : "選択中";
+      detail.textContent = `${[...new Set(slots)].join("・")} / ${status}`;
+      item.append(title, detail);
+      list.append(item);
+    });
+
+    if (analysis.requiredConflictIds.length) {
+      dialogTitle.textContent = "必修授業と重複しています";
+      description.textContent = `「${targetTitle}」は、次の必修授業と時間が重複しています。`;
+      note.textContent = "必修授業は解除できないため、この授業への入れ替えはできません。";
+      replaceButton.hidden = true;
+    } else {
+      dialogTitle.textContent = "授業を入れ替えますか？";
+      const countText = analysis.manualConflictIds.length > 1 ? `${analysis.manualConflictIds.length}科目` : "次の授業";
+      description.textContent = `「${targetTitle}」を選ぶには、現在選択中の${countText}を解除する必要があります。`;
+      note.textContent = "「授業を入れ替える」を押した場合だけ、表示中の授業をまとめて解除し、この授業を選択します。";
+      replaceButton.hidden = false;
+    }
+    return true;
+  };
+
+  const openConflictDialog = (courseId, returnTarget) => {
+    if (!renderConflictDialog(courseId, returnTarget)) return;
+    conflictDialog.showModal();
+    document.querySelector("#conflict-dialog-cancel").focus();
+  };
+
   dayBrowser.addEventListener("focusin", (event) => inspectCard(event.target.closest("[data-course-id]")));
   dayBrowser.addEventListener("mouseover", (event) => {
     const card = event.target.closest("[data-course-id]");
@@ -369,6 +442,7 @@
     const slotKey = button.dataset.slotKey;
     const result = model.toggleCourse({ records: eligible(), selectedIds: state.selected, requiredIds: requiredIds(), courseId: id });
     if (!result.changed) {
+      if (result.reason === "conflict") openConflictDialog(id, button);
       inspectCard(button);
       return;
     }
@@ -381,6 +455,39 @@
       tone: result.reason === "selected" ? "selected" : "neutral",
     };
     renderCourseStep({ focusCourseId: id, focusSlotKey: slotKey });
+  });
+
+  document.querySelector("#conflict-dialog-cancel").addEventListener("click", closeConflictDialog);
+  document.querySelector("#conflict-dialog-replace").addEventListener("click", () => {
+    const pending = state.pendingSwap;
+    if (!pending) return;
+    const result = model.replaceCourse({
+      records: eligible(),
+      selectedIds: state.selected,
+      requiredIds: requiredIds(),
+      courseId: pending.courseId,
+    });
+    if (!result.changed) {
+      renderConflictDialog(pending.courseId, pending.returnTarget);
+      return;
+    }
+    state.selected = result.selectedIds;
+    const removedNames = result.removedCourseIds.map(recordTitle).join("・");
+    const targetTitle = recordTitle(pending.courseId);
+    const focusCourseId = pending.courseId;
+    const focusSlotKey = pending.slotKey;
+    state.inspector = {
+      title: `${targetTitle}へ入れ替えました`,
+      message: `${removedNames}を解除し、${compactOccupancy(focusCourseId)}へ選択状態を反映しました。`,
+      tone: "selected",
+    };
+    conflictDialog.close();
+    renderCourseStep({ focusCourseId, focusSlotKey });
+  });
+  conflictDialog.addEventListener("close", () => {
+    const returnTarget = state.pendingSwap?.returnTarget;
+    state.pendingSwap = null;
+    if (returnTarget?.isConnected) returnTarget.focus({ preventScroll: true });
   });
 
   document.querySelector("#mini-toggle").addEventListener("click", () => {

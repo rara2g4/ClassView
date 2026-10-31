@@ -121,6 +121,23 @@
       </section>
     </main>
 
+    <dialog id="conflict-dialog" class="conflict-dialog" aria-labelledby="conflict-dialog-title" aria-describedby="conflict-dialog-description">
+      <div class="dialog-heading">
+        <span class="dialog-state-icon" aria-hidden="true"><span class="lock-glyph"></span></span>
+        <div>
+          <p class="eyebrow">TIME CONFLICT</p>
+          <h2 id="conflict-dialog-title">この授業は現在選択できません</h2>
+        </div>
+      </div>
+      <p id="conflict-dialog-description" class="dialog-description"></p>
+      <div id="conflict-dialog-list" class="conflict-dialog-list"></div>
+      <p id="conflict-dialog-note" class="dialog-note"></p>
+      <div class="dialog-actions">
+        <button id="conflict-dialog-cancel" class="button button--ghost" type="button">キャンセル</button>
+        <button id="conflict-dialog-replace" class="button button--primary" type="button">授業を入れ替える</button>
+      </div>
+    </dialog>
+
     <footer class="site-footer">ClassView — 個人時間割 UI prototype</footer>
   </body>
 </html>
