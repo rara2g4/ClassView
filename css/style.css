@@ -1593,3 +1593,34 @@ img {
     font-size: 0.78rem;
   }
 }
+
+
+/* First-visit personalization */
+.onboarding-page { max-width: 1040px; }
+.onboarding-intro { max-width: 760px; }
+.onboarding-intro h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.3; margin: 0 0 1rem; }
+.onboarding-intro > p:last-child { color: var(--color-subtle); }
+.onboarding-layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(250px, .85fr); gap: 1.5rem; margin-top: 2rem; align-items: start; }
+.onboarding-panel, .onboarding-explainer { border: 1px solid var(--color-line); border-radius: 16px; padding: clamp(1.2rem, 3vw, 2rem); background: #fff; }
+.onboarding-panel__heading h2, .onboarding-explainer h2 { margin: .5rem 0 1rem; font-size: 1.35rem; }
+.onboarding-step { color: var(--color-accent); font-size: .85rem; font-weight: 750; }
+.onboarding-form { display: grid; gap: 1.15rem; }
+.onboarding-privacy, .onboarding-data-note, .onboarding-explainer p { margin: 0; color: var(--color-subtle); font-size: .92rem; }
+.onboarding-data-note { border-left: 3px solid var(--color-accent); padding: .65rem .8rem; background: var(--color-accent-soft); }
+.onboarding-field { display: grid; gap: .4rem; }
+.onboarding-field label { font-weight: 700; }
+.onboarding-field select { width: 100%; min-height: 46px; padding: .55rem .7rem; border: 1px solid #9ba8bc; border-radius: 9px; background: white; color: var(--color-text); }
+.onboarding-field select:disabled { background: #f0f2f3; }
+.onboarding-error { color: #9b2424; margin: 0; }
+.onboarding-primary { background: var(--color-accent); color: white; border: 0; border-radius: 10px; min-height: 48px; padding: .7rem 1rem; font-weight: 750; cursor: pointer; }
+.onboarding-primary:disabled { opacity: .55; cursor: not-allowed; }
+.onboarding-primary:focus-visible, .onboarding-field select:focus-visible { outline: 3px solid #76b7cb; outline-offset: 2px; }
+.onboarding-explainer { background: var(--color-surface); }
+.onboarding-explainer ul { padding-left: 1.25rem; margin: .5rem 0 1.2rem; }
+.onboarding-explainer li { margin-bottom: .55rem; }
+.onboarding-skip { text-align: center; margin: 1.75rem 0; }
+.onboarding-skip a { color: var(--color-accent); text-underline-offset: .2rem; }
+@media (max-width: 760px) {
+  .onboarding-layout { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+  .onboarding-panel, .onboarding-explainer { padding: 1.2rem; }
+}
