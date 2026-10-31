@@ -8,6 +8,7 @@
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="styles.css">
     <script src="../personal-timetable-mock-data.js" defer></script>
+    <script src="model.js" defer></script>
     <script src="app.js" defer></script>
   </head>
   <body>
@@ -72,13 +73,23 @@
         </div>
 
         <div class="week-strip" id="week-strip" role="tablist" aria-label="曜日を選ぶ"></div>
-        <div id="conflict-banner" class="conflict-banner" role="status" hidden></div>
+        <div id="conflict-banner" class="conflict-banner" role="status" aria-live="polite">
+          現在、選択中の授業に時間の重複はありません。
+        </div>
+        <div id="course-inspector" class="course-inspector" aria-live="polite">
+          <strong>カード全体で選択できます</strong>
+          <span>同じ授業が複数時限にある場合も、選択状態はすべての時限へ反映されます。</span>
+        </div>
         <button class="text-button stress-shortcut" data-show-conflict type="button">火曜2限のstress状態を表示</button>
         <div class="selection-layout">
-          <section id="day-browser" class="day-browser" aria-live="polite"></section>
+          <section id="day-browser" class="day-browser" role="tabpanel" aria-live="polite"></section>
           <aside class="mini-timetable" aria-labelledby="mini-heading">
             <div class="mini-heading-row">
-              <h3 id="mini-heading">選択中の1週間</h3>
+              <div>
+                <h3 id="mini-heading">選択中の1週間</h3>
+                <span id="mini-summary-count">0科目</span>
+              </div>
+              <button id="mini-toggle" class="mini-toggle" type="button" aria-expanded="false" aria-controls="mini-schedule">週間サマリーを開く</button>
               <button class="text-button" data-show-conflict type="button">重複例</button>
             </div>
             <div id="mini-schedule"></div>
