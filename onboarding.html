@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ClassViewで学年・所属組を設定し、自分の時間割を作成します。">
+    <title>自分の時間割を設定 | ClassView</title>
+    <link rel="stylesheet" href="css/style.css?v=20260825T0626236729072Z" data-site-stylesheet data-site-href="css/style.css">
+    <script src="js/site-loader.js?v=1" defer></script>
+    <script data-site-src="js/personal-timetable.js"></script>
+    <script data-site-src="js/onboarding.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">本文へ移動</a>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="site-name" href="index.html" aria-label="ClassView ホーム">ClassView</a>
+        <nav class="site-navigation" aria-label="メインナビゲーション">
+          <a class="site-navigation__link" href="timetable.html">時間割</a>
+          <a class="site-navigation__link" href="courses.html">授業を探す</a>
+        </nav>
+      </div>
+    </header>
+    <main id="main-content" class="page-shell onboarding-page">
+      <header class="onboarding-intro">
+        <p class="page-eyebrow">My timetable</p>
+        <h1>自分の時間割をつくる</h1>
+        <p>学年と所属組を設定すると、該当する授業をもとに自分の時間割を作れます。選択授業は時間割画面で追加できます。</p>
+      </header>
+
+      <div class="onboarding-layout">
+        <section class="onboarding-panel" aria-labelledby="setup-heading">
+          <div class="onboarding-panel__heading">
+            <span class="onboarding-step">初期設定</span>
+            <h2 id="setup-heading">所属を設定する</h2>
+          </div>
+          <form id="onboarding-form" class="onboarding-form">
+            <p class="onboarding-privacy">ログインや氏名の入力は不要です。設定はこのブラウザ内に保存します。</p>
+            <div class="onboarding-field">
+              <label for="onboarding-grade">学年</label>
+              <select id="onboarding-grade" required disabled>
+                <option value="">選択してください</option>
+                <option value="1">1年</option>
+                <option value="2">2年</option>
+                <option value="3">3年</option>
+              </select>
+            </div>
+            <div class="onboarding-field">
+              <label for="onboarding-homeroom">所属組</label>
+              <select id="onboarding-homeroom" required disabled>
+                <option value="">学年を選択してください</option>
+              </select>
+            </div>
+            <div class="onboarding-field" id="onboarding-term-field" hidden>
+              <label for="onboarding-term">期間</label>
+              <select id="onboarding-term" disabled>
+                <option value="">選択してください</option>
+                <option value="first">前期</option>
+                <option value="second">後期</option>
+              </select>
+            </div>
+            <p class="onboarding-data-note" id="onboarding-period-note" role="status" aria-live="polite">学校の時間割データを確認しています…</p>
+            <p class="onboarding-error" id="onboarding-error" role="alert" hidden></p>
+            <button type="submit" id="onboarding-submit" class="onboarding-primary" disabled>設定を保存して時間割へ</button>
+          </form>
+        </section>
+
+        <aside class="onboarding-explainer" aria-label="自分の時間割でできること">
+          <h2>設定後にできること</h2>
+          <ul>
+            <li>所属学年・組に合う必修授業を自動で表示</li>
+            <li>候補から選択授業を追加・解除</li>
+            <li>時間が重なる授業を選択前に確認</li>
+            <li>いつでも学校全体の時間割に切り替え</li>
+          </ul>
+          <p>学期や対象範囲が未確認のデータは、推測して個人時間割に追加しません。</p>
+        </aside>
+      </div>
+
+      <p class="onboarding-skip"><a href="timetable.html">設定せず学校全体の時間割を見る</a></p>
+      <noscript><p class="onboarding-error">設定画面にはJavaScriptが必要です。学校全体の時間割は上記リンクから確認できます。</p></noscript>
+    </main>
+  </body>
+</html>
