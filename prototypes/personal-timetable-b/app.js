@@ -205,7 +205,7 @@
     if (selected && overlaps.length) return { key: "data-error", label: "要確認", symbol: "!", selected, mandatory, overlaps, analysis };
     if (selected) return { key: "selected", label: "選択済み", symbol: "✓", selected, mandatory, overlaps, analysis };
     if (overlaps.length) return { key: "blocked", label: "時間重複で選択不可", symbol: "", selected, mandatory, overlaps, analysis };
-    return { key: "available", label: "未選択", symbol: "○", selected, mandatory, overlaps, analysis };
+    return { key: "available", label: "未選択", symbol: "", selected, mandatory, overlaps, analysis };
   };
 
   const courseCard = (course) => {
