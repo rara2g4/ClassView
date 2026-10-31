@@ -145,8 +145,8 @@ h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.05rem); line-height: 1.25; letter-
   .prototype-note { display: grid; }
   .page-header { margin-top: 28px; }
   h1 { font-size: clamp(1.85rem, 9vw, 2.35rem); }
-  .progress { overflow-x: auto; }
-  .progress span { min-width: 92px; }
+  .progress { overflow: visible; }
+  .progress span { min-width: 0; padding-inline: 2px; font-size: .68rem; white-space: nowrap; }
   .step-panel { grid-template-columns: 1fr; gap: 8px; margin-top: 38px; }
   .question-number { font-size: 2.2rem; }
   .select-row { grid-template-columns: 1fr; }
