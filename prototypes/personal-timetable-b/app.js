@@ -75,6 +75,44 @@
     ));
   };
 
+  const SVG_NS = "http://www.w3.org/2000/svg";
+  const createStateIcon = (name) => {
+    const svg = document.createElementNS(SVG_NS, "svg");
+    svg.classList.add("state-icon", `state-icon--${name}`);
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", "2");
+    svg.setAttribute("stroke-linecap", "round");
+    svg.setAttribute("stroke-linejoin", "round");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
+
+    const add = (tag, attributes) => {
+      const element = document.createElementNS(SVG_NS, tag);
+      Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, value));
+      svg.append(element);
+    };
+    if (name === "circle") {
+      add("circle", { cx: "12", cy: "12", r: "9" });
+    } else if (name === "check-circle") {
+      add("circle", { cx: "12", cy: "12", r: "9" });
+      add("path", { d: "m8 12 2.5 2.5L16 9" });
+    } else if (name === "lock-keyhole") {
+      add("rect", { x: "4", y: "10", width: "16", height: "11", rx: "2" });
+      add("path", { d: "M8 10V7a4 4 0 0 1 8 0v3" });
+      add("path", { d: "M12 14v3" });
+    } else if (name === "calendar-x") {
+      add("rect", { x: "3", y: "4", width: "18", height: "17", rx: "2" });
+      add("path", { d: "M8 2v4M16 2v4M3 9h18" });
+      add("path", { d: "m9.5 13.5 5 5m0-5-5 5" });
+    } else {
+      add("path", { d: "M12 3 2.7 20h18.6L12 3Z" });
+      add("path", { d: "M12 9v4M12 17h.01" });
+    }
+    return svg;
+  };
+
   const choice = (name, value, label) => {
     const wrapper = document.createElement("div");
     wrapper.className = "select-card";
@@ -200,19 +238,18 @@
       courseId: course.id,
     });
     const overlaps = analysis.conflicts;
-    if (mandatory && overlaps.length) return { key: "data-error", label: "要確認", symbol: "!", selected, mandatory, overlaps, analysis };
-    if (mandatory) return { key: "required", label: "必修・自動", symbol: "必", selected, mandatory, overlaps, analysis };
-    if (selected && overlaps.length) return { key: "data-error", label: "要確認", symbol: "!", selected, mandatory, overlaps, analysis };
-    if (selected) return { key: "selected", label: "選択済み", symbol: "✓", selected, mandatory, overlaps, analysis };
-    if (overlaps.length) return { key: "blocked", label: "時間重複で選択不可", symbol: "", selected, mandatory, overlaps, analysis };
-    return { key: "available", label: "未選択", symbol: "", selected, mandatory, overlaps, analysis };
+    if (mandatory) return { key: "required", icon: "lock-keyhole", label: "必修", selected, mandatory, overlaps, analysis, hasDataError: overlaps.length > 0 };
+    if (selected && overlaps.length) return { key: "data-error", icon: "triangle-alert", label: "要確認", selected, mandatory, overlaps, analysis, hasDataError: true };
+    if (selected) return { key: "selected", icon: "check-circle", label: "選択済み", selected, mandatory, overlaps, analysis, hasDataError: false };
+    if (overlaps.length) return { key: "blocked", icon: "calendar-x", label: "時間重複で選択不可", selected, mandatory, overlaps, analysis, hasDataError: false };
+    return { key: "available", icon: "circle", label: "未選択", selected, mandatory, overlaps, analysis, hasDataError: false };
   };
 
   const courseCard = (course) => {
     const status = cardStatus(course);
     const button = document.createElement("button");
     button.type = "button";
-    button.className = `course-card is-${status.key}${status.mandatory ? " is-required-course" : ""}`;
+    button.className = `course-card is-${status.key}${status.mandatory ? " is-required-course" : ""}${status.hasDataError ? " has-data-error" : ""}`;
     button.dataset.courseId = course.id;
     button.dataset.slotKey = model.slotKey(course);
     button.setAttribute("aria-pressed", String(status.selected));
@@ -237,24 +274,30 @@
     button.dataset.inspectorMessage = status.overlaps.length
       ? `${conflictText}と重なります。${status.mandatory ? "必修のため解除できません。時間割データの確認が必要です。" : status.selected ? "選択済み同士の重複です。解除して重複を解消してください。" : status.analysis.requiredConflictIds.length ? "必修授業は解除できないため、この授業は選択できません。" : "カードを押すと、競合相手を確認して入れ替えられます。"}`
       : `${occupancyText}を占有します。講師: ${course.instructor}。${creditsText}。対象: ${course.grades.join("・")}年。区分: ${data.typeLabel(course.courseType)}。${status.mandatory ? "学年・組に一致する必修として自動追加されています。" : status.selected ? "選択済み。カードを押すとすべての時限から解除します。" : "カードを押すとすべての時限へ反映します。"}`;
-    button.dataset.inspectorTone = status.key === "data-error" ? "warning" : status.key === "blocked" ? "constraint" : status.selected ? "selected" : "neutral";
+    button.dataset.inspectorTone = status.hasDataError ? "warning" : status.key === "blocked" ? "constraint" : status.selected ? "selected" : "neutral";
 
     const titleRow = document.createElement("span");
     titleRow.className = "card-title-row";
     const title = document.createElement("span");
     title.className = "course-title";
     title.textContent = course.title;
-    const mark = document.createElement("span");
-    mark.className = "selection-mark";
-    mark.setAttribute("aria-hidden", "true");
-    if (status.key === "blocked") {
-      const lock = document.createElement("span");
-      lock.className = "lock-glyph";
-      mark.append(lock);
-    } else {
-      mark.textContent = status.symbol;
+    const stateMark = document.createElement("span");
+    stateMark.className = "course-state";
+    stateMark.setAttribute("aria-hidden", "true");
+    stateMark.append(createStateIcon(status.icon));
+    if (status.key === "required" || status.key === "data-error") {
+      const stateLabel = document.createElement("span");
+      stateLabel.className = "state-label";
+      stateLabel.textContent = status.label;
+      stateMark.append(stateLabel);
     }
-    titleRow.append(title, mark);
+    if (status.mandatory && status.hasDataError) {
+      const errorFlag = document.createElement("span");
+      errorFlag.className = "data-error-flag";
+      errorFlag.textContent = "!";
+      stateMark.append(errorFlag);
+    }
+    titleRow.append(title, stateMark);
     const details = document.createElement("span");
     details.className = "course-details";
     details.textContent = `${occupancyText} / 講師: ${course.instructor} / ${creditsText}`;
