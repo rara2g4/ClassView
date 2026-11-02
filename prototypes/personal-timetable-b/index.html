@@ -22,8 +22,12 @@
 
     <main id="main-content" class="page-shell">
       <div class="prototype-note" role="note">
-        <strong>曜日ナビ型プロトタイプ</strong>
-        <span>保存されません。2026年度後期時間割（予定）の全授業を使用しています。</span>
+        <strong>デモデータを使用しています</strong>
+        <span>このプロトタイプでは選択内容が保存されません。</span>
+        <details class="prototype-details">
+          <summary>データについて</summary>
+          <p>2026年度後期時間割（予定）の全授業に、比較用の合成courseTypeを一部だけ重ねています。正式な学校データではありません。</p>
+        </details>
       </div>
 
       <header class="page-header">
@@ -67,7 +71,6 @@
           <div>
             <p class="eyebrow">STEP 3 / TIME SLOT VIEW</p>
             <h2 id="courses-heading">曜日・時限ごとに選ぶ</h2>
-            <p class="section-intro">Excel全授業に、比較用の合成courseTypeを一部だけ重ねています。学校データではありません。</p>
           </div>
           <div class="count-chip"><strong id="selected-count">0</strong><span>科目</span></div>
         </div>
@@ -75,9 +78,7 @@
         <div class="selection-workspace">
           <div class="week-strip" id="week-strip" role="tablist" aria-label="曜日を選ぶ"></div>
           <div class="period-strip" id="period-strip" role="tablist" aria-label="時限を選ぶ"></div>
-          <div id="conflict-banner" class="conflict-banner" role="status" aria-live="polite">
-            現在、選択中の授業に時間の重複はありません。
-          </div>
+          <div id="conflict-banner" class="conflict-banner" role="status" aria-live="polite" hidden></div>
           <div class="selection-layout">
           <section id="day-browser" class="day-browser" role="tabpanel" aria-live="polite"></section>
           <div id="course-inspector" class="course-inspector" aria-live="polite">
@@ -123,7 +124,7 @@
 
     <dialog id="conflict-dialog" class="conflict-dialog" aria-labelledby="conflict-dialog-title" aria-describedby="conflict-dialog-description">
       <div class="dialog-heading">
-        <span class="dialog-state-icon" aria-hidden="true"><span class="lock-glyph"></span></span>
+        <span id="conflict-dialog-icon" class="dialog-state-icon" aria-hidden="true"></span>
         <div>
           <p class="eyebrow">TIME CONFLICT</p>
           <h2 id="conflict-dialog-title">この授業は現在選択できません</h2>

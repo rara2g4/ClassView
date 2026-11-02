@@ -106,6 +106,9 @@
       add("rect", { x: "3", y: "4", width: "18", height: "17", rx: "2" });
       add("path", { d: "M8 2v4M16 2v4M3 9h18" });
       add("path", { d: "m9.5 13.5 5 5m0-5-5 5" });
+    } else if (name === "arrow-left-right") {
+      add("path", { d: "M8 3 4 7l4 4M4 7h16" });
+      add("path", { d: "m16 21 4-4-4-4M20 17H4" });
     } else {
       add("path", { d: "M12 3 2.7 20h18.6L12 3Z" });
       add("path", { d: "M12 9v4M12 17h.01" });
@@ -380,9 +383,10 @@
   const renderConflictBanner = () => {
     const banner = document.querySelector("#conflict-banner");
     const entries = conflictEntries();
+    banner.hidden = entries.length === 0;
     banner.classList.toggle("has-conflict", entries.length > 0);
     if (!entries.length) {
-      banner.textContent = "現在、選択中の授業に時間の重複はありません。";
+      banner.textContent = "";
       return;
     }
     const summary = entries.slice(0, 2).map((entry) => {
@@ -431,10 +435,14 @@
     state.pendingSwap = { courseId, slotKey: returnTarget.dataset.slotKey, returnTarget };
     const targetTitle = recordTitle(courseId);
     const dialogTitle = document.querySelector("#conflict-dialog-title");
+    const dialogIcon = document.querySelector("#conflict-dialog-icon");
     const description = document.querySelector("#conflict-dialog-description");
     const list = document.querySelector("#conflict-dialog-list");
     const note = document.querySelector("#conflict-dialog-note");
     const replaceButton = document.querySelector("#conflict-dialog-replace");
+    const hasRequiredConflict = analysis.requiredConflictIds.length > 0;
+    dialogIcon.classList.toggle("is-required", hasRequiredConflict);
+    dialogIcon.replaceChildren(createStateIcon(hasRequiredConflict ? "lock-keyhole" : "arrow-left-right"));
     list.replaceChildren();
 
     analysis.conflictingCourseIds.forEach((conflictingId) => {
@@ -452,7 +460,7 @@
       list.append(item);
     });
 
-    if (analysis.requiredConflictIds.length) {
+    if (hasRequiredConflict) {
       dialogTitle.textContent = "必修授業と重複しています";
       description.textContent = `「${targetTitle}」は、次の必修授業と時間が重複しています。`;
       note.textContent = "必修授業は解除できないため、この授業への入れ替えはできません。";

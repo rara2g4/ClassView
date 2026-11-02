@@ -30,6 +30,9 @@ button { touch-action: manipulation; }
 .header-context { color: var(--subtle); font-size: .85rem; }
 .page-shell { padding-block: 54px 80px; }
 .prototype-note { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 10px 14px; border-left: 3px solid var(--accent); background: var(--accent-soft); font-size: .82rem; }
+.prototype-details { flex-basis: 100%; color: var(--subtle); font-size: .74rem; }
+.prototype-details summary { width: fit-content; cursor: pointer; color: var(--accent); }
+.prototype-details p { margin: 4px 0 0; }
 .page-header { max-width: 700px; margin-top: 36px; }
 .eyebrow { margin: 0 0 6px; color: var(--accent); font-size: .72rem; font-weight: 700; letter-spacing: .12em; }
 h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.05rem); line-height: 1.25; letter-spacing: -.025em; }
@@ -71,6 +74,7 @@ h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.05rem); line-height: 1.25; letter-
 .day-tab[aria-selected="true"] .tab-indicator, .period-tab[aria-selected="true"] .tab-indicator { background: white; }
 .has-conflict .tab-indicator { background: #c47721; }
 .conflict-banner { display: flex; min-height: 36px; align-items: center; margin-top: 10px; padding: 6px 0; border-top: 1px solid var(--line); color: var(--subtle); font-size: .72rem; }
+.conflict-banner[hidden] { display: none; }
 .conflict-banner.has-conflict { border-top-color: #d7a257; color: var(--warning); font-weight: 700; }
 .selection-layout { display: grid; gap: 12px; margin-top: 6px; }
 .day-browser { min-width: 0; outline: none; }
@@ -142,6 +146,7 @@ h1 { margin: 0; font-size: clamp(2rem, 5vw, 3.05rem); line-height: 1.25; letter-
 .dialog-heading .eyebrow { margin-bottom: 2px; color: var(--subtle); }
 .dialog-heading h2 { margin: 0; font-size: 1.1rem; line-height: 1.45; }
 .dialog-state-icon { display: grid; width: 28px; height: 28px; place-items: center; color: #59666b; font-size: .9rem; }
+.dialog-state-icon.is-required { color: var(--gold); }
 .dialog-description, .dialog-note { margin: 0; padding-inline: 22px; }
 .dialog-description { padding-top: 16px; color: var(--text); font-size: .85rem; }
 .conflict-dialog-list { display: grid; gap: 1px; margin: 12px 22px; border-block: 1px solid var(--line); background: var(--line); }
