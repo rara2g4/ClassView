@@ -107,10 +107,10 @@ feedback の第一目的は、**学校職員が、学生から観測できる学
 
 ### Project rule: UI direction
 
-- Desktop は、人間 review 済み prototype C の「曜日 × 時限を高密度な週間 grid で一覧する」考え方を基準にする。
-- Mobile は、人間 review 済み prototype E の「1コマへ集中しながら週間内の位置を把握する」考え方を基準にし、PC 用週間表を単純縮小しない。
+- Desktop / Mobile とも、人間 review 済み prototype B の4段階設定と「曜日 + 時限を直接切り替え、1コマの候補へ集中する」考え方を基準にする。Desktop は候補を原則2列、Mobile は1列にし、PC用画面を単純縮小しない。
+- STEP 3では選択中の週間サマリーを同時に確認できるようにし、同じcourseが複数時限を占有する場合も各時限に表示しながら選択状態はcourse ID単位で同期する。
 - 1コマ最大8件程度の履修 candidate を想定し、高密度時も courseType より授業名を優先する。
-- conflict の説明内容が変わっても週間時間割を上下させず、Desktop の情報領域で layout shift を起こさない。
+- conflict candidateは落ち着いた選択制約として表示し、押したときに相手courseと曜日・時限を説明する。manual selectionだけとの競合は明示確認後の一括入れ替えを許可し、必修は解除しない。
 - prototype は interaction と layout の検討材料であり、production の Current implementation ではない。
 
 ### Storage and public UI boundary — Current implementation

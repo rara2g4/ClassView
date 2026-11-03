@@ -38,6 +38,15 @@
       ? [...currentProfile.manualSelectedCourseIds]
       : [];
 
+  const createDraftProfile = ({ currentProfile, identity, dataVersion, now } = {}) => {
+    const manualSelectedCourseIds = manualSelectionsForSettings(currentProfile, identity);
+    return personal.createProfile({
+      ...identity,
+      manualSelectedCourseIds,
+      dataVersion,
+    }, now ? { now } : undefined);
+  };
+
   const entriesForPeriod = (entries, manifest, term) =>
     (Array.isArray(entries) ? entries : []).filter(
       (entry) => personal.resolveTermForDate(entry && entry.dateKey, manifest) === term,
@@ -84,6 +93,8 @@
       conflicts: emptyConflicts,
       filters: { grade: gradeFilter, category: categoryFilter },
       filteredCourseIds: [],
+      courses: Array.isArray(courses) ? courses : [],
+      dataVersion,
     };
     if (!profile) return base;
     if (!period.valid) return { ...base, reason: "term-unresolved" };
@@ -157,6 +168,82 @@
     return { changed: true, reason: "selected", courseIds: [...new Set([...current, courseId])] };
   };
 
+  const replaceManualSelection = (model, courseId) => {
+    if (!model || !model.active || !model.profile) {
+      return { changed: false, reason: "personal-timetable-unavailable", courseIds: [] };
+    }
+    const current = Array.isArray(model.profile.manualSelectedCourseIds)
+      ? [...model.profile.manualSelectedCourseIds]
+      : [];
+    const candidate = candidateState(model, courseId);
+    if (!candidate || candidate.selected || !candidate.conflicts.length) {
+      return { changed: false, reason: "no-replacement-needed", courseIds: current };
+    }
+    const requiredConflictIds = candidate.conflicts
+      .filter((conflict) => conflict.required)
+      .map((conflict) => conflict.courseId);
+    if (requiredConflictIds.length) {
+      return {
+        changed: false,
+        reason: "required-conflict",
+        courseIds: current,
+        requiredConflictIds: [...new Set(requiredConflictIds)],
+        manualConflictIds: [],
+      };
+    }
+    const manualConflictIds = [...new Set(candidate.conflicts
+      .filter((conflict) => conflict.manual && !conflict.required)
+      .map((conflict) => conflict.courseId))];
+    if (!manualConflictIds.length) {
+      return { changed: false, reason: "conflict", courseIds: current, requiredConflictIds: [], manualConflictIds: [] };
+    }
+    const proposed = [...new Set([
+      ...current.filter((id) => !manualConflictIds.includes(id) && id !== courseId),
+      courseId,
+    ])];
+    const nextProfileResult = personal.createProfile({
+      ...model.profile,
+      manualSelectedCourseIds: proposed,
+      dataVersion: model.dataVersion,
+    });
+    if (!nextProfileResult.ok) {
+      return { changed: false, reason: "invalid-profile", courseIds: current, requiredConflictIds: [], manualConflictIds };
+    }
+    const nextEnrollment = personal.deriveEffectiveEnrollment({
+      courses: model.courses,
+      entries: model.periodEntries,
+      profile: nextProfileResult.profile,
+      currentPeriod: { ...model.period.currentPeriod, dataVersion: model.dataVersion },
+    });
+    const nextConflicts = personal.analyzeConflicts({
+      courses: model.courses,
+      entries: model.periodEntries,
+      enrollment: nextEnrollment,
+      profile: nextProfileResult.profile,
+    });
+    const remaining = nextConflicts.enrollmentConflicts.filter(
+      (conflict) => conflict.left.courseId === courseId || conflict.right.courseId === courseId,
+    );
+    if (remaining.length) {
+      return {
+        changed: false,
+        reason: "remaining-conflict",
+        courseIds: current,
+        requiredConflictIds: [],
+        manualConflictIds,
+        remainingConflicts: remaining,
+      };
+    }
+    return {
+      changed: true,
+      reason: "replaced",
+      courseIds: proposed,
+      removedCourseIds: manualConflictIds,
+      requiredConflictIds: [],
+      manualConflictIds,
+    };
+  };
+
   const filterSummary = ({ grade = personal.ALL_FILTER, category = personal.ALL_FILTER } = {}) => {
     const labels = [];
     if (grade !== personal.ALL_FILTER) labels.push(`${grade}年`);
@@ -167,9 +254,11 @@
   return Object.freeze({
     buildModel,
     courseTypePresentation,
+    createDraftProfile,
     filterSummary,
     initialDisplayMode,
     manualSelectionsForSettings,
+    replaceManualSelection,
     sameProfileIdentity,
     updateManualSelection,
     usableProfile,

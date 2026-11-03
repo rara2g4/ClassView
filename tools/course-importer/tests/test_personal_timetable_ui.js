@@ -26,6 +26,9 @@ const courses = [
   { id: "manual-a", title: "選択A", courseType: "選択", category: "AI・データ" },
   { id: "manual-b", title: "選択B", courseType: "選択必修", category: "ゲーム制作" },
   { id: "manual-c", title: "選択C", courseType: null, category: "旧分類" },
+  { id: "manual-d", title: "選択D", courseType: "選択", category: "AI・データ" },
+  { id: "manual-wide", title: "複数時限選択", courseType: "選択", category: "AI・データ" },
+  { id: "manual-required-conflict", title: "必修競合", courseType: "選択", category: "AI・データ" },
 ];
 const entry = (courseId, period, extra = {}) => ({
   entryId: `${courseId}-${period}`,
@@ -43,6 +46,10 @@ const entries = [
   entry("manual-a", 2),
   entry("manual-b", 2),
   entry("manual-c", 3, { grades: [], homeroomIds: null }),
+  entry("manual-d", 3),
+  entry("manual-wide", 2),
+  entry("manual-wide", 3, { entryId: "manual-wide-3" }),
+  entry("manual-required-conflict", 1),
 ];
 const ready = { status: "ready", profile };
 
@@ -73,6 +80,32 @@ assert.deepEqual(
   ui.updateManualSelection(model, "manual-a").courseIds,
   ["missing-course"],
 );
+const singleReplacement = ui.replaceManualSelection(model, "manual-b");
+assert.equal(singleReplacement.changed, true);
+assert.deepEqual(singleReplacement.removedCourseIds, ["manual-a"]);
+assert.deepEqual(singleReplacement.courseIds, ["missing-course", "manual-b"]);
+assert.equal(ui.replaceManualSelection(model, "manual-required-conflict").reason, "required-conflict");
+
+const multipleConflictProfile = personal.createProfile({
+  academicYear: "2025",
+  term: "first",
+  grade: 1,
+  homeroomId: "grade1-1",
+  manualSelectedCourseIds: ["manual-a", "manual-d"],
+  dataVersion: { site: "site-v1", timetable: "tt-v1" },
+}).profile;
+const multipleConflictModel = ui.buildModel({
+  manifest,
+  dateKey: "2025-04-07",
+  courses,
+  entries,
+  profileLoad: { status: "ready", profile: multipleConflictProfile },
+  dataVersion: { site: "site-v1", timetable: "tt-v1" },
+});
+const multipleReplacement = ui.replaceManualSelection(multipleConflictModel, "manual-wide");
+assert.equal(multipleReplacement.changed, true);
+assert.deepEqual(new Set(multipleReplacement.removedCourseIds), new Set(["manual-a", "manual-d"]));
+assert.deepEqual(multipleReplacement.courseIds, ["manual-wide"]);
 
 const afterDeselectProfile = { ...profile, manualSelectedCourseIds: ["missing-course"] };
 const afterDeselect = ui.buildModel({
@@ -142,6 +175,20 @@ assert.deepEqual(
   [],
   "profile identity changes do not guess how old selections transfer",
 );
+const sameIdentityDraft = ui.createDraftProfile({
+  currentProfile: profile,
+  identity: { academicYear: "2025", term: "first", grade: 1, homeroomId: "grade1-1" },
+  dataVersion: { site: "site-v2", timetable: "tt-v2" },
+});
+assert.equal(sameIdentityDraft.ok, true);
+assert.deepEqual(sameIdentityDraft.profile.manualSelectedCourseIds, ["manual-a", "missing-course"]);
+const changedIdentityDraft = ui.createDraftProfile({
+  currentProfile: profile,
+  identity: { academicYear: "2025", term: "first", grade: 2, homeroomId: "grade2-1" },
+  dataVersion: { site: "site-v2", timetable: "tt-v2" },
+});
+assert.equal(changedIdentityDraft.ok, true);
+assert.deepEqual(changedIdentityDraft.profile.manualSelectedCourseIds, []);
 assert.equal(ui.filterSummary({ grade: "all", category: "all" }), "すべて");
 assert.equal(ui.filterSummary({ grade: 2, category: "ゲーム制作" }), "2年 / ゲーム制作");
 assert.deepEqual(ui.courseTypePresentation(null), { code: "?", label: "区分未確認", kind: "unknown" });

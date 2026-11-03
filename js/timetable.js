@@ -174,22 +174,7 @@
   const personalSettingsButton = document.querySelector("#personal-settings-button");
   const personalProfileSummary = document.querySelector("#personal-profile-summary");
   const personalStatus = document.querySelector("#personal-timetable-status");
-  const personalSelector = document.querySelector("#personal-course-selector");
-  const personalGrid = document.querySelector("#personal-course-grid");
-  const conflictSummary = document.querySelector("#personal-conflict-summary");
-  const desktopFilters = document.querySelector("#personal-desktop-filters");
-  const mobileFilters = document.querySelector("#personal-mobile-filters");
-  const filterButton = document.querySelector("#personal-filter-button");
-  const filterDialog = document.querySelector("#personal-filter-dialog");
-  const filterForm = document.querySelector("#personal-filter-form");
-  const filterReset = document.querySelector("#personal-filter-reset");
-  const setupDialog = document.querySelector("#personal-setup-dialog");
-  const setupForm = document.querySelector("#personal-setup-form");
-  const gradeInput = document.querySelector("#personal-grade-input");
-  const homeroomInput = document.querySelector("#personal-homeroom-input");
-  const termInput = document.querySelector("#personal-term-input");
-  const termField = document.querySelector("#personal-term-field");
-  const setupError = document.querySelector("#personal-setup-error");
+  const personalWizardApi = global.ClassViewPersonalTimetableWizard;
 
   const state = {
     mode: "day",
@@ -210,6 +195,7 @@
     personalModel: null,
     activeCandidateSlot: "",
     interactionMessage: "",
+    personalWizard: null,
   };
 
   const resetMobileWeekExpansion = () => {
@@ -412,227 +398,6 @@
     });
   };
 
-  const conflictText = (conflict) => {
-    const other = conflict.title || conflict.courseId;
-    const slots = (conflict.slots || []).map(
-      (slot) => `${DAY_NAMES[slot.weekday]}曜${slot.period}限`,
-    ).join("・");
-    return `${other}（${slots}）`;
-  };
-
-  const saveCurrentProfile = (manualSelectedCourseIds) => {
-    const profile = state.personalModel?.profile;
-    if (!profile) return false;
-    const created = personal.createProfile({
-      ...profile,
-      manualSelectedCourseIds,
-      dataVersion: currentDataVersion(),
-    });
-    if (!created.ok) return false;
-    const saved = personal.saveProfile(state.profileStorage, created.profile);
-    if (!saved.saved) {
-      state.profileLoad = { status: "unavailable", profile: null, error: saved.error };
-      state.displayMode = "school";
-      state.interactionMessage = "このブラウザへ設定を保存できなかったため、学校全体表示へ戻しました。";
-      return false;
-    }
-    state.profileLoad = { status: "ready", profile: created.profile, error: null };
-    return true;
-  };
-
-  const candidateButton = (courseId, entry) => {
-    const course = state.courses.find((item) => item.id === courseId) || {};
-    const enrollmentItem = state.personalModel.enrollment.items.find(
-      (item) => item.courseId === courseId,
-    );
-    const candidate = state.personalModel.conflicts.candidateStates.find(
-      (item) => item.courseId === courseId,
-    );
-    const type = personalUi.courseTypePresentation(course.courseType);
-    const scopeUnknown = !Array.isArray(entry.grades) || entry.grades.length === 0 ||
-      entry.homeroomIds === null || !Array.isArray(entry.homeroomIds);
-    const required = Boolean(enrollmentItem?.required);
-    const selected = Boolean(candidate?.selected);
-    const blocked = !selected && (!candidate?.selectable || scopeUnknown);
-    const button = element(
-      "button",
-      `personal-candidate${selected ? " personal-candidate--selected" : ""}` +
-        `${required ? " personal-candidate--required" : ""}` +
-        `${blocked ? " personal-candidate--blocked" : ""}`,
-    );
-    button.type = "button";
-    button.dataset.courseId = courseId;
-    button.setAttribute("aria-pressed", String(selected));
-    if (blocked) button.setAttribute("aria-disabled", "true");
-    const heading = element("span", "personal-candidate__heading");
-    heading.append(element("span", "personal-candidate__title", course.title || entry.subjectName || courseId));
-    if (type.code) heading.append(element("span", `personal-candidate__type personal-candidate__type--${type.kind}`, type.code));
-    button.append(heading);
-    let detail = "選択する";
-    if (required) detail = "必修・解除できません";
-    else if (selected) detail = "選択中・押すと解除";
-    else if (scopeUnknown) detail = "対象学年または組が未確認";
-    else if (candidate?.conflicts?.length) {
-      detail = `重複：${candidate.conflicts.map(conflictText).join("、")}`;
-    }
-    button.append(element("span", "personal-candidate__detail", detail));
-    button.setAttribute("aria-label", `${course.title || entry.subjectName || courseId}、${detail}`);
-    button.addEventListener("click", () => {
-      if (scopeUnknown && !selected) {
-        state.interactionMessage = `${course.title || courseId}は対象学年または所属組が未確認のため選択できません。`;
-        renderPersonalUi();
-        return;
-      }
-      const update = personalUi.updateManualSelection(state.personalModel, courseId);
-      if (!update.changed) {
-        state.interactionMessage = update.reason === "required-course"
-          ? "必修授業は解除できません。"
-          : `時間割が重複するため選択できません：${candidate?.conflicts?.map(conflictText).join("、") || "重複あり"}`;
-        renderPersonalUi();
-        return;
-      }
-      if (saveCurrentProfile(update.courseIds)) {
-        state.interactionMessage = update.reason === "selected" ? "授業を選択しました。" : "授業の選択を解除しました。";
-      }
-      void render();
-    });
-    return button;
-  };
-
-  const candidateSlots = () => {
-    const visible = new Set(state.personalModel.filteredCourseIds);
-    const slots = new Map();
-    state.personalModel.periodEntries.forEach((entry) => {
-      if (entry?.kind !== "class" || !visible.has(entry.courseId)) return;
-      const slot = personal.slotFromEntry(entry);
-      if (!slot) return;
-      const key = `${slot.weekday}:${slot.period}`;
-      if (!slots.has(key)) slots.set(key, new Map());
-      if (!slots.get(key).has(entry.courseId)) slots.get(key).set(entry.courseId, entry);
-    });
-    return slots;
-  };
-
-  const renderCandidateGrid = () => {
-    const slots = candidateSlots();
-    const periodKeys = [...new Set([
-      ...Object.keys(state.periods.periods).map(Number),
-      ...[...slots.keys()].map((key) => Number(key.split(":")[1])),
-    ])].sort((left, right) => left - right);
-    const weekdayCount = [...slots.keys()].some((key) => Number(key.split(":")[0]) > 5) ? 7 : 5;
-    const desktop = element("div", "personal-candidate-week personal-candidate-week--desktop");
-    desktop.style.setProperty("--personal-days", String(weekdayCount));
-    desktop.append(element("div", "personal-candidate-week__corner", "時限"));
-    for (let weekday = 1; weekday <= weekdayCount; weekday += 1) {
-      desktop.append(element("div", "personal-candidate-week__day", `${DAY_NAMES[weekday]}曜日`));
-    }
-    periodKeys.forEach((period) => {
-      desktop.append(element("div", "personal-candidate-week__period", `${period}限`));
-      for (let weekday = 1; weekday <= weekdayCount; weekday += 1) {
-        const cell = element("div", "personal-candidate-week__cell");
-        const entries = [...(slots.get(`${weekday}:${period}`)?.entries() || [])];
-        if (entries.length) entries.forEach(([courseId, entry]) => cell.append(candidateButton(courseId, entry)));
-        else cell.append(element("span", "personal-candidate-week__empty", "—"));
-        desktop.append(cell);
-      }
-    });
-
-    const mobile = element("div", "personal-candidate-mobile");
-    const selected = state.personalModel.enrollment.items;
-    const selectedBox = element("div", "personal-selected-courses");
-    selectedBox.append(element("h3", "", `選択中 ${selected.length}件`));
-    const chips = element("div", "personal-selected-courses__chips");
-    selected.forEach((item) => {
-      const course = state.courses.find((value) => value.id === item.courseId);
-      chips.append(element("span", "personal-selected-course", `${item.required ? "🔒 " : ""}${course?.title || item.courseId}`));
-    });
-    if (!selected.length) chips.append(element("span", "personal-selected-courses__empty", "まだ選択していません"));
-    selectedBox.append(chips);
-    mobile.append(selectedBox);
-
-    const map = element("div", "personal-mobile-map");
-    const availableKeys = [];
-    periodKeys.forEach((period) => {
-      for (let weekday = 1; weekday <= weekdayCount; weekday += 1) {
-        const key = `${weekday}:${period}`;
-        const count = slots.get(key)?.size || 0;
-        if (!count) continue;
-        availableKeys.push(key);
-        const slotButton = element("button", "personal-mobile-map__slot", `${DAY_NAMES[weekday]} ${period}限 · ${count}件`);
-        slotButton.type = "button";
-        slotButton.dataset.slot = key;
-        slotButton.setAttribute("aria-pressed", String(state.activeCandidateSlot === key));
-        slotButton.addEventListener("click", () => {
-          state.activeCandidateSlot = key;
-          renderCandidateGrid();
-        });
-        map.append(slotButton);
-      }
-    });
-    if (!availableKeys.includes(state.activeCandidateSlot)) state.activeCandidateSlot = availableKeys[0] || "";
-    mobile.append(map);
-    const focus = element("section", "personal-mobile-focus");
-    if (state.activeCandidateSlot) {
-      const [weekday, period] = state.activeCandidateSlot.split(":").map(Number);
-      focus.append(element("h3", "", `${DAY_NAMES[weekday]}曜日 ${period}限の候補`));
-      [...(slots.get(state.activeCandidateSlot)?.entries() || [])].forEach(
-        ([courseId, entry]) => focus.append(candidateButton(courseId, entry)),
-      );
-    } else {
-      focus.append(element("p", "", "現在の絞り込みに該当する授業候補はありません。"));
-    }
-    mobile.append(focus);
-    personalGrid.replaceChildren(desktop, mobile);
-  };
-
-  const createFilterControls = (target, prefix) => {
-    const gradeLabel = element("label", "personal-filter-control", "学年");
-    const grade = element("select");
-    grade.id = `${prefix}-grade-filter`;
-    [["all", "すべて"], ["1", "1年"], ["2", "2年"], ["3", "3年"]].forEach(([value, label]) => {
-      const option = element("option", "", label);
-      option.value = value;
-      grade.append(option);
-    });
-    grade.value = String(state.gradeFilter);
-    gradeLabel.append(grade);
-    const categoryLabel = element("label", "personal-filter-control", "分野");
-    const category = element("select");
-    category.id = `${prefix}-category-filter`;
-    const all = element("option", "", "すべて");
-    all.value = "all";
-    category.append(all);
-    personal.OFFICIAL_CATEGORIES.forEach((value) => {
-      const option = element("option", "", value);
-      option.value = value;
-      category.append(option);
-    });
-    category.value = state.categoryFilter;
-    categoryLabel.append(category);
-    target.replaceChildren(gradeLabel, categoryLabel);
-    return { grade, category };
-  };
-
-  const renderFilters = () => {
-    const desktop = createFilterControls(desktopFilters, "desktop");
-    const mobile = createFilterControls(mobileFilters, "mobile");
-    const apply = (controls) => {
-      state.gradeFilter = controls.grade.value === "all" ? "all" : Number(controls.grade.value);
-      state.categoryFilter = controls.category.value;
-      state.interactionMessage = "";
-      refreshPersonalModel();
-      renderPersonalUi();
-    };
-    desktop.grade.addEventListener("change", () => apply(desktop));
-    desktop.category.addEventListener("change", () => apply(desktop));
-    filterForm.onsubmit = (event) => {
-      event.preventDefault();
-      apply(mobile);
-      filterDialog.close();
-    };
-    filterButton.textContent = `絞り込み：${personalUi.filterSummary({ grade: state.gradeFilter, category: state.categoryFilter })}`;
-  };
-
   const renderPersonalUi = () => {
     refreshPersonalModel();
     const model = state.personalModel;
@@ -664,23 +429,6 @@
       statusMessage = "学校全体の時間割を表示しています。初回設定は任意です。";
     }
     personalStatus.textContent = statusMessage;
-    personalSelector.hidden = !(isPersonal && model?.active);
-    if (!personalSelector.hidden) {
-      renderFilters();
-      const requiredErrors = model.conflicts.requiredConflicts;
-      const conflicts = model.conflicts.enrollmentConflicts;
-      if (requiredErrors.length) {
-        conflictSummary.className = "personal-conflict-summary personal-conflict-summary--error";
-        conflictSummary.textContent = `必修授業同士の重複が${requiredErrors.length}件あります。学校側で時間割データの確認が必要です。`;
-      } else if (conflicts.length) {
-        conflictSummary.className = "personal-conflict-summary personal-conflict-summary--warning";
-        conflictSummary.textContent = `選択中の授業に${conflicts.length}件の重複があります。重複元の選択授業を解除してください。`;
-      } else {
-        conflictSummary.className = "personal-conflict-summary";
-        conflictSummary.textContent = "候補を選ぶ前に、重複する曜日・時限を確認できます。";
-      }
-      renderCandidateGrid();
-    }
   };
 
   const renderDay = async () => {
@@ -959,34 +707,10 @@
   );
   todayButton.addEventListener("click", () => selectDate(fromDate(new Date())));
 
-  const updateHomeroomOptions = (selectedId = "") => {
-    const grade = Number(gradeInput.value);
-    const options = (state.manifest?.homerooms || []).filter((item) => item.grade === grade);
-    const prompt = element("option", "", options.length ? "選択してください" : "この学年の所属組は未登録です");
-    prompt.value = "";
-    homeroomInput.replaceChildren(prompt);
-    options.forEach((item) => {
-      const option = element("option", "", item.label);
-      option.value = item.id;
-      homeroomInput.append(option);
-    });
-    homeroomInput.value = options.some((item) => item.id === selectedId) ? selectedId : "";
-  };
-
   const openSetup = () => {
-    const profile = state.personalModel?.profile;
-    const period = personal.periodContextForDate(formatDateKey(state.selectedDate), state.manifest);
-    gradeInput.value = profile ? String(profile.grade) : "";
-    updateHomeroomOptions(profile?.homeroomId || "");
-    termField.hidden = period.valid;
-    termInput.required = !period.valid;
-    termInput.value = period.valid ? period.currentPeriod.term : profile?.term || "";
-    setupError.hidden = true;
-    setupDialog.showModal();
-    gradeInput.focus();
+    state.personalWizard?.open();
   };
 
-  gradeInput.addEventListener("change", () => updateHomeroomOptions());
   personalSettingsButton.addEventListener("click", openSetup);
   personalModeButton.addEventListener("click", () => {
     if (!state.personalModel?.profile) {
@@ -1000,60 +724,6 @@
   schoolModeButton.addEventListener("click", () => {
     state.displayMode = "school";
     state.interactionMessage = "";
-    void render();
-  });
-  filterButton.addEventListener("click", () => {
-    renderFilters();
-    filterDialog.showModal();
-    mobileFilters.querySelector("select")?.focus();
-  });
-  filterReset.addEventListener("click", () => {
-    state.gradeFilter = "all";
-    state.categoryFilter = "all";
-    renderFilters();
-    mobileFilters.querySelector("select").value = "all";
-    mobileFilters.querySelectorAll("select")[1].value = "all";
-  });
-  document.querySelectorAll("[data-dialog-close]").forEach((button) => {
-    button.addEventListener("click", () => button.closest("dialog")?.close());
-  });
-  setupForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const period = personal.periodContextForDate(formatDateKey(state.selectedDate), state.manifest);
-    const term = period.valid ? period.currentPeriod.term : termInput.value;
-    const identity = {
-      academicYear: state.manifest.academicYear,
-      term,
-      grade: Number(gradeInput.value),
-      homeroomId: homeroomInput.value,
-    };
-    const created = personal.createProfile({
-      ...identity,
-      manualSelectedCourseIds: personalUi.manualSelectionsForSettings(
-        state.personalModel?.profile,
-        identity,
-      ),
-      dataVersion: currentDataVersion(),
-    });
-    if (!created.ok) {
-      setupError.textContent = "学年・所属組・期間を確認してください。";
-      setupError.hidden = false;
-      return;
-    }
-    const saved = personal.saveProfile(state.profileStorage, created.profile);
-    if (!saved.saved) {
-      setupError.textContent = "このブラウザへ設定を保存できませんでした。学校全体表示は引き続き利用できます。";
-      setupError.hidden = false;
-      state.profileLoad = { status: "unavailable", profile: null, error: saved.error };
-      state.displayMode = "school";
-      return;
-    }
-    state.profileLoad = { status: "ready", profile: created.profile, error: null };
-    state.displayMode = "personal";
-    state.interactionMessage = period.valid
-      ? "設定を保存しました。"
-      : "設定を保存しました。期間境界が未設定のため、個人時間割にはまだ適用していません。";
-    setupDialog.close();
     void render();
   });
   window.addEventListener("popstate", () => {
@@ -1078,7 +748,7 @@
     updateNavigationLabels();
     updateUrl(true);
     try {
-      if (!personal || !personalUi) throw new Error("Personal timetable modules are unavailable");
+      if (!personal || !personalUi || !personalWizardApi) throw new Error("Personal timetable modules are unavailable");
       const manifest = await fetchJson(manifestUrl);
       if (typeof manifest?.version !== "string" || !manifest.version) {
         throw new Error("Invalid timetable manifest version");
@@ -1108,6 +778,34 @@
           ? { status: "ready", profile: state.profileLoad.profile, error: null }
           : { status: "unavailable", profile: null, error: migrationSave.error };
       }
+      state.personalWizard = personalWizardApi.createController({
+        getContext: () => ({
+          manifest: state.manifest,
+          periods: state.periods,
+          courses: state.courses,
+          entries: state.allEntries,
+          dateKey: formatDateKey(state.selectedDate),
+          dataVersion: currentDataVersion(),
+        }),
+        getSavedProfile: () => state.personalModel?.profile || state.profileLoad.profile,
+        saveProfile: async (profile) => {
+          const saved = personal.saveProfile(state.profileStorage, profile);
+          if (!saved.saved) {
+            return {
+              saved: false,
+              message: "このブラウザへ設定を保存できませんでした。学校全体表示は引き続き利用できます。",
+            };
+          }
+          state.profileLoad = { status: "ready", profile, error: null };
+          state.displayMode = "personal";
+          state.interactionMessage = "設定を保存しました。";
+          await render();
+          return { saved: true };
+        },
+        onClose: (result) => {
+          if (result !== "saved") state.interactionMessage = "";
+        },
+      });
       state.displayMode = personalUi.initialDisplayMode(state.profileLoad);
       showUpdatedAt();
       await render();

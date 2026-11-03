@@ -50,7 +50,7 @@ DOM は主に `createElement` と `textContent` で構築する。course ID は 
 
 ### Personal timetable — Phase 1 + Phase 2 current implementation
 
-`js/personal-timetable.js` にDOM非依存のprofile、履修、必修導出、conflict、entry visibility、candidate filter、versioned `localStorage` logicがある。`js/personal-timetable-ui.js` はPhase 1 APIからUI用modelを作り、`js/timetable.js` がpublic data loading、DOM、保存、学校全体表示との切替を担当する。Human UX review用prototypeのmock dataやdiagnosticsはproductionへ含めない。
+`js/personal-timetable.js` にDOM非依存のprofile、履修、必修導出、conflict、entry visibility、candidate filter、versioned `localStorage` logicがある。`js/personal-timetable-ui.js` はPhase 1 APIからUI用modelとatomicなmanual selection入れ替え結果を作る。`js/personal-timetable-wizard.js` は4段階のdraft UIを担当し、`js/timetable.js` がpublic data loading、確定時の保存、学校全体表示との切替を担当する。Human UX review用prototypeのmock dataやdiagnosticsはproductionへ含めない。
 
 MVPでもpublic siteのstatic architectureを維持し、次のbrowser内データフローを実装している。
 
@@ -70,7 +70,7 @@ public course / timetable JSON
 - profile 未設定、破損、未対応 schema、storage failure は別 state であり、学校全体時間割の fallback を妨げない。
 - manifestの `termPeriods` を日付へ照合し、`first` / `second` / `unresolved` を解決するpure logicを持つ。年度Excel全体や表示文言へ単一termを付けず、学期境界はExcelから推測しない。
 - manifestの `homerooms` catalogとentryの `homeroomIds` を所属組判定に使う。`groupTags` は表示・授業内group・compatibility用として残るが、個人時間割の判定には使わない。
-- Desktopは週間candidate grid、Mobileは時限mapとfocused candidate listを別layoutとしてrenderする。storage/期間/profileが利用できない場合は学校全体表示へfallbackできる。
+- Desktop / Mobileとも曜日・時限tabでfocused candidate listをrenderし、Desktopは原則2列、Mobileは1列にする。wizard内draftはSTEP 4まで保存せず、storage/期間/profileが利用できない場合は学校全体表示へfallbackできる。
 
 ## Data
 

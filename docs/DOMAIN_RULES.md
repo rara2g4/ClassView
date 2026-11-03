@@ -194,11 +194,11 @@ parser は `試験:`、休暇系 keyword、行事系 keyword を限定的に認�
 
 ### Phase 2 public UI — Current implementation
 
-- 学年とmanifestのstable所属組IDをdialogで設定し、氏名等は要求しない。設定変更でprofile identityが変わる場合、旧manual selectionを推測移植しない。
-- Desktopは高密度な曜日×時限grid、Mobileは時限mapから1コマの候補へ集中するlayoutを使う。必修・選択済み・重複・区分未確認は文字または記号でも識別できる。
-- conflictは選択前に相手courseと曜日・時限を示し、manual candidateを無効化する。required-requiredは自動解決せず学校側data errorとして示す。
-- 学年filterはentryの`grades`、分野filterは正式10分類との`course.category`完全一致だけを使う。必修・選択済みcourseはfilterでeffective enrollmentから除外しない。
-- current termが`unresolved`の場合は旧履修を適用せず、その旨を表示する。学校全体表示への切替とprofile設定は可能である。
+- 学年、manifestのstable所属組ID、授業選択、確認・保存からなる4段階設定を使い、氏名等は要求しない。設定変更でprofile identityが変わる場合、旧manual selectionを推測移植しない。
+- Desktop / Mobile とも曜日tabと時限tabから1コマへ集中するlayoutを使う。Desktopは候補を原則2列、Mobileは1列とし、選択中の週間サマリーを表示する。必修・選択済み・時間競合は色だけでなくlock-keyhole、check-circle、calendar-xでも識別できる。
+- conflictは選択前から制約状態を示し、押すと相手courseと曜日・時限を説明する。競合元がmanual selectionだけの場合は、明示確認後に全競合元の解除とcandidate選択を一括で行える。required conflictでは入れ替えを提案せず、required-requiredは自動解決せず学校側data errorとして示す。
+- STEP 1〜3の変更は編集中のdraftとして保持し、STEP 4の明示確定時だけ既存profile keyへ保存する。キャンセルや保存失敗では保存済みprofileを変更しない。
+- current termが`unresolved`の場合は旧履修を適用せず、仮の学期境界を入力させない。設定完了を制限して理由を表示し、学校全体表示は利用可能にする。
 - stale manual course IDは保存profileから自動削除・置換せず、件数を表示する。`homeroomIds: null`等は本人向けentryやslotへ採用せず、未確認として示す。
 
 ### Profile and enrollment period — Project rule
@@ -231,6 +231,7 @@ parser は `試験:`、休暇系 keyword、行事系 keyword を限定的に認�
 
 - 選択済み course が占有する全曜日・時限と candidate が占有する全曜日・時限を比較し、1時限でも intersection があれば conflict とする。
 - conflict する candidate は、選択操作前から選択不可であること、競合元の授業名、競合する曜日・時限を確認できるようにし、原則選択不可とする。
+- 競合元がmanual selectionだけの場合、学生が解除対象を確認して承認したときに限り、全占有時限を再判定した上で競合元の解除とcandidate選択を一括更新できる。required courseをこの操作で解除しない。
 - 競合元の選択 course を解除した場合は、該当 candidate を即座に再選択可能にする。
 - 必修と選択 course が競合する場合は選択 course 側を選択不可にする。
 - 必修同士が競合する場合はどちらも自動解決・自動削除せず、学校側の時間割確認が必要な異常状態として表示する。
