@@ -14,6 +14,7 @@
     <script src="js/site-loader.js?v=1" defer></script>
     <script data-site-src="js/personal-timetable.js"></script>
     <script data-site-src="js/personal-timetable-ui.js"></script>
+    <script data-site-src="js/personal-timetable-wizard.js"></script>
     <script data-site-src="js/timetable.js"></script>
   </head>
   <body>
@@ -54,19 +55,6 @@
 
       <div id="personal-timetable-status" class="personal-timetable-status" role="status" aria-live="polite"></div>
 
-      <section id="personal-course-selector" class="personal-course-selector" aria-labelledby="personal-course-selector-heading" hidden>
-        <div class="personal-course-selector__heading">
-          <div>
-            <p class="personal-timetable-controls__eyebrow">Course selection</p>
-            <h2 id="personal-course-selector-heading">週間表から授業を選ぶ</h2>
-          </div>
-          <button id="personal-filter-button" class="personal-filter-button" type="button">絞り込み：すべて</button>
-        </div>
-        <div id="personal-desktop-filters" class="personal-desktop-filters" aria-label="授業候補の絞り込み"></div>
-        <div id="personal-conflict-summary" class="personal-conflict-summary" aria-live="polite"></div>
-        <div id="personal-course-grid"></div>
-      </section>
-
       <section class="timetable-toolbar" aria-label="時間割の表示設定">
         <div class="timetable-view-switch" role="group" aria-label="表示方法">
           <button id="day-view-button" class="timetable-switch-button" type="button" aria-pressed="true">
@@ -95,51 +83,91 @@
         <p id="timetable-updated-at" class="timetable-updated-at" hidden></p>
       </aside>
 
-      <dialog id="personal-setup-dialog" class="personal-dialog">
-        <form id="personal-setup-form" method="dialog">
-          <div class="personal-dialog__heading">
-            <h2>自分の時間割を設定</h2>
-            <button class="personal-dialog__close" type="button" data-dialog-close aria-label="設定を閉じる">×</button>
-          </div>
-          <p>氏名やログインは不要です。この端末のブラウザにだけ保存します。</p>
-          <label>学年
-            <select id="personal-grade-input" required>
-              <option value="">選択してください</option>
-              <option value="1">1年</option><option value="2">2年</option><option value="3">3年</option>
-            </select>
-          </label>
-          <label>所属組
-            <select id="personal-homeroom-input" required><option value="">学年を選択してください</option></select>
-          </label>
-          <div id="personal-term-field" hidden>
-            <label>期間
-              <select id="personal-term-input">
-                <option value="">選択してください</option>
-                <option value="first">前期</option><option value="second">後期</option>
-              </select>
-            </label>
-            <p class="personal-dialog__note">現在の日付に対応する期間が未設定です。保存はできますが、期間が解決するまで個人時間割へ適用されません。</p>
-          </div>
-          <p id="personal-setup-error" class="error-message" hidden></p>
-          <div class="personal-dialog__actions">
-            <button type="button" data-dialog-close>キャンセル</button>
-            <button class="button-primary" type="submit">保存</button>
-          </div>
+      <dialog id="personal-wizard-dialog" class="personal-wizard-dialog">
+        <form id="personal-wizard-form" method="dialog">
+          <header class="personal-wizard-header">
+            <div>
+              <p class="personal-timetable-controls__eyebrow">Personal timetable</p>
+              <h2>自分の時間割を設定</h2>
+              <p>氏名やログインは不要です。完了時に、この端末のブラウザへ保存します。</p>
+            </div>
+            <button class="personal-dialog__close" type="button" data-personal-close aria-label="設定を閉じる">×</button>
+          </header>
+
+          <ol class="personal-wizard-progress" aria-label="設定手順">
+            <li data-personal-progress="1"><span>1</span>学年</li>
+            <li data-personal-progress="2"><span>2</span>所属組</li>
+            <li data-personal-progress="3"><span>3</span>授業選択</li>
+            <li data-personal-progress="4"><span>4</span>確認・保存</li>
+          </ol>
+
+          <section class="personal-wizard-step" data-personal-step="1">
+            <h3 tabindex="-1">学年を選択してください</h3>
+            <p>現在の学年に一致する授業だけを候補として表示します。</p>
+            <div id="personal-grade-choices" class="personal-choice-grid"></div>
+          </section>
+
+          <section class="personal-wizard-step" data-personal-step="2" hidden>
+            <h3 tabindex="-1">所属組を選択してください</h3>
+            <p>時間割データで対象組が明示されている授業だけを使用します。</p>
+            <div id="personal-homeroom-choices" class="personal-choice-grid"></div>
+            <p id="personal-period-notice" class="personal-period-notice" role="status" hidden></p>
+          </section>
+
+          <section class="personal-wizard-step personal-wizard-step--courses" data-personal-step="3" hidden>
+            <h3 class="visually-hidden" tabindex="-1">履修する授業を選択してください</h3>
+            <div class="personal-wizard-workspace">
+              <div class="personal-wizard-browser">
+                <div id="personal-day-tabs" class="personal-wizard-tabs" role="tablist" aria-label="曜日"></div>
+                <div id="personal-period-tabs" class="personal-wizard-tabs personal-wizard-tabs--period" role="tablist" aria-label="時限"></div>
+                <div class="personal-wizard-slot-heading">
+                  <h4 id="personal-slot-heading">月曜日・1限</h4>
+                  <span id="personal-candidate-count">0件の候補</span>
+                </div>
+                <p id="personal-selection-status" class="personal-selection-status" role="status" aria-live="polite" hidden></p>
+                <div id="personal-wizard-candidates" class="personal-wizard-candidates"></div>
+              </div>
+              <aside class="personal-weekly-summary" aria-labelledby="personal-weekly-heading">
+                <div class="personal-weekly-summary__heading">
+                  <h4 id="personal-weekly-heading">選択中の1週間</h4>
+                  <span id="personal-selected-summary">0科目・0コマ</span>
+                </div>
+                <div id="personal-weekly-summary"></div>
+              </aside>
+            </div>
+          </section>
+
+          <section class="personal-wizard-step" data-personal-step="4" hidden>
+            <h3 tabindex="-1">設定内容を確認してください</h3>
+            <p>「設定を完了」を押すまで、保存済みの時間割は変更されません。</p>
+            <div id="personal-wizard-review"></div>
+          </section>
+
+          <p id="personal-wizard-error" class="error-message" role="alert" hidden></p>
+          <footer class="personal-wizard-actions">
+            <button type="button" data-personal-close>キャンセル</button>
+            <div>
+              <button id="personal-wizard-back" type="button" hidden>戻る</button>
+              <button id="personal-wizard-next" class="button-primary" type="button">次へ</button>
+              <button id="personal-wizard-save" class="button-primary" type="button" hidden>設定を完了</button>
+            </div>
+          </footer>
         </form>
       </dialog>
 
-      <dialog id="personal-filter-dialog" class="personal-dialog">
-        <form id="personal-filter-form" method="dialog">
-          <div class="personal-dialog__heading">
-            <h2>授業候補を絞り込む</h2>
-            <button class="personal-dialog__close" type="button" data-dialog-close aria-label="絞り込みを閉じる">×</button>
+      <dialog id="personal-conflict-dialog" class="personal-conflict-dialog" aria-labelledby="personal-conflict-title">
+        <div class="personal-conflict-dialog__body">
+          <div id="personal-conflict-icon" class="personal-conflict-dialog__icon" aria-hidden="true"></div>
+          <div>
+            <h2 id="personal-conflict-title">授業を入れ替えますか？</h2>
+            <p id="personal-conflict-message"></p>
+            <ul id="personal-conflict-list"></ul>
           </div>
-          <div id="personal-mobile-filters"></div>
-          <div class="personal-dialog__actions">
-            <button id="personal-filter-reset" type="button">すべてに戻す</button>
-            <button class="button-primary" type="submit">適用</button>
-          </div>
-        </form>
+        </div>
+        <div class="personal-conflict-dialog__actions">
+          <button id="personal-conflict-cancel" type="button">キャンセル</button>
+          <button id="personal-conflict-replace" class="button-primary" type="button">授業を入れ替える</button>
+        </div>
       </dialog>
     </main>
 

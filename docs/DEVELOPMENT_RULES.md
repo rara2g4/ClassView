@@ -103,6 +103,7 @@ node tools/course-importer/tests/test_public_feedback_link.js
 node tools/course-importer/tests/test_public_navigation.js
 node tools/course-importer/tests/test_personal_timetable.js
 node tools/course-importer/tests/test_personal_timetable_ui.js
+node tools/course-importer/tests/test_personal_timetable_wizard_integration.js
 node tools/course-importer/tests/test_public_timetable.js
 node tools/course-importer/tests/test_site_loader.js
 node tools/course-importer/tests/test_timetable_admin.js
@@ -118,7 +119,7 @@ repository 内の変更対象 JavaScript には `node --check` を実行する�
 | course public list/detail | public navigation/measurement tests、対象 JS `node --check`、実ブラウザ |
 | timetable parser/mapping/save | `test_timetable.py`, `test_timetable_admin.js` |
 | public timetable | `test_public_timetable.js`, `test_site_loader.js`、実ブラウザの day/week/mobile |
-| personal timetable domain/storage/UI | `test_personal_timetable.js`、`test_personal_timetable_ui.js`、`test_public_timetable.js`、対象 JS `node --check`、実ブラウザの desktop/mobile |
+| personal timetable domain/storage/UI | `test_personal_timetable.js`、`test_personal_timetable_ui.js`、`test_personal_timetable_wizard_integration.js`、`test_public_timetable.js`、対象 JS `node --check`、実ブラウザの desktop/mobile |
 | feedback | `test_feedback.py`, `test_public_feedback_link.js` |
 | works | `test_works.py`, `test_public_course_works.js` |
 | Git publish | `test_publisher.py` の temporary Git/remote tests |

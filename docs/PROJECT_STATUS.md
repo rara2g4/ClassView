@@ -31,7 +31,7 @@
 - 本人の学年・所属組に明示一致するentryだけを使う曜日・時限単位の複数時限 conflict、required/manual conflict source、required-required data error の検出
 - non-class entry visibility、`grades` と正式10 categoryのcandidate filter
 - profile未設定、破損・schemaVersion欠落/型不正、validな未対応future schema version、storage利用不能/read/write failureの状態分離
-- production pageのdata loading、profile setup、個人/学校全体切替、Desktop週間candidate grid、Mobile時限focus UIへ接続済み
+- production pageのdata loading、profile setup、個人/学校全体切替、人間review済みB案の4段階wizard、曜日・時限focus候補、週間summary、manual授業の確認付き一括入れ替えへ接続済み
 
 ### Course and syllabus management
 
@@ -94,13 +94,13 @@
 - works pipeline は実装済みだが、現在 tracked の 8 件はすべて架空の表示確認 sample。実在の学生作品運用へは未移行。
 - public timetable は 2025-04 の 5 日分だけ。annual parser は実装済みだが、現 Excel 全年範囲には blocking が残る。
 - keyword classification の human-confirmation 方針は Project rule として決定済みだが、現行 parser は「説明会」「休暇」等の一部 keyword から `event` / `holiday` 等を直接確定し、専用確認 gate なしで保存可能な場合がある。
-- 個人時間割のdomain/storage Phase 1、前提public contract、Phase 2のproduction UI/data loading接続を実装済み。現在の正式term境界日とcategory data整理は未完了。
+- 個人時間割のdomain/storage Phase 1、前提public contract、B案4段階UIのproduction data loading接続を実装済み。現在の正式term境界日は未設定のため、学校全体表示を維持しつつ個人設定の完了を制限する。
 
 ## Planned / known next steps
 
 ### Formal roadmap: personal timetable
 
-個人時間割は正式roadmapであり、Phase 1のUI非依存logic/storage contractとPhase 2のproduction UIを実装済みである。学校全体時間割との切替、初回設定、Desktop週間grid、Mobile時限focus、conflict事前表示、candidate filterをpublic pageへ接続した。詳細なProject ruleは[`DOMAIN_RULES.md`](DOMAIN_RULES.md#personal-timetable--project-rule--phased-implementation)、製品上の位置づけは[`PRODUCT_VISION.md`](PRODUCT_VISION.md#personal-timetable--current-implementation)、構造は[`ARCHITECTURE.md`](ARCHITECTURE.md#personal-timetable--phase-1--phase-2-current-implementation)を参照する。
+個人時間割は正式roadmapであり、Phase 1のUI非依存logic/storage contractとB案のproduction UIを実装済みである。学校全体時間割との切替、初回/変更設定、4段階wizard、曜日・時限focus、週間summary、conflict説明とmanual授業の確認付き入れ替えをpublic pageへ接続した。詳細なProject ruleは[`DOMAIN_RULES.md`](DOMAIN_RULES.md#personal-timetable--project-rule--phased-implementation)、製品上の位置づけは[`PRODUCT_VISION.md`](PRODUCT_VISION.md#personal-timetable--current-implementation)、構造は[`ARCHITECTURE.md`](ARCHITECTURE.md#personal-timetable--phase-1--phase-2-current-implementation)を参照する。
 
 Human UX review 用 prototype は production の Current implementation ではない。正式categoryの管理・validationと、A/B/C等の授業内groupを学生へ割り当てる方法は引き続き設計・判断が必要である。machine-readable term sourceはmanifestの明示 `termPeriods` として実装済みだが、現在年度の正式境界日は未設定である。
 
