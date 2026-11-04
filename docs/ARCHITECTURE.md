@@ -71,6 +71,7 @@ public course / timetable JSON
 - manifestの `termPeriods` を日付へ照合し、`first` / `second` / `unresolved` を解決するpure logicを持つ。年度Excel全体や表示文言へ単一termを付けず、学期境界はExcelから推測しない。
 - manifestの `homerooms` catalogとentryの `homeroomIds` を所属組判定に使う。`groupTags` は表示・授業内group・compatibility用として残るが、個人時間割の判定には使わない。
 - Desktop / Mobileとも曜日・時限tabでfocused candidate listをrenderし、Desktopは原則2列、Mobileは1列にする。wizard内draftはSTEP 4まで保存せず、storage/期間/profileが利用できない場合は学校全体表示へfallbackできる。
+- 現在の開発・検証用Pagesではクエリなしと `?demo=1` が `data/demo/` の架空course・時間割fixtureを読み、同じdomain/UI code pathを実行する。`?demo=0` は通常dataを明示表示する。デモprofileは `classview.demo.personalTimetable.profile` へ分離し、通常profile keyを読み書きしない。画面上部のデモ表示と通常版への切替導線を常時示す。学生向け正式公開へ移行するときは `js/timetable.js` の `DEMO_DEFAULT_ENABLED` を `false` にして初期modeだけを明示変更できる。
 
 ## Data
 
@@ -86,6 +87,7 @@ public course / timetable JSON
 | `data/timetable/manifest.json` | 年度、明示学期期間、所属組catalog、公開月一覧、更新時刻、content version | tracked/public |
 | `data/timetable/periods.json` | 1〜4限の時刻 | tracked/public |
 | `data/timetable/YYYY-MM.json` | 日付 key ごとの時間割 entry | tracked/public |
+| `data/demo/` | 開発・検証用Pagesの初期modeと `?demo=1` で使う架空course・時間割fixture。本番学校dataとして扱わない | tracked/public |
 | `data/timetable-*.schema.json` | manifest / periods / month の契約 | tracked/public |
 | `data/site-version.json` | CSS/JavaScript cache version | tracked/public |
 | `data/course-feedback-summary.json` | 任意生成の匿名化・集計済み feedback | allowlisted。現在は不存在 |

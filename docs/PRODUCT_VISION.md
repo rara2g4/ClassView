@@ -95,6 +95,8 @@ feedback の第一目的は、**学校職員が、学生から観測できる学
 
 個人時間割を正式 roadmap に含め、Phase 1 の domain/storage logicとPhase 2の公開時間割UI接続を実装している。未設定端末では学校全体表示、設定済み端末では個人表示を標準とし、両者を常時切り替えられる。
 
+現在の開発・検証用Pagesはデモを初期表示し、`?demo=1` でも明示起動できる。これは架空データと分離した端末内保存を使って同じproduction UI/domain flowを確認するための環境であり、学校の正式授業・学期情報を表すものではない。`?demo=0` で通常modeを確認でき、学生向け正式公開時は初期デモを明示的に解除する。
+
 ### Project rule: role and first-use behavior
 
 - public site の static 構成を維持する。

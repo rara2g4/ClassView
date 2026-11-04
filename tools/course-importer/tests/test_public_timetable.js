@@ -9,7 +9,7 @@ const source = fs.readFileSync(
   path.resolve(__dirname, "../../../js/timetable.js"),
   "utf8",
 );
-const context = { console };
+const context = { console, URLSearchParams };
 context.globalThis = context;
 vm.runInNewContext(source, context);
 
@@ -41,6 +41,29 @@ assert.equal(api.kindLabel("class"), "");
 assert.equal(api.courseDetailUrl("after-effects-a"), "course.html?id=after-effects-a");
 assert.equal(api.courseDetailUrl("course id"), "course.html?id=course%20id");
 assert.equal(api.courseDetailUrl(null), "");
+assert.equal(api.isDemoMode("?demo=1"), true);
+assert.equal(api.isDemoMode("?demo=0"), false);
+assert.equal(api.isDemoMode("?date=2026-11-02"), true);
+assert.equal(api.isDemoMode("?date=2026-11-02", false), false);
+
+const storageValues = new Map([
+  ["classview.personalTimetable.profile", "normal-profile"],
+]);
+const storage = {
+  getItem: (key) => storageValues.get(key) ?? null,
+  setItem: (key, value) => storageValues.set(key, value),
+  removeItem: (key) => storageValues.delete(key),
+};
+const demoStorage = api.createKeyMappedStorage(
+  storage,
+  "classview.personalTimetable.profile",
+  "classview.demo.personalTimetable.profile",
+);
+demoStorage.setItem("classview.personalTimetable.profile", "demo-profile");
+assert.equal(demoStorage.getItem("classview.personalTimetable.profile"), "demo-profile");
+assert.equal(storage.getItem("classview.personalTimetable.profile"), "normal-profile");
+demoStorage.removeItem("classview.personalTimetable.profile");
+assert.equal(storage.getItem("classview.demo.personalTimetable.profile"), null);
 
 const monday = { year: 2025, month: 4, day: 21 };
 const weekdays = new Map();
@@ -131,6 +154,9 @@ assert.equal(source.includes("localStorage"), false);
 assert.equal(source.includes('cache: "no-store"'), false);
 assert.match(source, /cache: "no-cache"/);
 assert.match(source, /\.\/data\/timetable\//);
+assert.match(source, /\.\/data\/demo\/timetable\//);
+assert.match(source, /classview\.demo\.personalTimetable\.profile/);
+assert.match(source, /const DEMO_DEFAULT_ENABLED = true/);
 assert.match(source, /course\.html\?id=/);
 assert.match(source, /periods\.json\?v=/);
 assert.match(source, /\$\{key\}\.json\?v=/);

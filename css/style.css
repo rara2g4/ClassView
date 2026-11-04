@@ -14,6 +14,28 @@
 }
 
 /* Personal timetable */
+.demo-mode-banner {
+  border-bottom: 1px solid #c5ad6f;
+  background: #fff8e6;
+  color: #4f421f;
+}
+
+.demo-mode-banner__inner {
+  display: flex;
+  width: min(100% - 40px, var(--content-width));
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 auto;
+  font-size: .86rem;
+}
+
+.demo-mode-banner p { margin: 0; }
+.demo-mode-banner a { color: inherit; font-weight: 650; }
+.demo-mode-entry { margin: .65rem 0 0; text-align: right; font-size: .82rem; }
+.demo-mode-entry a { color: var(--color-accent); }
+
 .personal-timetable-controls {
   display: flex;
   align-items: center;
@@ -146,6 +168,8 @@
 .personal-conflict-dialog__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 22px; }
 
 @media (max-width: 760px) {
+  .demo-mode-banner__inner { width: min(100% - 24px, var(--content-width)); align-items: flex-start; flex-direction: column; gap: 4px; padding: 9px 0; }
+  .demo-mode-entry { padding: 0 12px; text-align: left; }
   .personal-timetable-controls { align-items: stretch; flex-direction: column; border-inline: 0; }
   .personal-timetable-controls__actions { align-items: stretch; flex-direction: column; }
   .personal-mode-switch { display: grid; grid-template-columns: 1fr 1fr; }

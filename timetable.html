@@ -29,6 +29,13 @@
       </div>
     </header>
 
+    <aside id="demo-mode-banner" class="demo-mode-banner" aria-label="デモモード" hidden>
+      <div class="demo-mode-banner__inner">
+        <p><strong>デモモード</strong> — 架空の授業・時間割データを使用しています。</p>
+        <a href="?demo=0">通常版へ切り替える</a>
+      </div>
+    </aside>
+
     <main id="main-content" class="page-shell timetable-page">
       <header class="timetable-header">
         <p class="page-eyebrow">School timetable</p>
@@ -52,6 +59,8 @@
           <button id="personal-settings-button" class="personal-settings-button" type="button">自分の時間割を設定</button>
         </div>
       </section>
+
+      <p class="demo-mode-entry"><a id="demo-mode-link" href="?demo=1">架空データで個人時間割を試す</a></p>
 
       <div id="personal-timetable-status" class="personal-timetable-status" role="status" aria-live="polite"></div>
 

@@ -44,6 +44,7 @@ Project rule が未実装でも Current implementation より下位という意�
 - test は temporary repository/data を使用し、実運用 JSON を変更しない。
 - course Schema の field を変える場合は template、README、importer/editor、public renderer、publisher 表示、data contract test を同時に監査する。
 - timetable entry に course 情報を追加複製する前に、既存 `courseId` link と public course data で足りないか確認する。
+- `data/demo/` は公開レビュー専用の架空fixtureとしてSchema検証し、IDを `demo-` prefixへ限定する。実在の学校data・学生情報・private feedbackをコピーせず、通常版の `data/courses.json` / `data/timetable/` と保存keyを混在させない。
 
 ### Local-only state
 

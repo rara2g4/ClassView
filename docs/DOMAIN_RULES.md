@@ -200,6 +200,7 @@ parser は `試験:`、休暇系 keyword、行事系 keyword を限定的に認�
 - STEP 1〜3の変更は編集中のdraftとして保持し、STEP 4の明示確定時だけ既存profile keyへ保存する。キャンセルや保存失敗では保存済みprofileを変更しない。
 - current termが`unresolved`の場合は旧履修を適用せず、仮の学期境界を入力させない。設定完了を制限して理由を表示し、学校全体表示は利用可能にする。
 - stale manual course IDは保存profileから自動削除・置換せず、件数を表示する。`homeroomIds: null`等は本人向けentryやslotへ採用せず、未確認として示す。
+- 開発・検証用Pagesの初期modeと `?demo=1` は架空の `data/demo/` だけを読み、同じ4段階UI・履修・競合・入れ替え・保存logicを使う。`?demo=0` は通常modeとする。保存keyは `classview.demo.personalTimetable.profile` とし、通常版の `classview.personalTimetable.profile` から分離する。デモの明示 `termPeriods` はfixtureの検証用であり、学校の正式学期境界を示さない。学生向け正式公開時は初期modeを明示的に通常へ戻す。
 
 ### Profile and enrollment period — Project rule
 
