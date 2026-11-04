@@ -36,6 +36,54 @@ class CourseDataContractTests(unittest.TestCase):
             with self.subTest(course_id=course["id"]):
                 self.assertEqual(list(self.validator.iter_errors(course)), [])
 
+    def test_demo_personal_timetable_data_is_schema_compatible_and_separate(self):
+        demo_root = REPO_ROOT / "data" / "demo"
+        courses = json.loads((demo_root / "courses.json").read_text(encoding="utf-8"))
+        for course in courses["courses"]:
+            with self.subTest(course_id=course["id"]):
+                self.assertEqual(list(self.validator.iter_errors(course)), [])
+
+        manifest = json.loads(
+            (demo_root / "timetable" / "manifest.json").read_text(encoding="utf-8")
+        )
+        periods = json.loads(
+            (demo_root / "timetable" / "periods.json").read_text(encoding="utf-8")
+        )
+        month = json.loads(
+            (demo_root / "timetable" / "2026-11.json").read_text(encoding="utf-8")
+        )
+        for document, schema_name in (
+            (manifest, "timetable-manifest.schema.json"),
+            (periods, "timetable-periods.schema.json"),
+            (month, "timetable-month.schema.json"),
+        ):
+            schema = json.loads(
+                (REPO_ROOT / "data" / schema_name).read_text(encoding="utf-8")
+            )
+            self.assertEqual(list(Draft202012Validator(schema).iter_errors(document)), [])
+
+        production_manifest = json.loads(
+            (REPO_ROOT / "data" / "timetable" / "manifest.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(production_manifest["termPeriods"], [])
+        self.assertTrue(manifest["termPeriods"])
+        self.assertTrue(all(course["id"].startswith("demo-") for course in courses["courses"]))
+        course_ids = {course["id"] for course in courses["courses"]}
+        class_entries = [
+            entry
+            for day in month["days"].values()
+            for entry in day
+            if entry["kind"] == "class"
+        ]
+        self.assertLessEqual({entry["courseId"] for entry in class_entries}, course_ids)
+        self.assertEqual({room["grade"] for room in manifest["homerooms"]}, {1, 2, 3})
+        for grade in (1, 2, 3):
+            self.assertGreaterEqual(
+                sum(room["grade"] == grade for room in manifest["homerooms"]),
+                2,
+                f"grade {grade} must have at least two demo homerooms",
+            )
+
     def test_credits_and_total_hours_are_optional_nonnegative_numbers(self):
         self.assertFalse(self.schema["additionalProperties"])
         template = json.loads(

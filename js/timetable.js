@@ -10,6 +10,10 @@
     other: "その他",
   };
   const DAY_NAMES = ["日", "月", "火", "水", "木", "金", "土"];
+  // 開発・検証用Pagesではtrue。学生向け正式公開へ切り替える際はfalseにする。
+  const DEMO_DEFAULT_ENABLED = true;
+  const DEMO_PROFILE_STORAGE_KEY = "classview.demo.personalTimetable.profile";
+  const DEMO_DEFAULT_DATE = "2026-11-02";
 
   const pad = (value) => String(value).padStart(2, "0");
 
@@ -135,14 +139,37 @@
       ? `course.html?id=${encodeURIComponent(courseId)}`
       : "";
 
+  const isDemoMode = (search = "", defaultEnabled = DEMO_DEFAULT_ENABLED) => {
+    const params = new URLSearchParams(typeof search === "string" ? search : "");
+    if (params.get("demo") === "1") return true;
+    if (params.get("demo") === "0") return false;
+    return defaultEnabled === true;
+  };
+
+  const createKeyMappedStorage = (storage, sourceKey, targetKey) => {
+    if (!storage || typeof storage.getItem !== "function" || typeof storage.setItem !== "function") {
+      return storage;
+    }
+    const mappedKey = (key) => key === sourceKey ? targetKey : key;
+    return {
+      getItem: (key) => storage.getItem(mappedKey(key)),
+      setItem: (key, value) => storage.setItem(mappedKey(key), value),
+      removeItem: (key) => typeof storage.removeItem === "function"
+        ? storage.removeItem(mappedKey(key))
+        : undefined,
+    };
+  };
+
   const api = {
     addDays,
     compactEntryData,
     courseDetailUrl,
+    createKeyMappedStorage,
     expandedDateKeysForWeek,
     formatDateKey,
     formatGrades,
     kindLabel,
+    isDemoMode,
     monthKey,
     parseCalendarDate,
     startOfWeek,
@@ -153,10 +180,11 @@
 
   if (typeof document === "undefined") return;
 
-  const DATA_ROOT = new URL("./data/timetable/", document.baseURI);
+  const demoMode = isDemoMode(window.location.search);
+  const DATA_ROOT = new URL(demoMode ? "./data/demo/timetable/" : "./data/timetable/", document.baseURI);
   const manifestUrl = new URL("manifest.json", DATA_ROOT);
   const periodsUrl = new URL("periods.json", DATA_ROOT);
-  const coursesUrl = new URL("./data/courses.json", document.baseURI);
+  const coursesUrl = new URL(demoMode ? "./data/demo/courses.json" : "./data/courses.json", document.baseURI);
   const siteVersionUrl = new URL("./data/site-version.json", document.baseURI);
   const personal = global.ClassViewPersonalTimetable;
   const personalUi = global.ClassViewPersonalTimetableUi;
@@ -175,6 +203,8 @@
   const personalProfileSummary = document.querySelector("#personal-profile-summary");
   const personalStatus = document.querySelector("#personal-timetable-status");
   const personalWizardApi = global.ClassViewPersonalTimetableWizard;
+  const demoBanner = document.querySelector("#demo-mode-banner");
+  const demoModeLink = document.querySelector("#demo-mode-link");
 
   const state = {
     mode: "day",
@@ -196,6 +226,7 @@
     activeCandidateSlot: "",
     interactionMessage: "",
     personalWizard: null,
+    demoMode,
   };
 
   const resetMobileWeekExpansion = () => {
@@ -289,7 +320,7 @@
     if (labels.childElementCount) item.append(labels);
 
     const title = element(compact ? "p" : "h4", "timetable-entry__title");
-    const detailUrl = courseDetailUrl(entry.courseId);
+    const detailUrl = state.demoMode ? "" : courseDetailUrl(entry.courseId);
     if (detailUrl) {
       const link = element("a", "timetable-entry__link", entry.subjectName || "授業");
       link.href = detailUrl;
@@ -320,7 +351,7 @@
   const createMobileWeekEntry = (entry) => {
     const data = compactEntryData(entry);
     const item = element("article", "timetable-mobile-entry");
-    const detailUrl = courseDetailUrl(data.courseId);
+    const detailUrl = state.demoMode ? "" : courseDetailUrl(data.courseId);
     const compact = element(
       detailUrl ? "a" : "div",
       `timetable-mobile-entry__compact${detailUrl ? " timetable-mobile-entry__compact--link" : ""}`,
@@ -676,7 +707,8 @@
   const initialDate = () => {
     const params = new URLSearchParams(window.location.search);
     const parsed = parseCalendarDate(params.get("date"));
-    return parsed || fromDate(new Date());
+    if (parsed) return parsed;
+    return demoMode ? parseCalendarDate(DEMO_DEFAULT_DATE) : fromDate(new Date());
   };
 
   const initialMode = () => {
@@ -743,6 +775,9 @@
   });
 
   const initialize = async () => {
+    if (demoBanner) demoBanner.hidden = !demoMode;
+    if (demoModeLink) demoModeLink.closest(".demo-mode-entry").hidden = demoMode;
+    document.body.classList.toggle("is-demo-mode", demoMode);
     state.selectedDate = initialDate();
     state.mode = initialMode();
     updateNavigationLabels();
@@ -768,9 +803,11 @@
         personal.flattenTimetableDays(monthly?.days),
       );
       const storageResult = personal.resolveBrowserStorage(global);
-      state.profileStorage = storageResult.storage;
+      state.profileStorage = demoMode
+        ? createKeyMappedStorage(storageResult.storage, personal.STORAGE_KEY, DEMO_PROFILE_STORAGE_KEY)
+        : storageResult.storage;
       state.profileLoad = storageResult.status === "ready"
-        ? personal.loadProfile(storageResult.storage, { homerooms: manifest.homerooms })
+        ? personal.loadProfile(state.profileStorage, { homerooms: manifest.homerooms })
         : { status: "unavailable", profile: null, error: storageResult.error };
       if (state.profileLoad.status === "migrated") {
         const migrationSave = personal.saveProfile(state.profileStorage, state.profileLoad.profile);

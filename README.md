@@ -285,6 +285,10 @@ course.html?id=web-programming
 
 ルートの `index.html` は時間割の日表示から始まります。授業一覧は `courses.html` にあり、どちらもヘッダーの「時間割」「授業を探す」から相互に移動できます。`timetable.html` と `timetable.html?date=YYYY-MM-DD` も共有済みURLとの互換性のためそのまま利用できます。週間表示では `view=week` をURLへ保持するため、授業詳細からブラウザで戻った場合も元の週間表示へ戻ります。
 
+### 個人時間割のデモ
+
+現在の開発・検証用GitHub Pagesは、クエリなしまたは `?demo=1` で `data/demo/` の架空データを使います。4段階の個人時間割設定、必修反映、競合、授業入れ替え、保存・復元を確認でき、`?demo=0` で通常データへ切り替えられます。画面上部にデモ表示と通常版への導線を出します。デモ設定は `classview.demo.personalTimetable.profile` に保存され、通常版の個人設定とは共有しません。デモの学期日付・授業・講師・所属組はすべて動作確認用で、学校の正式情報ではありません。学生向け正式公開へ移行する際は `js/timetable.js` の `DEMO_DEFAULT_ENABLED` を `false` にします。
+
 ## GitHub Pagesでの公開方法
 
 このサイトはビルド処理を必要としないため、`main` ブランチのルートをそのまま公開元にできます。対象リポジトリは次のURLです。
