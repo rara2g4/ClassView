@@ -287,7 +287,9 @@ course.html?id=web-programming
 
 ### 個人時間割のデモ
 
-現在の開発・検証用GitHub Pagesは、クエリなしまたは `?demo=1` で `data/demo/` の架空データを使います。4段階の個人時間割設定、必修反映、競合、授業入れ替え、保存・復元を確認でき、`?demo=0` で通常データへ切り替えられます。画面上部にデモ表示と通常版への導線を出します。デモ設定は `classview.demo.personalTimetable.profile` に保存され、通常版の個人設定とは共有しません。デモの学期日付・授業・講師・所属組はすべて動作確認用で、学校の正式情報ではありません。学生向け正式公開へ移行する際は `js/timetable.js` の `DEMO_DEFAULT_ENABLED` を `false` にします。
+現在の開発・検証用GitHub Pagesは、クエリなしまたは `?demo=1` で `data/demo/` の架空データを使います。4段階の個人時間割設定、必修反映、競合、授業入れ替え、保存・復元を確認でき、`?demo=0` で通常データへ切り替えられます。画面上部にデモ表示と通常版への導線を出します。デモ設定は `classview.demo.personalTimetable.profile` に保存され、通常版の個人設定とは共有しません。デモには116科目を用意し、1〜3年・各2所属組で多数の選択候補、複数時限、必修との競合を確認できます。デモの学期日付・授業・講師・所属組はすべて動作確認用で、学校の正式情報ではありません。学生向け正式公開へ移行する際は `js/timetable.js` の `DEMO_DEFAULT_ENABLED` を `false` にします。
+
+デモ科目・時間割を定義済みのカタログから再生成する場合は、リポジトリルートで `node tools/course-importer/tools/generate_demo_personal_timetable_data.js` を実行します。通常モードの `data/courses.json` と `data/timetable/` は変更しません。
 
 ## GitHub Pagesでの公開方法
 

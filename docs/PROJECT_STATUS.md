@@ -95,7 +95,7 @@
 - public timetable は 2025-04 の 5 日分だけ。annual parser は実装済みだが、現 Excel 全年範囲には blocking が残る。
 - keyword classification の human-confirmation 方針は Project rule として決定済みだが、現行 parser は「説明会」「休暇」等の一部 keyword から `event` / `holiday` 等を直接確定し、専用確認 gate なしで保存可能な場合がある。
 - 個人時間割のdomain/storage Phase 1、前提public contract、B案4段階UIのproduction data loading接続を実装済み。現在の正式term境界日は未設定のため、学校全体表示を維持しつつ個人設定の完了を制限する。
-- 開発・検証用Pagesはデモを初期modeとし、`?demo=1` でも明示起動できる。`data/demo/` の架空fixtureと専用localStorage keyを使い、正式term情報を待たずに同じproduction UI/domain flowをレビューできる。`?demo=0` の通常版dataとprofileは変更しない。学生向け正式公開へ移行する際は初期デモflagを解除する必要がある。
+- 開発・検証用Pagesはデモを初期modeとし、`?demo=1` でも明示起動できる。`data/demo/` の架空fixtureと専用localStorage keyを使い、正式term情報を待たずに同じproduction UI/domain flowをレビューできる。現在は116科目を収録し、1〜3年・各2所属組で25科目以上の選択候補、複数時限、競合と入れ替えを検証できる。`?demo=0` の通常版dataとprofileは変更しない。学生向け正式公開へ移行する際は初期デモflagを解除する必要がある。
 
 ## Planned / known next steps
 
