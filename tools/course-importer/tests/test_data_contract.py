@@ -68,7 +68,10 @@ class CourseDataContractTests(unittest.TestCase):
         self.assertEqual(production_manifest["termPeriods"], [])
         self.assertTrue(manifest["termPeriods"])
         self.assertTrue(all(course["id"].startswith("demo-") for course in courses["courses"]))
+        self.assertGreaterEqual(len(courses["courses"]), 100)
+        self.assertLessEqual(len(courses["courses"]), 140)
         course_ids = {course["id"] for course in courses["courses"]}
+        self.assertEqual(len(course_ids), len(courses["courses"]))
         class_entries = [
             entry
             for day in month["days"].values()
@@ -76,6 +79,8 @@ class CourseDataContractTests(unittest.TestCase):
             if entry["kind"] == "class"
         ]
         self.assertLessEqual({entry["courseId"] for entry in class_entries}, course_ids)
+        self.assertEqual(len({entry["entryId"] for entry in class_entries}), len(class_entries))
+        self.assertEqual({entry["courseId"] for entry in class_entries}, course_ids)
         self.assertEqual({room["grade"] for room in manifest["homerooms"]}, {1, 2, 3})
         for grade in (1, 2, 3):
             self.assertGreaterEqual(

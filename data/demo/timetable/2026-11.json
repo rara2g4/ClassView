@@ -3,42 +3,3574 @@
   "yearMonth": "2026-11",
   "days": {
     "2026-11-02": [
-      { "entryId": "tt-0000000000000001", "period": 1, "courseId": "demo-digital-foundations", "subjectRaw": "デジタル基礎", "subjectName": "デジタル基礎", "subjectBaseName": "デジタル基礎", "courseVariantTags": [], "grades": [1], "gradeRaw": "1", "groupTags": [], "homeroomIds": [], "instructors": ["未来 みなと"], "rooms": ["デモ教室A"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-0000000000000002", "period": 2, "courseId": "demo-digital-foundations", "subjectRaw": "デジタル基礎", "subjectName": "デジタル基礎", "subjectBaseName": "デジタル基礎", "courseVariantTags": [], "grades": [1], "gradeRaw": "1", "groupTags": [], "homeroomIds": [], "instructors": ["未来 みなと"], "rooms": ["デモ教室A"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-0000000000000003", "period": 1, "courseId": "demo-required-overlap", "subjectRaw": "高度映像表現", "subjectName": "高度映像表現", "subjectBaseName": "高度映像表現", "courseVariantTags": [], "grades": [1], "gradeRaw": "1", "groupTags": [], "homeroomIds": [], "instructors": ["光井 まこと"], "rooms": ["映像室"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-0000000000000004", "period": 3, "courseId": "demo-visual-design", "subjectRaw": "ビジュアルデザイン", "subjectName": "ビジュアルデザイン", "subjectBaseName": "ビジュアルデザイン", "courseVariantTags": [], "grades": [1], "gradeRaw": "1", "groupTags": [], "homeroomIds": [], "instructors": ["虹野 いろは"], "rooms": ["デザイン室"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-0000000000000005", "period": 3, "courseId": "demo-cross-media", "subjectRaw": "クロスメディア制作", "subjectName": "クロスメディア制作", "subjectBaseName": "クロスメディア制作", "courseVariantTags": [], "grades": [1], "gradeRaw": "1", "groupTags": [], "homeroomIds": [], "instructors": ["湊川 すい"], "rooms": ["制作室"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-0000000000000006", "period": 3, "courseId": "demo-long-title", "subjectRaw": "地域課題を発見しデジタル表現で解決するプロジェクト演習", "subjectName": "地域課題を発見しデジタル表現で解決するプロジェクト演習", "subjectBaseName": "地域課題を発見しデジタル表現で解決するプロジェクト演習", "courseVariantTags": [], "grades": [1], "gradeRaw": "1", "groupTags": [], "homeroomIds": [], "instructors": ["朝凪 ひかり"], "rooms": ["プロジェクト室"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-0000000000000007", "period": 3, "courseId": "demo-elective-required", "subjectRaw": "選択必修クリエイティブ演習", "subjectName": "選択必修クリエイティブ演習", "subjectBaseName": "選択必修クリエイティブ演習", "courseVariantTags": [], "grades": [1], "gradeRaw": "1", "groupTags": [], "homeroomIds": [], "instructors": ["森丘 かなで"], "rooms": ["デモ教室B"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-0000000000000008", "period": 3, "courseId": "demo-type-unconfirmed", "subjectRaw": "メディア研究", "subjectName": "メディア研究", "subjectBaseName": "メディア研究", "courseVariantTags": [], "grades": [1], "gradeRaw": "1", "groupTags": [], "homeroomIds": [], "instructors": ["白波 しおり"], "rooms": ["講義室"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-0000000000000009", "period": 3, "courseId": "demo-web-creative", "subjectRaw": "Webクリエイティブ", "subjectName": "Webクリエイティブ", "subjectBaseName": "Webクリエイティブ", "courseVariantTags": [], "grades": [1], "gradeRaw": "1", "groupTags": [], "homeroomIds": [], "instructors": ["空野 あお"], "rooms": ["PC室"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-000000000000000a", "period": 3, "courseId": "demo-homeroom-one", "subjectRaw": "1組制作ゼミ", "subjectName": "1組制作ゼミ", "subjectBaseName": "1組制作ゼミ", "courseVariantTags": [], "grades": [1], "gradeRaw": "1", "groupTags": [], "homeroomIds": ["demo-grade1-1"], "instructors": ["一ノ瀬 まい"], "rooms": ["ゼミ室1"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-000000000000000b", "period": 3, "courseId": "demo-homeroom-two", "subjectRaw": "2組制作ゼミ", "subjectName": "2組制作ゼミ", "subjectBaseName": "2組制作ゼミ", "courseVariantTags": [], "grades": [1], "gradeRaw": "1", "groupTags": [], "homeroomIds": ["demo-grade1-2"], "instructors": ["二階堂 りつ"], "rooms": ["ゼミ室2"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-000000000000000c", "period": 4, "courseId": "demo-grade-two-required", "subjectRaw": "メディア応用", "subjectName": "メディア応用", "subjectBaseName": "メディア応用", "courseVariantTags": [], "grades": [2], "gradeRaw": "2", "groupTags": [], "homeroomIds": [], "instructors": ["月島 えん"], "rooms": ["メディア室"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-000000000000000d", "period": 4, "courseId": "demo-grade-two-elective", "subjectRaw": "モーションデザイン", "subjectName": "モーションデザイン", "subjectBaseName": "モーションデザイン", "courseVariantTags": [], "grades": [2], "gradeRaw": "2", "groupTags": [], "homeroomIds": [], "instructors": ["風見 くるみ"], "rooms": ["映像室"], "kind": "class", "status": "confirmed" }
+      {
+        "entryId": "tt-4712f5733ee38fde",
+        "period": 1,
+        "courseId": "demo-expanded-g1-01",
+        "subjectRaw": "Pythonプログラミング基礎",
+        "subjectName": "Pythonプログラミング基礎",
+        "subjectBaseName": "Pythonプログラミング基礎",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "朝倉 みらい"
+        ],
+        "rooms": [
+          "デモ実習室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-9853ba1408ee4028",
+        "period": 1,
+        "courseId": "demo-expanded-g1-02",
+        "subjectRaw": "Webデザイン基礎",
+        "subjectName": "Webデザイン基礎",
+        "subjectBaseName": "Webデザイン基礎",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "雨宮 かなで"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-0000000000000001",
+        "period": 1,
+        "courseId": "demo-digital-foundations",
+        "subjectRaw": "デジタル基礎",
+        "subjectName": "デジタル基礎",
+        "subjectBaseName": "デジタル基礎",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "未来 みなと"
+        ],
+        "rooms": [
+          "デモ教室A"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-0000000000000003",
+        "period": 1,
+        "courseId": "demo-required-overlap",
+        "subjectRaw": "高度映像表現",
+        "subjectName": "高度映像表現",
+        "subjectBaseName": "高度映像表現",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "光井 まこと"
+        ],
+        "rooms": [
+          "映像室"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-f56699674e448f62",
+        "period": 1,
+        "courseId": "demo-expanded-g2-01",
+        "subjectRaw": "Python Webアプリ開発",
+        "subjectName": "Python Webアプリ開発",
+        "subjectBaseName": "Python Webアプリ開発",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "大空 つばさ"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-40cadc81193cb129",
+        "period": 1,
+        "courseId": "demo-expanded-g2-02",
+        "subjectRaw": "TypeScript実践",
+        "subjectName": "TypeScript実践",
+        "subjectBaseName": "TypeScript実践",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "霧島 まどか"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-4d05e3cdf1143074",
+        "period": 1,
+        "courseId": "demo-expanded-g3-01",
+        "subjectRaw": "AIアプリケーション開発",
+        "subjectName": "AIアプリケーション開発",
+        "subjectBaseName": "AIアプリケーション開発",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "月見里 ひなた"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-b2c1d866cee1ca6e",
+        "period": 1,
+        "courseId": "demo-expanded-g3-02",
+        "subjectRaw": "深層学習実践",
+        "subjectName": "深層学習実践",
+        "subjectBaseName": "深層学習実践",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "七海 こよみ"
+        ],
+        "rooms": [
+          "デモ実習室5"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-e6433b975b484a0a",
+        "period": 2,
+        "courseId": "demo-expanded-g1-01",
+        "subjectRaw": "Pythonプログラミング基礎",
+        "subjectName": "Pythonプログラミング基礎",
+        "subjectBaseName": "Pythonプログラミング基礎",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "朝倉 みらい"
+        ],
+        "rooms": [
+          "デモ実習室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-e03098a2ef02b140",
+        "period": 2,
+        "courseId": "demo-expanded-g1-02",
+        "subjectRaw": "Webデザイン基礎",
+        "subjectName": "Webデザイン基礎",
+        "subjectBaseName": "Webデザイン基礎",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "雨宮 かなで"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-0000000000000002",
+        "period": 2,
+        "courseId": "demo-digital-foundations",
+        "subjectRaw": "デジタル基礎",
+        "subjectName": "デジタル基礎",
+        "subjectBaseName": "デジタル基礎",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "未来 みなと"
+        ],
+        "rooms": [
+          "デモ教室A"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-bccc15e22acfee68",
+        "period": 2,
+        "courseId": "demo-expanded-g2-01",
+        "subjectRaw": "Python Webアプリ開発",
+        "subjectName": "Python Webアプリ開発",
+        "subjectBaseName": "Python Webアプリ開発",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "大空 つばさ"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-94ae035c07ce97e7",
+        "period": 2,
+        "courseId": "demo-expanded-g2-02",
+        "subjectRaw": "TypeScript実践",
+        "subjectName": "TypeScript実践",
+        "subjectBaseName": "TypeScript実践",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "霧島 まどか"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-59267552cef56054",
+        "period": 2,
+        "courseId": "demo-expanded-g3-01",
+        "subjectRaw": "AIアプリケーション開発",
+        "subjectName": "AIアプリケーション開発",
+        "subjectBaseName": "AIアプリケーション開発",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "月見里 ひなた"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-db44b436cda01fba",
+        "period": 2,
+        "courseId": "demo-expanded-g3-02",
+        "subjectRaw": "深層学習実践",
+        "subjectName": "深層学習実践",
+        "subjectBaseName": "深層学習実践",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "七海 こよみ"
+        ],
+        "rooms": [
+          "デモ実習室5"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-000000000000000a",
+        "period": 3,
+        "courseId": "demo-homeroom-one",
+        "subjectRaw": "1組制作ゼミ",
+        "subjectName": "1組制作ゼミ",
+        "subjectBaseName": "1組制作ゼミ",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [
+          "demo-grade1-1"
+        ],
+        "instructors": [
+          "一ノ瀬 まい"
+        ],
+        "rooms": [
+          "ゼミ室1"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-000000000000000b",
+        "period": 3,
+        "courseId": "demo-homeroom-two",
+        "subjectRaw": "2組制作ゼミ",
+        "subjectName": "2組制作ゼミ",
+        "subjectBaseName": "2組制作ゼミ",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [
+          "demo-grade1-2"
+        ],
+        "instructors": [
+          "二階堂 りつ"
+        ],
+        "rooms": [
+          "ゼミ室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-19fddc1163f02295",
+        "period": 3,
+        "courseId": "demo-expanded-g1-03",
+        "subjectRaw": "HTML・CSS実践",
+        "subjectName": "HTML・CSS実践",
+        "subjectBaseName": "HTML・CSS実践",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "石動 しおん"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-0000000000000009",
+        "period": 3,
+        "courseId": "demo-web-creative",
+        "subjectRaw": "Webクリエイティブ",
+        "subjectName": "Webクリエイティブ",
+        "subjectBaseName": "Webクリエイティブ",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "空野 あお"
+        ],
+        "rooms": [
+          "PC室"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-0000000000000005",
+        "period": 3,
+        "courseId": "demo-cross-media",
+        "subjectRaw": "クロスメディア制作",
+        "subjectName": "クロスメディア制作",
+        "subjectBaseName": "クロスメディア制作",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "湊川 すい"
+        ],
+        "rooms": [
+          "制作室"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-5ec1b3babe9572aa",
+        "period": 3,
+        "courseId": "demo-expanded-g1-26",
+        "subjectRaw": "ゲームレベルデザイン",
+        "subjectName": "ゲームレベルデザイン",
+        "subjectBaseName": "ゲームレベルデザイン",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "雨宮 かなで"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-0000000000000004",
+        "period": 3,
+        "courseId": "demo-visual-design",
+        "subjectRaw": "ビジュアルデザイン",
+        "subjectName": "ビジュアルデザイン",
+        "subjectBaseName": "ビジュアルデザイン",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "虹野 いろは"
+        ],
+        "rooms": [
+          "デザイン室"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-0000000000000008",
+        "period": 3,
+        "courseId": "demo-type-unconfirmed",
+        "subjectRaw": "メディア研究",
+        "subjectName": "メディア研究",
+        "subjectBaseName": "メディア研究",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "白波 しおり"
+        ],
+        "rooms": [
+          "講義室"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-0000000000000007",
+        "period": 3,
+        "courseId": "demo-elective-required",
+        "subjectRaw": "選択必修クリエイティブ演習",
+        "subjectName": "選択必修クリエイティブ演習",
+        "subjectBaseName": "選択必修クリエイティブ演習",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "森丘 かなで"
+        ],
+        "rooms": [
+          "デモ教室B"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-0000000000000006",
+        "period": 3,
+        "courseId": "demo-long-title",
+        "subjectRaw": "地域課題を発見しデジタル表現で解決するプロジェクト演習",
+        "subjectName": "地域課題を発見しデジタル表現で解決するプロジェクト演習",
+        "subjectBaseName": "地域課題を発見しデジタル表現で解決するプロジェクト演習",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "朝凪 ひかり"
+        ],
+        "rooms": [
+          "プロジェクト室"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-d1c0500438acb818",
+        "period": 3,
+        "courseId": "demo-expanded-g2-03",
+        "subjectRaw": "Reactフロントエンド開発",
+        "subjectName": "Reactフロントエンド開発",
+        "subjectBaseName": "Reactフロントエンド開発",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "小鳥遊 りん"
+        ],
+        "rooms": [
+          "デモ実習室5"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-27e61513b6e88df9",
+        "period": 3,
+        "courseId": "demo-expanded-g2-26",
+        "subjectRaw": "データ可視化",
+        "subjectName": "データ可視化",
+        "subjectBaseName": "データ可視化",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "霧島 まどか"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-a55f04d9dae9f75a",
+        "period": 3,
+        "courseId": "demo-expanded-g3-26",
+        "subjectRaw": "アジャイル開発実践",
+        "subjectName": "アジャイル開発実践",
+        "subjectBaseName": "アジャイル開発実践",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "七海 こよみ"
+        ],
+        "rooms": [
+          "デモ実習室5"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-27b7cb43869d8a4c",
+        "period": 3,
+        "courseId": "demo-expanded-g3-03",
+        "subjectRaw": "画像認識システム",
+        "subjectName": "画像認識システム",
+        "subjectBaseName": "画像認識システム",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "花咲 いぶき"
+        ],
+        "rooms": [
+          "デモ実習室6"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-c6f7cd92ffa6cb4d",
+        "period": 4,
+        "courseId": "demo-expanded-g1-04",
+        "subjectRaw": "JavaScript入門",
+        "subjectName": "JavaScript入門",
+        "subjectBaseName": "JavaScript入門",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "海野 あかり"
+        ],
+        "rooms": [
+          "デモ実習室5"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-5201a83bfc3b6b7b",
+        "period": 4,
+        "courseId": "demo-expanded-g1-27",
+        "subjectRaw": "Webアクセシビリティ入門",
+        "subjectName": "Webアクセシビリティ入門",
+        "subjectBaseName": "Webアクセシビリティ入門",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "石動 しおん"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-ff26d1654e135c12",
+        "period": 4,
+        "courseId": "demo-expanded-g2-04",
+        "subjectRaw": "サーバーサイドJavaScript",
+        "subjectName": "サーバーサイドJavaScript",
+        "subjectBaseName": "サーバーサイドJavaScript",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "高峰 そうた"
+        ],
+        "rooms": [
+          "デモ実習室6"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-000000000000000c",
+        "period": 4,
+        "courseId": "demo-grade-two-required",
+        "subjectRaw": "メディア応用",
+        "subjectName": "メディア応用",
+        "subjectBaseName": "メディア応用",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "月島 えん"
+        ],
+        "rooms": [
+          "メディア室"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-000000000000000d",
+        "period": 4,
+        "courseId": "demo-grade-two-elective",
+        "subjectRaw": "モーションデザイン",
+        "subjectName": "モーションデザイン",
+        "subjectBaseName": "モーションデザイン",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "風見 くるみ"
+        ],
+        "rooms": [
+          "映像室"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-6c9f4ab6aef38ba8",
+        "period": 4,
+        "courseId": "demo-expanded-g2-27",
+        "subjectRaw": "機械学習入門",
+        "subjectName": "機械学習入門",
+        "subjectBaseName": "機械学習入門",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "小鳥遊 りん"
+        ],
+        "rooms": [
+          "デモ実習室5"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-4f30b2837410ca0e",
+        "period": 4,
+        "courseId": "demo-expanded-g3-27",
+        "subjectRaw": "プロダクトマネジメント",
+        "subjectName": "プロダクトマネジメント",
+        "subjectBaseName": "プロダクトマネジメント",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "花咲 いぶき"
+        ],
+        "rooms": [
+          "デモ実習室6"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-de3c972d21275607",
+        "period": 4,
+        "courseId": "demo-expanded-g3-04",
+        "subjectRaw": "生成AIプロダクト設計",
+        "subjectName": "生成AIプロダクト設計",
+        "subjectBaseName": "生成AIプロダクト設計",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "水城 なお"
+        ],
+        "rooms": [
+          "デモ実習室1"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      }
     ],
     "2026-11-03": [
-      { "entryId": "tt-000000000000000e", "period": 1, "courseId": "demo-communication-basics", "subjectRaw": "コミュニケーション基礎", "subjectName": "コミュニケーション基礎", "subjectBaseName": "コミュニケーション基礎", "courseVariantTags": [], "grades": [1], "gradeRaw": "1", "groupTags": [], "homeroomIds": [], "instructors": ["青葉 つむぎ"], "rooms": ["講義室"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-000000000000000f", "period": 2, "courseId": "demo-game-prototyping", "subjectRaw": "ゲームプロトタイピング", "subjectName": "ゲームプロトタイピング", "subjectBaseName": "ゲームプロトタイピング", "courseVariantTags": [], "grades": [1], "gradeRaw": "1", "groupTags": [], "homeroomIds": [], "instructors": ["星見 レン"], "rooms": ["ゲームラボ"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-0000000000000010", "period": 2, "courseId": "demo-cross-media", "subjectRaw": "クロスメディア制作", "subjectName": "クロスメディア制作", "subjectBaseName": "クロスメディア制作", "courseVariantTags": [], "grades": [1], "gradeRaw": "1", "groupTags": [], "homeroomIds": [], "instructors": ["湊川 すい"], "rooms": ["制作室"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-0000000000000011", "period": 3, "courseId": "demo-grade-two-required", "subjectRaw": "メディア応用", "subjectName": "メディア応用", "subjectBaseName": "メディア応用", "courseVariantTags": [], "grades": [2], "gradeRaw": "2", "groupTags": [], "homeroomIds": [], "instructors": ["月島 えん"], "rooms": ["メディア室"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-0000000000000012", "period": 4, "courseId": "demo-grade-two-one", "subjectRaw": "2年1組専門演習", "subjectName": "2年1組専門演習", "subjectBaseName": "2年1組専門演習", "courseVariantTags": [], "grades": [2], "gradeRaw": "2", "groupTags": [], "homeroomIds": ["demo-grade2-1"], "instructors": ["緑川 なお"], "rooms": ["専門室1"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-0000000000000013", "period": 4, "courseId": "demo-grade-two-two", "subjectRaw": "2年2組専門演習", "subjectName": "2年2組専門演習", "subjectBaseName": "2年2組専門演習", "courseVariantTags": [], "grades": [2], "gradeRaw": "2", "groupTags": [], "homeroomIds": ["demo-grade2-2"], "instructors": ["橙山 みかん"], "rooms": ["専門室2"], "kind": "class", "status": "confirmed" }
+      {
+        "entryId": "tt-000000000000000e",
+        "period": 1,
+        "courseId": "demo-communication-basics",
+        "subjectRaw": "コミュニケーション基礎",
+        "subjectName": "コミュニケーション基礎",
+        "subjectBaseName": "コミュニケーション基礎",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "青葉 つむぎ"
+        ],
+        "rooms": [
+          "講義室"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-5c82aa084ced6d6b",
+        "period": 1,
+        "courseId": "demo-expanded-g1-05",
+        "subjectRaw": "データベース基礎",
+        "subjectName": "データベース基礎",
+        "subjectBaseName": "データベース基礎",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "大空 つばさ"
+        ],
+        "rooms": [
+          "デモ実習室6"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-5b6bc404ae9b00e9",
+        "period": 1,
+        "courseId": "demo-expanded-g1-19",
+        "subjectRaw": "モバイルアプリ企画",
+        "subjectName": "モバイルアプリ企画",
+        "subjectBaseName": "モバイルアプリ企画",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "小鳥遊 りん"
+        ],
+        "rooms": [
+          "デモ実習室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-bc78a5c80c298fef",
+        "period": 1,
+        "courseId": "demo-expanded-g2-05",
+        "subjectRaw": "API設計演習",
+        "subjectName": "API設計演習",
+        "subjectBaseName": "API設計演習",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "月見里 ひなた"
+        ],
+        "rooms": [
+          "デモ実習室1"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-7910c61f0f969945",
+        "period": 1,
+        "courseId": "demo-expanded-g2-19",
+        "subjectRaw": "サービスデザイン",
+        "subjectName": "サービスデザイン",
+        "subjectBaseName": "サービスデザイン",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "花咲 いぶき"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-f8d9721642a35b3e",
+        "period": 1,
+        "courseId": "demo-expanded-g3-19",
+        "subjectRaw": "インタラクションデザイン",
+        "subjectName": "インタラクションデザイン",
+        "subjectBaseName": "インタラクションデザイン",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "石動 しおん"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-ac1353ba592ad02a",
+        "period": 1,
+        "courseId": "demo-expanded-g3-05",
+        "subjectRaw": "クラウドネイティブ開発",
+        "subjectName": "クラウドネイティブ開発",
+        "subjectBaseName": "クラウドネイティブ開発",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "朝倉 みらい"
+        ],
+        "rooms": [
+          "デモ実習室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-0000000000000010",
+        "period": 2,
+        "courseId": "demo-cross-media",
+        "subjectRaw": "クロスメディア制作",
+        "subjectName": "クロスメディア制作",
+        "subjectBaseName": "クロスメディア制作",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "湊川 すい"
+        ],
+        "rooms": [
+          "制作室"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-000000000000000f",
+        "period": 2,
+        "courseId": "demo-game-prototyping",
+        "subjectRaw": "ゲームプロトタイピング",
+        "subjectName": "ゲームプロトタイピング",
+        "subjectBaseName": "ゲームプロトタイピング",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "星見 レン"
+        ],
+        "rooms": [
+          "ゲームラボ"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-2bb2b639ba348c7c",
+        "period": 2,
+        "courseId": "demo-expanded-g1-06",
+        "subjectRaw": "ネットワーク入門",
+        "subjectName": "ネットワーク入門",
+        "subjectBaseName": "ネットワーク入門",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "霧島 まどか"
+        ],
+        "rooms": [
+          "デモ実習室1"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-fc52e5f1189a1a6a",
+        "period": 2,
+        "courseId": "demo-expanded-g1-28",
+        "subjectRaw": "プレゼンテーション演習",
+        "subjectName": "プレゼンテーション演習",
+        "subjectBaseName": "プレゼンテーション演習",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "海野 あかり"
+        ],
+        "rooms": [
+          "デモ実習室5"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-f01611c3a39e0b26",
+        "period": 2,
+        "courseId": "demo-expanded-g2-06",
+        "subjectRaw": "SQLデータ分析",
+        "subjectName": "SQLデータ分析",
+        "subjectBaseName": "SQLデータ分析",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "七海 こよみ"
+        ],
+        "rooms": [
+          "デモ実習室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-1f6d983fa671c3b8",
+        "period": 2,
+        "courseId": "demo-expanded-g2-28",
+        "subjectRaw": "自然言語処理入門",
+        "subjectName": "自然言語処理入門",
+        "subjectBaseName": "自然言語処理入門",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "高峰 そうた"
+        ],
+        "rooms": [
+          "デモ実習室6"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-470a10123962d4a4",
+        "period": 2,
+        "courseId": "demo-expanded-g3-06",
+        "subjectRaw": "マイクロサービス設計",
+        "subjectName": "マイクロサービス設計",
+        "subjectBaseName": "マイクロサービス設計",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "雨宮 かなで"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-c2babb4b0488ce7d",
+        "period": 2,
+        "courseId": "demo-expanded-g3-28",
+        "subjectRaw": "起業・サービス企画",
+        "subjectName": "起業・サービス企画",
+        "subjectBaseName": "起業・サービス企画",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "水城 なお"
+        ],
+        "rooms": [
+          "デモ実習室1"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-69bcc5af1bdec2a3",
+        "period": 3,
+        "courseId": "demo-expanded-g1-08",
+        "subjectRaw": "2Dゲーム制作",
+        "subjectName": "2Dゲーム制作",
+        "subjectBaseName": "2Dゲーム制作",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "高峰 そうた"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-7a8406974153ebaf",
+        "period": 3,
+        "courseId": "demo-expanded-g1-07",
+        "subjectRaw": "情報セキュリティ基礎",
+        "subjectName": "情報セキュリティ基礎",
+        "subjectBaseName": "情報セキュリティ基礎",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "小鳥遊 りん"
+        ],
+        "rooms": [
+          "デモ実習室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-7e9d93311f604c0b",
+        "period": 3,
+        "courseId": "demo-expanded-g2-07",
+        "subjectRaw": "クラウドインフラ構築",
+        "subjectName": "クラウドインフラ構築",
+        "subjectBaseName": "クラウドインフラ構築",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "花咲 いぶき"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-259aa46d13aa27d6",
+        "period": 3,
+        "courseId": "demo-expanded-g2-08",
+        "subjectRaw": "ネットワーク構築演習",
+        "subjectName": "ネットワーク構築演習",
+        "subjectBaseName": "ネットワーク構築演習",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "水城 なお"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-0000000000000011",
+        "period": 3,
+        "courseId": "demo-grade-two-required",
+        "subjectRaw": "メディア応用",
+        "subjectName": "メディア応用",
+        "subjectBaseName": "メディア応用",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "月島 えん"
+        ],
+        "rooms": [
+          "メディア室"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-811b82122e5ac141",
+        "period": 3,
+        "courseId": "demo-expanded-g3-07",
+        "subjectRaw": "セキュアコーディング",
+        "subjectName": "セキュアコーディング",
+        "subjectBaseName": "セキュアコーディング",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "石動 しおん"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-f12f98e12ac31a3b",
+        "period": 3,
+        "courseId": "demo-expanded-g3-08",
+        "subjectRaw": "デジタルフォレンジック",
+        "subjectName": "デジタルフォレンジック",
+        "subjectBaseName": "デジタルフォレンジック",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "海野 あかり"
+        ],
+        "rooms": [
+          "デモ実習室5"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-7c8c9a1b29419e67",
+        "period": 4,
+        "courseId": "demo-expanded-g1-08",
+        "subjectRaw": "2Dゲーム制作",
+        "subjectName": "2Dゲーム制作",
+        "subjectBaseName": "2Dゲーム制作",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "高峰 そうた"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-49eb17fa94321ba0",
+        "period": 4,
+        "courseId": "demo-expanded-g1-29",
+        "subjectRaw": "デジタル作品制作",
+        "subjectName": "デジタル作品制作",
+        "subjectBaseName": "デジタル作品制作",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "大空 つばさ"
+        ],
+        "rooms": [
+          "デモ実習室6"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-0000000000000012",
+        "period": 4,
+        "courseId": "demo-grade-two-one",
+        "subjectRaw": "2年1組専門演習",
+        "subjectName": "2年1組専門演習",
+        "subjectBaseName": "2年1組専門演習",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [
+          "demo-grade2-1"
+        ],
+        "instructors": [
+          "緑川 なお"
+        ],
+        "rooms": [
+          "専門室1"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-0000000000000013",
+        "period": 4,
+        "courseId": "demo-grade-two-two",
+        "subjectRaw": "2年2組専門演習",
+        "subjectName": "2年2組専門演習",
+        "subjectBaseName": "2年2組専門演習",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [
+          "demo-grade2-2"
+        ],
+        "instructors": [
+          "橙山 みかん"
+        ],
+        "rooms": [
+          "専門室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-7255f360fa630b24",
+        "period": 4,
+        "courseId": "demo-expanded-g2-08",
+        "subjectRaw": "ネットワーク構築演習",
+        "subjectName": "ネットワーク構築演習",
+        "subjectBaseName": "ネットワーク構築演習",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "水城 なお"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-370442feba0d9952",
+        "period": 4,
+        "courseId": "demo-expanded-g2-29",
+        "subjectRaw": "モバイルアプリ開発",
+        "subjectName": "モバイルアプリ開発",
+        "subjectBaseName": "モバイルアプリ開発",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "月見里 ひなた"
+        ],
+        "rooms": [
+          "デモ実習室1"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-953b6c1853cad986",
+        "period": 4,
+        "courseId": "demo-expanded-g3-08",
+        "subjectRaw": "デジタルフォレンジック",
+        "subjectName": "デジタルフォレンジック",
+        "subjectBaseName": "デジタルフォレンジック",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "海野 あかり"
+        ],
+        "rooms": [
+          "デモ実習室5"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-db1a3f718c870272",
+        "period": 4,
+        "courseId": "demo-expanded-g3-29",
+        "subjectRaw": "産学連携プロジェクト",
+        "subjectName": "産学連携プロジェクト",
+        "subjectBaseName": "産学連携プロジェクト",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "朝倉 みらい"
+        ],
+        "rooms": [
+          "デモ実習室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      }
     ],
     "2026-11-04": [
-      { "entryId": "tt-0000000000000014", "period": 1, "courseId": "demo-grade-three-required", "subjectRaw": "卒業制作", "subjectName": "卒業制作", "subjectBaseName": "卒業制作", "courseVariantTags": [], "grades": [3], "gradeRaw": "3", "groupTags": [], "homeroomIds": [], "instructors": ["桜庭 かなめ"], "rooms": ["制作室"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-0000000000000015", "period": 2, "courseId": "demo-grade-three-required", "subjectRaw": "卒業制作", "subjectName": "卒業制作", "subjectBaseName": "卒業制作", "courseVariantTags": [], "grades": [3], "gradeRaw": "3", "groupTags": [], "homeroomIds": [], "instructors": ["桜庭 かなめ"], "rooms": ["制作室"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-0000000000000016", "period": 3, "courseId": "demo-grade-three-elective", "subjectRaw": "AI表現研究", "subjectName": "AI表現研究", "subjectBaseName": "AI表現研究", "courseVariantTags": [], "grades": [3], "gradeRaw": "3", "groupTags": [], "homeroomIds": [], "instructors": ["天城 こはく"], "rooms": ["AIラボ"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-0000000000000017", "period": 3, "courseId": "demo-grade-three-one", "subjectRaw": "3年1組研究ゼミ", "subjectName": "3年1組研究ゼミ", "subjectBaseName": "3年1組研究ゼミ", "courseVariantTags": [], "grades": [3], "gradeRaw": "3", "groupTags": [], "homeroomIds": ["demo-grade3-1"], "instructors": ["水瀬 みお"], "rooms": ["研究室1"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-0000000000000018", "period": 3, "courseId": "demo-grade-three-two", "subjectRaw": "3年2組研究ゼミ", "subjectName": "3年2組研究ゼミ", "subjectBaseName": "3年2組研究ゼミ", "courseVariantTags": [], "grades": [3], "gradeRaw": "3", "groupTags": [], "homeroomIds": ["demo-grade3-2"], "instructors": ["紫藤 ゆかり"], "rooms": ["研究室2"], "kind": "class", "status": "confirmed" }
+      {
+        "entryId": "tt-5d1dc1faa9689b95",
+        "period": 1,
+        "courseId": "demo-expanded-g1-09",
+        "subjectRaw": "3DCGモデリング基礎",
+        "subjectName": "3DCGモデリング基礎",
+        "subjectBaseName": "3DCGモデリング基礎",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "月見里 ひなた"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-c995d6c28f44e02d",
+        "period": 1,
+        "courseId": "demo-expanded-g1-11",
+        "subjectRaw": "デジタルイラスト",
+        "subjectName": "デジタルイラスト",
+        "subjectBaseName": "デジタルイラスト",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "花咲 いぶき"
+        ],
+        "rooms": [
+          "デモ実習室6"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-88ecdef14d3958a9",
+        "period": 1,
+        "courseId": "demo-expanded-g2-11",
+        "subjectRaw": "Unityゲームプログラミング",
+        "subjectName": "Unityゲームプログラミング",
+        "subjectBaseName": "Unityゲームプログラミング",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "石動 しおん"
+        ],
+        "rooms": [
+          "デモ実習室1"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-472a09df05c8082e",
+        "period": 1,
+        "courseId": "demo-expanded-g2-09",
+        "subjectRaw": "Webセキュリティ実践",
+        "subjectName": "Webセキュリティ実践",
+        "subjectBaseName": "Webセキュリティ実践",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "朝倉 みらい"
+        ],
+        "rooms": [
+          "デモ実習室5"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-40e33be9784aa318",
+        "period": 1,
+        "courseId": "demo-expanded-g3-09",
+        "subjectRaw": "SOC運用演習",
+        "subjectName": "SOC運用演習",
+        "subjectBaseName": "SOC運用演習",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "大空 つばさ"
+        ],
+        "rooms": [
+          "デモ実習室6"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-0000000000000014",
+        "period": 1,
+        "courseId": "demo-grade-three-required",
+        "subjectRaw": "卒業制作",
+        "subjectName": "卒業制作",
+        "subjectBaseName": "卒業制作",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "桜庭 かなめ"
+        ],
+        "rooms": [
+          "制作室"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-d3a0f24d3a010d86",
+        "period": 1,
+        "courseId": "demo-expanded-g3-11",
+        "subjectRaw": "大規模データ処理",
+        "subjectName": "大規模データ処理",
+        "subjectBaseName": "大規模データ処理",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "小鳥遊 りん"
+        ],
+        "rooms": [
+          "デモ実習室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-d4d0e8b53fb7aef5",
+        "period": 2,
+        "courseId": "demo-expanded-g1-30",
+        "subjectRaw": "クリエイティブコーディング",
+        "subjectName": "クリエイティブコーディング",
+        "subjectBaseName": "クリエイティブコーディング",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "霧島 まどか"
+        ],
+        "rooms": [
+          "デモ実習室1"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-f0fa61decabd807c",
+        "period": 2,
+        "courseId": "demo-expanded-g1-10",
+        "subjectRaw": "映像編集入門",
+        "subjectName": "映像編集入門",
+        "subjectBaseName": "映像編集入門",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "七海 こよみ"
+        ],
+        "rooms": [
+          "デモ実習室5"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-4534ce26646454e1",
+        "period": 2,
+        "courseId": "demo-expanded-g2-30",
+        "subjectRaw": "チーム制作演習",
+        "subjectName": "チーム制作演習",
+        "subjectBaseName": "チーム制作演習",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "七海 こよみ"
+        ],
+        "rooms": [
+          "デモ実習室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-a4de5c97383db50a",
+        "period": 2,
+        "courseId": "demo-expanded-g2-10",
+        "subjectRaw": "脆弱性診断入門",
+        "subjectName": "脆弱性診断入門",
+        "subjectBaseName": "脆弱性診断入門",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "雨宮 かなで"
+        ],
+        "rooms": [
+          "デモ実習室6"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-5bc0f30b834fa3f3",
+        "period": 2,
+        "courseId": "demo-expanded-g3-30",
+        "subjectRaw": "テクニカルライティング",
+        "subjectName": "テクニカルライティング",
+        "subjectBaseName": "テクニカルライティング",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "雨宮 かなで"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-49e0dcafb56f26b7",
+        "period": 2,
+        "courseId": "demo-expanded-g3-10",
+        "subjectRaw": "フルスタックWeb開発",
+        "subjectName": "フルスタックWeb開発",
+        "subjectBaseName": "フルスタックWeb開発",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "霧島 まどか"
+        ],
+        "rooms": [
+          "デモ実習室1"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-0000000000000015",
+        "period": 2,
+        "courseId": "demo-grade-three-required",
+        "subjectRaw": "卒業制作",
+        "subjectName": "卒業制作",
+        "subjectBaseName": "卒業制作",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "桜庭 かなめ"
+        ],
+        "rooms": [
+          "制作室"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-db86382a76fbbe04",
+        "period": 3,
+        "courseId": "demo-expanded-g1-09",
+        "subjectRaw": "3DCGモデリング基礎",
+        "subjectName": "3DCGモデリング基礎",
+        "subjectBaseName": "3DCGモデリング基礎",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "月見里 ひなた"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-17b83b6000d95095",
+        "period": 3,
+        "courseId": "demo-expanded-g1-11",
+        "subjectRaw": "デジタルイラスト",
+        "subjectName": "デジタルイラスト",
+        "subjectBaseName": "デジタルイラスト",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "花咲 いぶき"
+        ],
+        "rooms": [
+          "デモ実習室6"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-1d10890ec370351e",
+        "period": 3,
+        "courseId": "demo-expanded-g2-11",
+        "subjectRaw": "Unityゲームプログラミング",
+        "subjectName": "Unityゲームプログラミング",
+        "subjectBaseName": "Unityゲームプログラミング",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "石動 しおん"
+        ],
+        "rooms": [
+          "デモ実習室1"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-560488b2e0b6b389",
+        "period": 3,
+        "courseId": "demo-expanded-g2-09",
+        "subjectRaw": "Webセキュリティ実践",
+        "subjectName": "Webセキュリティ実践",
+        "subjectBaseName": "Webセキュリティ実践",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "朝倉 みらい"
+        ],
+        "rooms": [
+          "デモ実習室5"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-0000000000000017",
+        "period": 3,
+        "courseId": "demo-grade-three-one",
+        "subjectRaw": "3年1組研究ゼミ",
+        "subjectName": "3年1組研究ゼミ",
+        "subjectBaseName": "3年1組研究ゼミ",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [
+          "demo-grade3-1"
+        ],
+        "instructors": [
+          "水瀬 みお"
+        ],
+        "rooms": [
+          "研究室1"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-0000000000000018",
+        "period": 3,
+        "courseId": "demo-grade-three-two",
+        "subjectRaw": "3年2組研究ゼミ",
+        "subjectName": "3年2組研究ゼミ",
+        "subjectBaseName": "3年2組研究ゼミ",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [
+          "demo-grade3-2"
+        ],
+        "instructors": [
+          "紫藤 ゆかり"
+        ],
+        "rooms": [
+          "研究室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-0000000000000016",
+        "period": 3,
+        "courseId": "demo-grade-three-elective",
+        "subjectRaw": "AI表現研究",
+        "subjectName": "AI表現研究",
+        "subjectBaseName": "AI表現研究",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "天城 こはく"
+        ],
+        "rooms": [
+          "AIラボ"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-9f3cdc82f794ed67",
+        "period": 3,
+        "courseId": "demo-expanded-g3-09",
+        "subjectRaw": "SOC運用演習",
+        "subjectName": "SOC運用演習",
+        "subjectBaseName": "SOC運用演習",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "大空 つばさ"
+        ],
+        "rooms": [
+          "デモ実習室6"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-d1350bd76d43fad0",
+        "period": 3,
+        "courseId": "demo-expanded-g3-11",
+        "subjectRaw": "大規模データ処理",
+        "subjectName": "大規模データ処理",
+        "subjectBaseName": "大規模データ処理",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "小鳥遊 りん"
+        ],
+        "rooms": [
+          "デモ実習室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-c1c4bbeb38492c79",
+        "period": 4,
+        "courseId": "demo-expanded-g1-12",
+        "subjectRaw": "UIデザイン入門",
+        "subjectName": "UIデザイン入門",
+        "subjectBaseName": "UIデザイン入門",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "水城 なお"
+        ],
+        "rooms": [
+          "デモ実習室1"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-915b6cf49767ed88",
+        "period": 4,
+        "courseId": "demo-expanded-g1-31",
+        "subjectRaw": "プロジェクト企画演習",
+        "subjectName": "プロジェクト企画演習",
+        "subjectBaseName": "プロジェクト企画演習",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "小鳥遊 りん"
+        ],
+        "rooms": [
+          "デモ実習室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-069e7e1ad71cdb8b",
+        "period": 4,
+        "courseId": "demo-expanded-g2-12",
+        "subjectRaw": "Unreal Engine演習",
+        "subjectName": "Unreal Engine演習",
+        "subjectBaseName": "Unreal Engine演習",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "海野 あかり"
+        ],
+        "rooms": [
+          "デモ実習室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-3753db7b00fed798",
+        "period": 4,
+        "courseId": "demo-expanded-g2-31",
+        "subjectRaw": "デジタルマーケティング",
+        "subjectName": "デジタルマーケティング",
+        "subjectBaseName": "デジタルマーケティング",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "花咲 いぶき"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-9122a1c681446748",
+        "period": 4,
+        "courseId": "demo-expanded-g3-12",
+        "subjectRaw": "データサイエンス実践",
+        "subjectName": "データサイエンス実践",
+        "subjectBaseName": "データサイエンス実践",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "高峰 そうた"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-388132623409f59e",
+        "period": 4,
+        "courseId": "demo-expanded-g3-31",
+        "subjectRaw": "就職作品ブラッシュアップ",
+        "subjectName": "就職作品ブラッシュアップ",
+        "subjectBaseName": "就職作品ブラッシュアップ",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "石動 しおん"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      }
     ],
     "2026-11-05": [
-      { "entryId": "tt-0000000000000019", "period": 1, "courseId": "demo-web-creative", "subjectRaw": "Webクリエイティブ", "subjectName": "Webクリエイティブ", "subjectBaseName": "Webクリエイティブ", "courseVariantTags": [], "grades": [1], "gradeRaw": "1", "groupTags": [], "homeroomIds": [], "instructors": ["空野 あお"], "rooms": ["PC室"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-000000000000001a", "period": 2, "courseId": "demo-homeroom-one", "subjectRaw": "1組制作ゼミ", "subjectName": "1組制作ゼミ", "subjectBaseName": "1組制作ゼミ", "courseVariantTags": [], "grades": [1], "gradeRaw": "1", "groupTags": [], "homeroomIds": ["demo-grade1-1"], "instructors": ["一ノ瀬 まい"], "rooms": ["ゼミ室1"], "kind": "class", "status": "confirmed" },
-      { "entryId": "tt-000000000000001b", "period": 2, "courseId": "demo-homeroom-two", "subjectRaw": "2組制作ゼミ", "subjectName": "2組制作ゼミ", "subjectBaseName": "2組制作ゼミ", "courseVariantTags": [], "grades": [1], "gradeRaw": "1", "groupTags": [], "homeroomIds": ["demo-grade1-2"], "instructors": ["二階堂 りつ"], "rooms": ["ゼミ室2"], "kind": "class", "status": "confirmed" }
+      {
+        "entryId": "tt-9ec328e53740ffcc",
+        "period": 1,
+        "courseId": "demo-expanded-g1-14",
+        "subjectRaw": "IoT工作入門",
+        "subjectName": "IoT工作入門",
+        "subjectBaseName": "IoT工作入門",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "雨宮 かなで"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-0000000000000019",
+        "period": 1,
+        "courseId": "demo-web-creative",
+        "subjectRaw": "Webクリエイティブ",
+        "subjectName": "Webクリエイティブ",
+        "subjectBaseName": "Webクリエイティブ",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "空野 あお"
+        ],
+        "rooms": [
+          "PC室"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-e707a819928f49b5",
+        "period": 1,
+        "courseId": "demo-expanded-g1-13",
+        "subjectRaw": "ロボット制御基礎",
+        "subjectName": "ロボット制御基礎",
+        "subjectBaseName": "ロボット制御基礎",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "朝倉 みらい"
+        ],
+        "rooms": [
+          "デモ実習室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-dc088fb35d6bf801",
+        "period": 1,
+        "courseId": "demo-expanded-g2-14",
+        "subjectRaw": "3DCGアニメーション",
+        "subjectName": "3DCGアニメーション",
+        "subjectBaseName": "3DCGアニメーション",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "霧島 まどか"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-75a4deadc94cde64",
+        "period": 1,
+        "courseId": "demo-expanded-g2-13",
+        "subjectRaw": "ゲームAI実装",
+        "subjectName": "ゲームAI実装",
+        "subjectBaseName": "ゲームAI実装",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "大空 つばさ"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-98183b3b4c96716e",
+        "period": 1,
+        "courseId": "demo-expanded-g3-14",
+        "subjectRaw": "オンラインゲーム開発",
+        "subjectName": "オンラインゲーム開発",
+        "subjectBaseName": "オンラインゲーム開発",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "七海 こよみ"
+        ],
+        "rooms": [
+          "デモ実習室5"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-972db81fa3740ef1",
+        "period": 1,
+        "courseId": "demo-expanded-g3-13",
+        "subjectRaw": "ゲームエンジン拡張",
+        "subjectName": "ゲームエンジン拡張",
+        "subjectBaseName": "ゲームエンジン拡張",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "月見里 ひなた"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-000000000000001a",
+        "period": 2,
+        "courseId": "demo-homeroom-one",
+        "subjectRaw": "1組制作ゼミ",
+        "subjectName": "1組制作ゼミ",
+        "subjectBaseName": "1組制作ゼミ",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [
+          "demo-grade1-1"
+        ],
+        "instructors": [
+          "一ノ瀬 まい"
+        ],
+        "rooms": [
+          "ゼミ室1"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-000000000000001b",
+        "period": 2,
+        "courseId": "demo-homeroom-two",
+        "subjectRaw": "2組制作ゼミ",
+        "subjectName": "2組制作ゼミ",
+        "subjectBaseName": "2組制作ゼミ",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [
+          "demo-grade1-2"
+        ],
+        "instructors": [
+          "二階堂 りつ"
+        ],
+        "rooms": [
+          "ゼミ室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-c39137bc8940534a",
+        "period": 2,
+        "courseId": "demo-expanded-g1-14",
+        "subjectRaw": "IoT工作入門",
+        "subjectName": "IoT工作入門",
+        "subjectBaseName": "IoT工作入門",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "雨宮 かなで"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-62c2e802ea3aa478",
+        "period": 2,
+        "courseId": "demo-expanded-g1-13",
+        "subjectRaw": "ロボット制御基礎",
+        "subjectName": "ロボット制御基礎",
+        "subjectBaseName": "ロボット制御基礎",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "朝倉 みらい"
+        ],
+        "rooms": [
+          "デモ実習室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-80d3ccdabfa7f94e",
+        "period": 2,
+        "courseId": "demo-expanded-g2-14",
+        "subjectRaw": "3DCGアニメーション",
+        "subjectName": "3DCGアニメーション",
+        "subjectBaseName": "3DCGアニメーション",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "霧島 まどか"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-775f62594cc6cd33",
+        "period": 2,
+        "courseId": "demo-expanded-g2-13",
+        "subjectRaw": "ゲームAI実装",
+        "subjectName": "ゲームAI実装",
+        "subjectBaseName": "ゲームAI実装",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "大空 つばさ"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-b97b535c3a658d81",
+        "period": 2,
+        "courseId": "demo-expanded-g3-14",
+        "subjectRaw": "オンラインゲーム開発",
+        "subjectName": "オンラインゲーム開発",
+        "subjectBaseName": "オンラインゲーム開発",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "七海 こよみ"
+        ],
+        "rooms": [
+          "デモ実習室5"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-e3c6442db28ed962",
+        "period": 2,
+        "courseId": "demo-expanded-g3-13",
+        "subjectRaw": "ゲームエンジン拡張",
+        "subjectName": "ゲームエンジン拡張",
+        "subjectBaseName": "ゲームエンジン拡張",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "月見里 ひなた"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-ef27d65bc7d34ed3",
+        "period": 3,
+        "courseId": "demo-expanded-g1-15",
+        "subjectRaw": "Linux操作演習",
+        "subjectName": "Linux操作演習",
+        "subjectBaseName": "Linux操作演習",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "石動 しおん"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-1198e7603ccb9a3a",
+        "period": 3,
+        "courseId": "demo-expanded-g1-25",
+        "subjectRaw": "クラウドサービス基礎",
+        "subjectName": "クラウドサービス基礎",
+        "subjectBaseName": "クラウドサービス基礎",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "朝倉 みらい"
+        ],
+        "rooms": [
+          "デモ実習室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-fa64f84f428c9f1b",
+        "period": 3,
+        "courseId": "demo-expanded-g1-23",
+        "subjectRaw": "コンピュータグラフィックス基礎",
+        "subjectName": "コンピュータグラフィックス基礎",
+        "subjectBaseName": "コンピュータグラフィックス基礎",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "花咲 いぶき"
+        ],
+        "rooms": [
+          "デモ実習室6"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-dbdf1771c132e4ac",
+        "period": 3,
+        "courseId": "demo-expanded-g1-20",
+        "subjectRaw": "サウンドデザイン基礎",
+        "subjectName": "サウンドデザイン基礎",
+        "subjectBaseName": "サウンドデザイン基礎",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "高峰 そうた"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-1679cf580ca7b30c",
+        "period": 3,
+        "courseId": "demo-expanded-g1-22",
+        "subjectRaw": "タイポグラフィ",
+        "subjectName": "タイポグラフィ",
+        "subjectBaseName": "タイポグラフィ",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "七海 こよみ"
+        ],
+        "rooms": [
+          "デモ実習室5"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-60989f12b3c55633",
+        "period": 3,
+        "courseId": "demo-expanded-g1-19",
+        "subjectRaw": "モバイルアプリ企画",
+        "subjectName": "モバイルアプリ企画",
+        "subjectBaseName": "モバイルアプリ企画",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "小鳥遊 りん"
+        ],
+        "rooms": [
+          "デモ実習室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-d5f91a105cd8c519",
+        "period": 3,
+        "courseId": "demo-expanded-g1-21",
+        "subjectRaw": "写真・構図演習",
+        "subjectName": "写真・構図演習",
+        "subjectBaseName": "写真・構図演習",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "月見里 ひなた"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-ae827f7998a81fb0",
+        "period": 3,
+        "courseId": "demo-expanded-g1-24",
+        "subjectRaw": "生成AI活用入門",
+        "subjectName": "生成AI活用入門",
+        "subjectBaseName": "生成AI活用入門",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "水城 なお"
+        ],
+        "rooms": [
+          "デモ実習室1"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-42a3e52723f08312",
+        "period": 3,
+        "courseId": "demo-expanded-g2-25",
+        "subjectRaw": "DevOps基礎",
+        "subjectName": "DevOps基礎",
+        "subjectBaseName": "DevOps基礎",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "大空 つばさ"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-c5939f0786e414ef",
+        "period": 3,
+        "courseId": "demo-expanded-g2-22",
+        "subjectRaw": "IoTシステム開発",
+        "subjectName": "IoTシステム開発",
+        "subjectBaseName": "IoTシステム開発",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "雨宮 かなで"
+        ],
+        "rooms": [
+          "デモ実習室6"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-ed56ea8bebc9356e",
+        "period": 3,
+        "courseId": "demo-expanded-g2-24",
+        "subjectRaw": "Linuxサーバー管理",
+        "subjectName": "Linuxサーバー管理",
+        "subjectBaseName": "Linuxサーバー管理",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "海野 あかり"
+        ],
+        "rooms": [
+          "デモ実習室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-0038c3f511d317c8",
+        "period": 3,
+        "courseId": "demo-expanded-g2-15",
+        "subjectRaw": "キャラクターモデリング",
+        "subjectName": "キャラクターモデリング",
+        "subjectBaseName": "キャラクターモデリング",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "小鳥遊 りん"
+        ],
+        "rooms": [
+          "デモ実習室5"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-b5e4627d7591415d",
+        "period": 3,
+        "courseId": "demo-expanded-g2-19",
+        "subjectRaw": "サービスデザイン",
+        "subjectName": "サービスデザイン",
+        "subjectBaseName": "サービスデザイン",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "花咲 いぶき"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-ccbd6efaf79ebf6b",
+        "period": 3,
+        "courseId": "demo-expanded-g2-20",
+        "subjectRaw": "ロボットセンサー制御",
+        "subjectName": "ロボットセンサー制御",
+        "subjectBaseName": "ロボットセンサー制御",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "水城 なお"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-d367d13906480c66",
+        "period": 3,
+        "courseId": "demo-expanded-g2-23",
+        "subjectRaw": "基本情報技術者対策",
+        "subjectName": "基本情報技術者対策",
+        "subjectBaseName": "基本情報技術者対策",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "石動 しおん"
+        ],
+        "rooms": [
+          "デモ実習室1"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-7ae8daaf4f41adbb",
+        "period": 3,
+        "courseId": "demo-expanded-g2-21",
+        "subjectRaw": "組込みプログラミング",
+        "subjectName": "組込みプログラミング",
+        "subjectBaseName": "組込みプログラミング",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "朝倉 みらい"
+        ],
+        "rooms": [
+          "デモ実習室5"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-b4456f3c890a86a5",
+        "period": 3,
+        "courseId": "demo-expanded-g3-25",
+        "subjectRaw": "ITプロジェクトマネジメント",
+        "subjectName": "ITプロジェクトマネジメント",
+        "subjectBaseName": "ITプロジェクトマネジメント",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "月見里 ひなた"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-ed33c05105f1d0ca",
+        "period": 3,
+        "courseId": "demo-expanded-g3-15",
+        "subjectRaw": "XRコンテンツ制作",
+        "subjectName": "XRコンテンツ制作",
+        "subjectBaseName": "XRコンテンツ制作",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "花咲 いぶき"
+        ],
+        "rooms": [
+          "デモ実習室6"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-105988efad7f6e79",
+        "period": 3,
+        "courseId": "demo-expanded-g3-19",
+        "subjectRaw": "インタラクションデザイン",
+        "subjectName": "インタラクションデザイン",
+        "subjectBaseName": "インタラクションデザイン",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "石動 しおん"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-7374df4444a8ef2f",
+        "period": 3,
+        "courseId": "demo-expanded-g3-23",
+        "subjectRaw": "クラウド資格対策演習",
+        "subjectName": "クラウド資格対策演習",
+        "subjectBaseName": "クラウド資格対策演習",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "小鳥遊 りん"
+        ],
+        "rooms": [
+          "デモ実習室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-6bdf269ed704aa46",
+        "period": 3,
+        "courseId": "demo-expanded-g3-22",
+        "subjectRaw": "コンピュータビジョンロボティクス",
+        "subjectName": "コンピュータビジョンロボティクス",
+        "subjectBaseName": "コンピュータビジョンロボティクス",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "霧島 まどか"
+        ],
+        "rooms": [
+          "デモ実習室1"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-0fde5e1996102e69",
+        "period": 3,
+        "courseId": "demo-expanded-g3-20",
+        "subjectRaw": "デザインシステム構築",
+        "subjectName": "デザインシステム構築",
+        "subjectBaseName": "デザインシステム構築",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "海野 あかり"
+        ],
+        "rooms": [
+          "デモ実習室5"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-26052c30c8868e13",
+        "period": 3,
+        "courseId": "demo-expanded-g3-21",
+        "subjectRaw": "自律移動ロボット",
+        "subjectName": "自律移動ロボット",
+        "subjectBaseName": "自律移動ロボット",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "大空 つばさ"
+        ],
+        "rooms": [
+          "デモ実習室6"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-e09450a3ac5babcc",
+        "period": 3,
+        "courseId": "demo-expanded-g3-24",
+        "subjectRaw": "情報処理安全確保支援士対策",
+        "subjectName": "情報処理安全確保支援士対策",
+        "subjectBaseName": "情報処理安全確保支援士対策",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "高峰 そうた"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-1ee118bf082ad4a8",
+        "period": 4,
+        "courseId": "demo-expanded-g1-18",
+        "subjectRaw": "Git・チーム開発入門",
+        "subjectName": "Git・チーム開発入門",
+        "subjectBaseName": "Git・チーム開発入門",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "霧島 まどか"
+        ],
+        "rooms": [
+          "デモ実習室1"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-0a7ae3fcf3c08257",
+        "period": 4,
+        "courseId": "demo-expanded-g1-16",
+        "subjectRaw": "ITパスポート対策",
+        "subjectName": "ITパスポート対策",
+        "subjectBaseName": "ITパスポート対策",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "海野 あかり"
+        ],
+        "rooms": [
+          "デモ実習室5"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-df45ecfa1342dfc2",
+        "period": 4,
+        "courseId": "demo-expanded-g2-18",
+        "subjectRaw": "UIプロトタイピング",
+        "subjectName": "UIプロトタイピング",
+        "subjectBaseName": "UIプロトタイピング",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "七海 こよみ"
+        ],
+        "rooms": [
+          "デモ実習室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-d1e1bae02783e720",
+        "period": 4,
+        "courseId": "demo-expanded-g2-16",
+        "subjectRaw": "VFX・モーショングラフィックス",
+        "subjectName": "VFX・モーショングラフィックス",
+        "subjectBaseName": "VFX・モーショングラフィックス",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "高峰 そうた"
+        ],
+        "rooms": [
+          "デモ実習室6"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-3c174be248063531",
+        "period": 4,
+        "courseId": "demo-expanded-g3-18",
+        "subjectRaw": "バーチャルプロダクション",
+        "subjectName": "バーチャルプロダクション",
+        "subjectBaseName": "バーチャルプロダクション",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "雨宮 かなで"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-ac08d2a899152140",
+        "period": 4,
+        "courseId": "demo-expanded-g3-16",
+        "subjectRaw": "リアルタイム3DCG",
+        "subjectName": "リアルタイム3DCG",
+        "subjectBaseName": "リアルタイム3DCG",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "水城 なお"
+        ],
+        "rooms": [
+          "デモ実習室1"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      }
     ],
     "2026-11-06": [
-      { "entryId": "tt-000000000000001c", "period": 1, "courseId": null, "subjectRaw": "デモ校全体ガイダンス", "subjectName": "デモ校全体ガイダンス", "subjectBaseName": "デモ校全体ガイダンス", "courseVariantTags": [], "grades": [1, 2, 3], "gradeRaw": "全学年", "groupTags": [], "homeroomIds": [], "instructors": ["デモ校教務"], "rooms": ["ホール"], "kind": "event", "status": "confirmed" }
+      {
+        "entryId": "tt-d9751e77c9921ce5",
+        "period": 1,
+        "courseId": "demo-expanded-g1-32",
+        "subjectRaw": "UXリサーチ基礎",
+        "subjectName": "UXリサーチ基礎",
+        "subjectBaseName": "UXリサーチ基礎",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "高峰 そうた"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-6bd388a7aac1aba8",
+        "period": 1,
+        "courseId": "demo-expanded-g1-17",
+        "subjectRaw": "アルゴリズム演習",
+        "subjectName": "アルゴリズム演習",
+        "subjectBaseName": "アルゴリズム演習",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "大空 つばさ"
+        ],
+        "rooms": [
+          "デモ実習室6"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-000000000000001c",
+        "period": 1,
+        "courseId": null,
+        "subjectRaw": "デモ校全体ガイダンス",
+        "subjectName": "デモ校全体ガイダンス",
+        "subjectBaseName": "デモ校全体ガイダンス",
+        "courseVariantTags": [],
+        "grades": [
+          1,
+          2,
+          3
+        ],
+        "gradeRaw": "全学年",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "デモ校教務"
+        ],
+        "rooms": [
+          "ホール"
+        ],
+        "kind": "event",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-760d5531fe6ed1e5",
+        "period": 1,
+        "courseId": "demo-expanded-g2-32",
+        "subjectRaw": "ポートフォリオ制作",
+        "subjectName": "ポートフォリオ制作",
+        "subjectBaseName": "ポートフォリオ制作",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "水城 なお"
+        ],
+        "rooms": [
+          "デモ実習室4"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-3ac7a5793e16428b",
+        "period": 1,
+        "courseId": "demo-expanded-g2-17",
+        "subjectRaw": "映像撮影技法",
+        "subjectName": "映像撮影技法",
+        "subjectBaseName": "映像撮影技法",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "月見里 ひなた"
+        ],
+        "rooms": [
+          "デモ実習室1"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-06593ed26bd86fb7",
+        "period": 1,
+        "courseId": "demo-expanded-g3-17",
+        "subjectRaw": "高度映像合成",
+        "subjectName": "高度映像合成",
+        "subjectBaseName": "高度映像合成",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "朝倉 みらい"
+        ],
+        "rooms": [
+          "デモ実習室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-c980c92fc592f678",
+        "period": 1,
+        "courseId": "demo-expanded-g3-32",
+        "subjectRaw": "専門研究発表",
+        "subjectName": "専門研究発表",
+        "subjectBaseName": "専門研究発表",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "海野 あかり"
+        ],
+        "rooms": [
+          "デモ実習室5"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-e4b2e44bf98ee989",
+        "period": 2,
+        "courseId": "demo-expanded-g1-18",
+        "subjectRaw": "Git・チーム開発入門",
+        "subjectName": "Git・チーム開発入門",
+        "subjectBaseName": "Git・チーム開発入門",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "霧島 まどか"
+        ],
+        "rooms": [
+          "デモ実習室1"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-46c62a5b7b861362",
+        "period": 2,
+        "courseId": "demo-expanded-g1-16",
+        "subjectRaw": "ITパスポート対策",
+        "subjectName": "ITパスポート対策",
+        "subjectBaseName": "ITパスポート対策",
+        "courseVariantTags": [],
+        "grades": [
+          1
+        ],
+        "gradeRaw": "1",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "海野 あかり"
+        ],
+        "rooms": [
+          "デモ実習室5"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-f5f83c11a611491d",
+        "period": 2,
+        "courseId": "demo-expanded-g2-18",
+        "subjectRaw": "UIプロトタイピング",
+        "subjectName": "UIプロトタイピング",
+        "subjectBaseName": "UIプロトタイピング",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "七海 こよみ"
+        ],
+        "rooms": [
+          "デモ実習室2"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-10c09c4273fd679f",
+        "period": 2,
+        "courseId": "demo-expanded-g2-16",
+        "subjectRaw": "VFX・モーショングラフィックス",
+        "subjectName": "VFX・モーショングラフィックス",
+        "subjectBaseName": "VFX・モーショングラフィックス",
+        "courseVariantTags": [],
+        "grades": [
+          2
+        ],
+        "gradeRaw": "2",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "高峰 そうた"
+        ],
+        "rooms": [
+          "デモ実習室6"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-c153f86254fb45bc",
+        "period": 2,
+        "courseId": "demo-expanded-g3-18",
+        "subjectRaw": "バーチャルプロダクション",
+        "subjectName": "バーチャルプロダクション",
+        "subjectBaseName": "バーチャルプロダクション",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "雨宮 かなで"
+        ],
+        "rooms": [
+          "デモ実習室3"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      },
+      {
+        "entryId": "tt-99ffc1e5d33ecffb",
+        "period": 2,
+        "courseId": "demo-expanded-g3-16",
+        "subjectRaw": "リアルタイム3DCG",
+        "subjectName": "リアルタイム3DCG",
+        "subjectBaseName": "リアルタイム3DCG",
+        "courseVariantTags": [],
+        "grades": [
+          3
+        ],
+        "gradeRaw": "3",
+        "groupTags": [],
+        "homeroomIds": [],
+        "instructors": [
+          "水城 なお"
+        ],
+        "rooms": [
+          "デモ実習室1"
+        ],
+        "kind": "class",
+        "status": "confirmed"
+      }
     ]
   }
 }

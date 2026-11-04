@@ -2,18 +2,52 @@
   "schemaVersion": 1,
   "academicYear": "2026",
   "termPeriods": [
-    { "term": "first", "startDate": "2026-04-01", "endDate": "2026-09-30" },
-    { "term": "second", "startDate": "2026-10-01", "endDate": "2027-03-31" }
+    {
+      "term": "first",
+      "startDate": "2026-04-01",
+      "endDate": "2026-09-30"
+    },
+    {
+      "term": "second",
+      "startDate": "2026-10-01",
+      "endDate": "2027-03-31"
+    }
   ],
   "homerooms": [
-    { "id": "demo-grade1-1", "grade": 1, "label": "1組" },
-    { "id": "demo-grade1-2", "grade": 1, "label": "2組" },
-    { "id": "demo-grade2-1", "grade": 2, "label": "1組" },
-    { "id": "demo-grade2-2", "grade": 2, "label": "2組" },
-    { "id": "demo-grade3-1", "grade": 3, "label": "1組" },
-    { "id": "demo-grade3-2", "grade": 3, "label": "2組" }
+    {
+      "id": "demo-grade1-1",
+      "grade": 1,
+      "label": "1組"
+    },
+    {
+      "id": "demo-grade1-2",
+      "grade": 1,
+      "label": "2組"
+    },
+    {
+      "id": "demo-grade2-1",
+      "grade": 2,
+      "label": "1組"
+    },
+    {
+      "id": "demo-grade2-2",
+      "grade": 2,
+      "label": "2組"
+    },
+    {
+      "id": "demo-grade3-1",
+      "grade": 3,
+      "label": "1組"
+    },
+    {
+      "id": "demo-grade3-2",
+      "grade": 3,
+      "label": "2組"
+    }
   ],
-  "updatedAt": "2026-11-03T08:00:00Z",
-  "version": "d3a0b0000001",
-  "months": ["2026-11"]
+  "updatedAt": "2026-11-04T09:00:00Z",
+  "version": "d3a0b0000002",
+  "months": [
+    "2026-11"
+  ]
 }

@@ -12,9 +12,38 @@ const courses = JSON.parse(fs.readFileSync(path.join(demoRoot, "courses.json"), 
 const month = JSON.parse(fs.readFileSync(path.join(demoRoot, "timetable/2026-11.json"), "utf8"));
 const entries = personal.flattenTimetableDays(month.days);
 const dataVersion = { site: "demo-site", timetable: manifest.version };
+const originalCourseIds = [
+  "demo-digital-foundations",
+  "demo-communication-basics",
+  "demo-visual-design",
+  "demo-game-prototyping",
+  "demo-cross-media",
+  "demo-long-title",
+  "demo-web-creative",
+  "demo-elective-required",
+  "demo-type-unconfirmed",
+  "demo-required-overlap",
+  "demo-homeroom-one",
+  "demo-homeroom-two",
+  "demo-grade-two-required",
+  "demo-grade-two-elective",
+  "demo-grade-two-one",
+  "demo-grade-two-two",
+  "demo-grade-three-required",
+  "demo-grade-three-elective",
+  "demo-grade-three-one",
+  "demo-grade-three-two",
+];
+const profileMetrics = [];
 
 assert.equal(personal.resolveTermForDate("2026-04-01", manifest), "first");
 assert.equal(personal.resolveTermForDate("2026-11-02", manifest), "second");
+assert.ok(courses.length >= 100 && courses.length <= 140, "demo catalog contains 100–140 courses");
+assert.deepEqual(
+  originalCourseIds.filter((courseId) => !courses.some((course) => course.id === courseId)),
+  [],
+  "all original demo course IDs remain available",
+);
 
 for (const homeroom of manifest.homerooms) {
   const created = personal.createProfile({
@@ -36,14 +65,63 @@ for (const homeroom of manifest.homerooms) {
   });
   assert.equal(model.active, true, `${homeroom.id} demo model is active`);
   assert.ok(model.enrollment.requiredCourseIds.length > 0, `${homeroom.id} has a required course`);
-  const coursesWithSlots = new Set(model.conflicts.slotsByCourse.map((item) => item.courseId));
-  assert.equal(
-    model.conflicts.candidateStates.some(
-      (candidate) => !candidate.selected && candidate.selectable && coursesWithSlots.has(candidate.courseId),
-    ),
-    true,
-    `${homeroom.id} has a selectable course with an applicable timetable slot`,
+  const slotsByCourse = new Map(
+    model.conflicts.slotsByCourse.map((item) => [item.courseId, item.slots]),
   );
+  const requiredCourseIds = new Set(model.enrollment.requiredCourseIds);
+  const applicableElectives = model.conflicts.candidateStates.filter(
+    (candidate) => slotsByCourse.has(candidate.courseId) && !requiredCourseIds.has(candidate.courseId),
+  );
+  const selectableElectives = applicableElectives.filter(
+    (candidate) => !candidate.selected && candidate.selectable,
+  );
+  assert.ok(
+    selectableElectives.length >= 25,
+    `${homeroom.id} has at least 25 actually selectable electives`,
+  );
+  assert.ok(
+    selectableElectives.length / applicableElectives.length >= 0.7,
+    `${homeroom.id} keeps at least 70% of elective candidates selectable after required courses`,
+  );
+
+  const slotCounts = new Map();
+  for (const candidate of selectableElectives) {
+    for (const slot of slotsByCourse.get(candidate.courseId)) {
+      const slotKey = `${slot.weekday}-${slot.period}`;
+      slotCounts.set(slotKey, (slotCounts.get(slotKey) || 0) + 1);
+    }
+  }
+  const counts = [...slotCounts.values()];
+  assert.ok(
+    slotCounts.size >= 15,
+    `${homeroom.id} has selectable electives in at least 15 of 20 slots (actual: ${slotCounts.size}; ${JSON.stringify(Object.fromEntries(slotCounts))})`,
+  );
+  assert.ok(
+    counts.filter((count) => count >= 2 && count <= 4).length >= 10,
+    `${homeroom.id} has many slots with two to four selectable candidates`,
+  );
+  assert.ok(
+    counts.some((count) => count >= 6 && count <= 10),
+    `${homeroom.id} has a busy slot with six to ten selectable candidates`,
+  );
+  const multiSlotElectives = selectableElectives.filter(
+    (candidate) => slotsByCourse.get(candidate.courseId).length > 1,
+  );
+  assert.ok(
+    multiSlotElectives.length >= 4,
+    `${homeroom.id} has several selectable multi-slot courses`,
+  );
+  profileMetrics.push({
+    profile: homeroom.id,
+    grade: homeroom.grade,
+    applicableElectives: applicableElectives.length,
+    selectableElectives: selectableElectives.length,
+    blockedByRequired: applicableElectives.length - selectableElectives.length,
+    coveredSlots: slotCounts.size,
+    twoToFourCandidateSlots: counts.filter((count) => count >= 2 && count <= 4).length,
+    busiestSlotCandidates: Math.max(...counts),
+    selectableMultiSlotCourses: multiSlotElectives.length,
+  });
 }
 
 const gradeOneProfile = personal.createProfile({
@@ -104,4 +182,5 @@ assert.equal(courses.some((course) => course.courseType === "選択必修"), tru
 assert.equal(courses.some((course) => course.courseType === null), true);
 assert.equal(entries.some((entry) => entry.kind === "event" && entry.courseId === null), true);
 
+console.log(JSON.stringify({ totalCourses: courses.length, profileMetrics }, null, 2));
 console.log("Personal timetable demo integration tests passed.");
