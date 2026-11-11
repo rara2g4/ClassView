@@ -158,7 +158,6 @@
 
   keywordInput.addEventListener("input", applyFilters);
   keywordInput.addEventListener("search", applyFilters);
-  keywordInput.addEventListener("change", applyFilters);
   categoryFilter.addEventListener("change", applyFilters);
   styleFilter.addEventListener("change", applyFilters);
 

@@ -162,6 +162,9 @@
 
   const api = {
     addDays,
+    daysInMonth,
+    fromDate,
+    toLocalDate,
     compactEntryData,
     courseDetailUrl,
     createKeyMappedStorage,
@@ -462,8 +465,10 @@
     personalStatus.textContent = statusMessage;
   };
 
-  const renderDay = async () => {
+  let renderVersion = 0;
+  const renderDay = async (version) => {
     const entries = await getEntriesForDate(state.selectedDate);
+    if (version !== renderVersion) return;
     dateHeading.textContent = formatLongDate(state.selectedDate);
     document.title = `${formatLongDate(state.selectedDate)}の時間割 | ClassView`;
     if (!entries.length) {
@@ -615,8 +620,9 @@
     return wrapper;
   };
 
-  const renderWeek = async () => {
+  const renderWeek = async (version) => {
     const { weekStart, dates, entriesByDate } = await loadWeek();
+    if (version !== renderVersion) return;
     const visibleDates = dates.slice(0, weekDayCount(entriesByDate, weekStart));
     const allEntries = visibleDates.flatMap((dateParts) => entriesByDate.get(formatDateKey(dateParts)) || []);
     const weekEnd = visibleDates.at(-1);
@@ -646,16 +652,19 @@
   };
 
   const render = async () => {
+    if (!state.personalWizard) return;
+    const version = ++renderVersion;
     renderPersonalUi();
     setLoading();
     try {
-      if (state.mode === "day") await renderDay();
-      else await renderWeek();
+      if (state.mode === "day") await renderDay(version);
+      else await renderWeek(version);
     } catch (error) {
+      if (version !== renderVersion) return;
       console.error("時間割の表示に失敗しました。", error);
       renderError();
     } finally {
-      contentRoot.setAttribute("aria-busy", "false");
+      if (version === renderVersion) contentRoot.setAttribute("aria-busy", "false");
     }
   };
 
@@ -678,6 +687,7 @@
   };
 
   const selectDate = (dateParts, { replace = false, updateHistory = true } = {}) => {
+    if (!parseCalendarDate(formatDateKey(dateParts))) return;
     if (
       state.mode === "week" &&
       state.selectedDate &&
@@ -720,7 +730,7 @@
     if (state.mode === "day") return;
     state.mode = "day";
     updateNavigationLabels();
-    updateUrl(true);
+    updateUrl();
     void render();
   });
   weekButton.addEventListener("click", () => {
@@ -728,7 +738,7 @@
     state.mode = "week";
     resetMobileWeekExpansion();
     updateNavigationLabels();
-    updateUrl(true);
+    updateUrl();
     void render();
   });
   previousButton.addEventListener("click", () =>
@@ -844,6 +854,11 @@
         },
       });
       state.displayMode = personalUi.initialDisplayMode(state.profileLoad);
+      global.ClassViewCalendar.attach({
+        selectedDate: () => state.selectedDate,
+        selectDate,
+        datesWithEntries: new Set(state.allEntries.map((entry) => entry.dateKey)),
+      });
       showUpdatedAt();
       await render();
     } catch (error) {

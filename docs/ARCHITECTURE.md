@@ -46,6 +46,10 @@
 
 `js/site-loader.js` は `data/site-version.json` を `no-cache` で取得し、CSS と page script に同じ version query を付ける。course/works JSON は `no-cache`、時間割は manifest を `no-cache` で読み、manifest version を periods/month JSON の query に使う。
 
+4つの公開ページは CSS の前に `js/display-preferences.js` を同期読み込みし、保存済みの外観・密度・文字サイズを初回描画に反映する。この初期化スクリプトの更新時は4ページの URL の `v` を更新する。表示設定は通常版とデモ版で共通の `classview.displayPreferences` に保存する。
+
+時間割の月間カレンダーは読み込み済みの entry の日付集合を参照し、月移動のための追加取得は行わない。日付の確定は既存の日別・週間表示と URL 履歴の更新処理を使う。
+
 DOM は主に `createElement` と `textContent` で構築する。course ID は `encodeURIComponent` して detail URL に入れる。制作物 URL と画像 path は public script と Schema/管理 service の両方で制約する。
 
 ### Personal timetable — Phase 1 + Phase 2 current implementation

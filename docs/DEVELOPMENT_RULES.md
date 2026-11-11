@@ -107,10 +107,17 @@ node tools/course-importer/tests/test_personal_timetable_ui.js
 node tools/course-importer/tests/test_personal_timetable_wizard_integration.js
 node tools/course-importer/tests/test_public_timetable.js
 node tools/course-importer/tests/test_site_loader.js
+node tools/course-importer/tests/test_display_preferences.js
 node tools/course-importer/tests/test_timetable_admin.js
 ```
 
 repository 内の変更対象 JavaScript には `node --check` を実行する。JSON data 変更時は Python `json.load(..., encoding="utf-8")` と対応 Schema で検証する。
+
+表示設定・カレンダーの実ブラウザ回帰テストは、Python の Playwright と Chromium を用意し、起動済みの静的サイトに対して実行する。各ケースは独立した browser context を使う。
+
+```powershell
+python tools/course-importer/tests/browser_display_preferences.py http://localhost:8000/ --screenshots <出力先>
+```
 
 ### Change-to-test map
 
