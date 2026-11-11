@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="ClassViewで学校全体の日別・週間時間割を確認できます。">
     <title>時間割 | ClassView</title>
+    <meta name="color-scheme" content="light dark">
+    <script src="js/display-preferences.js?v=1"></script>
     <link
       rel="stylesheet"
-      href="css/style.css?v=20260825T0626236729072Z"
+      href="css/style.css?v=20261111T052112164437Z"
       data-site-stylesheet
       data-site-href="css/style.css"
     >
@@ -15,6 +17,7 @@
     <script data-site-src="js/personal-timetable.js"></script>
     <script data-site-src="js/personal-timetable-ui.js"></script>
     <script data-site-src="js/personal-timetable-wizard.js"></script>
+    <script data-site-src="js/timetable-calendar.js"></script>
     <script data-site-src="js/timetable.js"></script>
   </head>
   <body>
@@ -26,6 +29,7 @@
           <a class="site-navigation__link" href="index.html" aria-current="page">時間割</a>
           <a class="site-navigation__link" href="courses.html">授業を探す</a>
         </nav>
+        <button id="display-preferences-button" class="preferences-trigger" type="button" aria-label="表示設定" aria-haspopup="dialog" aria-controls="display-preferences" title="表示設定"><span aria-hidden="true">⚙</span></button>
       </div>
     </header>
 
@@ -81,7 +85,24 @@
       </section>
 
       <section class="timetable-results" aria-labelledby="timetable-date-heading">
-        <h2 id="timetable-date-heading" class="timetable-date-heading">時間割を読み込んでいます…</h2>
+        <div class="timetable-date-row">
+          <h2 id="timetable-date-heading" class="timetable-date-heading">時間割を読み込んでいます…</h2>
+          <button id="calendar-button" class="timetable-navigation-button" type="button" aria-haspopup="dialog" aria-controls="timetable-calendar" disabled>カレンダー</button>
+        </div>
+        <dialog id="timetable-calendar" class="calendar-panel" aria-labelledby="calendar-title">
+          <header class="panel-heading">
+            <h2 id="calendar-title">日付を選択</h2>
+            <button type="button" data-calendar-close aria-label="カレンダーを閉じる">×</button>
+          </header>
+          <div class="calendar-month-nav">
+            <button type="button" data-month-prev aria-label="前の月">←</button>
+            <strong id="calendar-month" aria-live="polite"></strong>
+            <button type="button" data-month-next aria-label="次の月">→</button>
+          </div>
+          <div class="calendar-weekdays" aria-hidden="true"><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span><span>日</span></div>
+          <div class="calendar-days" role="group" aria-labelledby="calendar-month"></div>
+          <footer class="calendar-footer"><span>● 時間割あり</span><button type="button" data-calendar-today>今日へ</button></footer>
+        </dialog>
         <div id="timetable-content" class="timetable-content" aria-live="polite" aria-busy="true">
           <p class="loading">時間割を読み込んでいます…</p>
         </div>

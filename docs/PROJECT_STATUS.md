@@ -15,6 +15,8 @@
 - GitHub Pages 向け static HTML/CSS/JavaScript/JSON 構成
 - root `index.html` と `timetable.html` の日別・週別時間割
 - 前日/今日/翌日、前週/今週/翌週、`?date=YYYY-MM-DD`、`view=week`
+- 公開4ページ共通の外観（システム・ライト・ダーク）、表示密度、文字サイズ設定と端末内保存
+- 時間割の日付見出しから月間カレンダーで直接移動。学校時間割の登録日表示と日別・週間の履歴復元
 - desktop 週間表と mobile 曜日 accordion
 - course ID がある時間割 entry から授業詳細への link
 - `courses.html` の 57 授業表示、keyword search、分野・授業形式 filter
