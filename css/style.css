@@ -152,10 +152,15 @@
 .personal-selection-status { margin: 0 0 10px; padding: 8px 10px; border-left: 3px solid var(--color-accent); background: var(--color-accent-soft); font-size: .84rem; }
 .personal-selection-status.is-error { border-left-color: var(--color-error); background: var(--color-error-soft); color: var(--color-error); }
 .personal-wizard-candidates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: calc(8 * var(--space-unit)); }
-.personal-wizard-card { display: grid; min-height: calc(72 * var(--space-unit)); gap: calc(5 * var(--space-unit)); padding: calc(11 * var(--space-unit)) calc(13 * var(--space-unit)); border: 1px solid var(--color-line); border-radius: 2px; background: var(--color-panel); color: var(--color-text); text-align: left; }
+.personal-wizard-card { position: relative; display: grid; min-height: calc(72 * var(--space-unit)); border: 1px solid var(--color-line); border-radius: 2px; background: var(--color-panel); color: var(--color-text); text-align: left; }
 .personal-wizard-card:hover { border-color: var(--color-accent); }
+.personal-wizard-card__select { position: absolute; z-index: 0; inset: 0; width: 100%; border: 0; border-radius: 0; background: transparent; cursor: pointer; }
+.personal-wizard-card__select:focus-visible { outline: 2px solid var(--color-accent); outline-offset: -3px; }
+.personal-wizard-card__content { position: relative; z-index: 1; display: grid; gap: calc(5 * var(--space-unit)); padding: calc(11 * var(--space-unit)) calc(13 * var(--space-unit)); pointer-events: none; }
 .personal-wizard-card__title-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 10px; }
-.personal-wizard-card__title { overflow-wrap: anywhere; font-size: .94rem; font-weight: 650; line-height: 1.35; }
+.personal-wizard-card__title { position: relative; z-index: 2; color: inherit; overflow-wrap: anywhere; font-size: .94rem; font-weight: 650; line-height: 1.35; pointer-events: auto; text-decoration: underline; text-decoration-color: transparent; text-underline-offset: .18em; }
+.personal-wizard-card__title:hover { color: var(--color-accent); text-decoration-color: currentColor; }
+.personal-wizard-card__title:focus-visible { border-radius: 1px; outline: 2px solid var(--color-accent); outline-offset: 2px; text-decoration-color: currentColor; }
 .personal-wizard-card__state { display: flex; align-items: center; gap: 5px; }
 .personal-state-icon { width: 20px; height: 20px; flex: none; }
 .personal-wizard-card__state-label { font-size: .7rem; font-weight: 650; }

@@ -54,7 +54,7 @@ DOM は主に `createElement` と `textContent` で構築する。course ID は 
 
 ### Personal timetable — Phase 1 + Phase 2 current implementation
 
-`js/personal-timetable.js` にDOM非依存のprofile、履修、必修導出、conflict、entry visibility、candidate filter、versioned `localStorage` logicがある。`js/personal-timetable-ui.js` はPhase 1 APIからUI用modelとatomicなmanual selection入れ替え結果を作る。`js/personal-timetable-wizard.js` は4段階のdraft UIを担当し、`js/timetable.js` がpublic data loading、確定時の保存、学校全体表示との切替を担当する。Human UX review用prototypeのmock dataやdiagnosticsはproductionへ含めない。
+`js/personal-timetable.js` にDOM非依存のprofile、履修、必修導出、conflict、entry visibility、candidate filter、versioned `localStorage` logicがある。`js/personal-timetable-ui.js` はPhase 1 APIからUI用modelとatomicなmanual selection入れ替え結果を作る。`js/personal-timetable-wizard.js` は4段階のdraft UIと授業名link遷移前の一時保存・復元を担当し、`js/timetable.js` がpublic data loading、確定時の保存、学校全体表示との切替、mode別のdraft keyと詳細URLを担当する。`js/course-detail.js` は`demo=1`で`data/demo/courses.json`を読み、検証済みの戻り先だけを履修選択へのlinkに使う。Human UX review用prototypeのmock logicやdiagnosticsはproductionへ含めない。
 
 MVPでもpublic siteのstatic architectureを維持し、次のbrowser内データフローを実装している。
 
@@ -75,6 +75,7 @@ public course / timetable JSON
 - manifestの `termPeriods` を日付へ照合し、`first` / `second` / `unresolved` を解決するpure logicを持つ。年度Excel全体や表示文言へ単一termを付けず、学期境界はExcelから推測しない。
 - manifestの `homerooms` catalogとentryの `homeroomIds` を所属組判定に使う。`groupTags` は表示・授業内group・compatibility用として残るが、個人時間割の判定には使わない。
 - Desktop / Mobileとも曜日・時限tabでfocused candidate listをrenderし、Desktopは原則2列、Mobileは1列にする。wizard内draftはSTEP 4まで保存せず、storage/期間/profileが利用できない場合は学校全体表示へfallbackできる。
+- 授業名linkで`course.html`へ移動する直前だけ、STEP、identity、manual selection、曜日・時限、scroll位置を`sessionStorage`へ保存する。通常版は`classview.personalTimetable.wizardDraft.v1`、デモ版は`classview.demo.personalTimetable.wizardDraft.v1`を使い、復元・キャンセル・確定時に破棄する。正式profileの`localStorage`契約とは分離する。
 - 現在の開発・検証用Pagesではクエリなしと `?demo=1` が `data/demo/` の架空course・時間割fixtureを読み、同じdomain/UI code pathを実行する。`?demo=0` は通常dataを明示表示する。デモprofileは `classview.demo.personalTimetable.profile` へ分離し、通常profile keyを読み書きしない。画面上部のデモ表示と通常版への切替導線を常時示す。学生向け正式公開へ移行するときは `js/timetable.js` の `DEMO_DEFAULT_ENABLED` を `false` にして初期modeだけを明示変更できる。
 
 ## Data

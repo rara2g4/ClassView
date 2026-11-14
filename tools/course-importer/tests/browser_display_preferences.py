@@ -125,19 +125,59 @@ def check_wizard(page, width, theme, folder):
     course = cards.first.get_attribute("data-course-id")
     alternative = cards.nth(1).get_attribute("data-course-id")
     first = page.locator(f'[data-course-id="{course}"].personal-wizard-card')
-    first.click()
-    expect(first).to_have_attribute("aria-pressed", "true")
-    first.click()
-    expect(first).to_have_attribute("aria-pressed", "false")
-    first.click()
+    first_select = first.locator(".personal-wizard-card__select")
+    first_title = first.locator(".personal-wizard-card__title")
+    first_select.click()
+    expect(first_select).to_have_attribute("aria-pressed", "true")
+    first_select.click()
+    expect(first_select).to_have_attribute("aria-pressed", "false")
+    first_select.click()
+    expect(first_select).to_have_attribute("aria-pressed", "true")
+
+    key = "classview.demo.personalTimetable.profile"
+    assert page.evaluate("key => localStorage.getItem(key)", key) is None
+    selected_day = page.locator('#personal-day-tabs [aria-selected="true"]').get_attribute("id")
+    selected_period = page.locator('#personal-period-tabs [aria-selected="true"]').get_attribute("id")
+    dialog_scroll = page.locator("#personal-wizard-dialog").evaluate(
+        "el => { el.scrollTop = Math.min(120, el.scrollHeight - el.clientHeight); return el.scrollTop; }"
+    )
+    first_title.click()
+    expect(page.locator(".course-header h1")).to_be_visible()
+    assert parse_qs(urlsplit(page.url).query)["demo"] == ["1"]
+    expect(page.locator(".course-header__eyebrow")).to_contain_text("デモデータ")
+    snapshot(page, folder, f"{width}-{theme}-wizard-detail")
+    assert page.evaluate("key => localStorage.getItem(key)", key) is None
+    personal_return = page.locator('[data-course-return="personal"]')
+    assert personal_return.count() == 1, page.url
+    personal_return.click()
+    expect(page.locator("#personal-wizard-dialog")).to_be_visible()
+    expect(page.locator('[data-personal-step="3"]')).to_be_visible()
+    expect(page.locator(f"#{selected_day}")).to_have_attribute("aria-selected", "true")
+    expect(page.locator(f"#{selected_period}")).to_have_attribute("aria-selected", "true")
+    expect(first_select).to_have_attribute("aria-pressed", "true")
+    expect(first_title).to_be_focused()
+    assert page.evaluate("sessionStorage.getItem('classview.demo.personalTimetable.wizardDraft.v1')") is None
+    assert page.evaluate("sessionStorage.getItem('classview.personalTimetable.wizardDraft.v1')") is None
+    if dialog_scroll:
+        page.wait_for_function(
+            "target => Math.abs(document.querySelector('#personal-wizard-dialog').scrollTop - target) <= 2",
+            arg=dialog_scroll,
+        )
+
+    first_title.click()
+    expect(page.locator(".course-header h1")).to_be_visible()
+    page.go_back()
+    expect(page.locator("#personal-wizard-dialog")).to_be_visible()
+    expect(first_select).to_have_attribute("aria-pressed", "true")
+    assert page.evaluate("key => localStorage.getItem(key)", key) is None
+
     snapshot(page, folder, f"{width}-{theme}-wizard")
-    page.locator(f'[data-course-id="{alternative}"].personal-wizard-card').click()
+    page.locator(f'[data-course-id="{alternative}"] .personal-wizard-card__select').click()
     expect(page.locator("#personal-conflict-replace")).to_be_visible()
     snapshot(page, folder, f"{width}-{theme}-conflict")
     page.locator("#personal-conflict-replace").click()
-    expect(first).to_have_attribute("aria-pressed", "false")
+    expect(first_select).to_have_attribute("aria-pressed", "false")
     page.locator("#personal-wizard-next").click()
-    key = "classview.demo.personalTimetable.profile"
     assert page.evaluate("key => localStorage.getItem(key)", key) is None
     page.locator("#personal-wizard-save").click()
     expect(page.locator("#personal-mode-button")).to_have_attribute("aria-pressed", "true")
@@ -146,6 +186,16 @@ def check_wizard(page, width, theme, folder):
     profile = page.evaluate("key => JSON.parse(localStorage.getItem(key))", key)
     assert profile["manualSelectedCourseIds"] == [alternative]
     original = page.evaluate("key => localStorage.getItem(key)", key)
+    page.locator("#personal-settings-button").click()
+    page.locator("#personal-wizard-next").click()
+    page.locator("#personal-wizard-next").click()
+    for tab in page.locator("#personal-period-tabs button").all():
+        tab.click()
+        if page.locator(".personal-wizard-card.is-available").count():
+            break
+    page.locator(".personal-wizard-card.is-available .personal-wizard-card__select").first.click()
+    page.locator('#personal-wizard-dialog [data-personal-close]').first.click()
+    assert page.evaluate("key => localStorage.getItem(key)", key) == original
     page.locator("#display-preferences-button").click()
     preference(page, "density", "compact")
     page.keyboard.press("Escape")

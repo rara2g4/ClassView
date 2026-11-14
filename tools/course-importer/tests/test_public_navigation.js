@@ -46,5 +46,14 @@ assert.doesNotMatch(courseListSource, /"詳細を見る"\)/);
 
 // 詳細ページの「授業一覧へ戻る」も移行先を参照する。
 assert.match(courseDetailSource, /\|\| "courses\.html"/);
+assert.match(courseDetailSource, /\.\/data\/demo\/courses\.json/);
+assert.match(courseDetailSource, /履修選択へ戻る/);
+assert.match(courseDetailSource, /dataset\.courseReturn/);
+
+// 個人時間割では授業名リンクとカード本体の履修操作を別要素として扱う。
+const wizardSource = read("js/personal-timetable-wizard.js");
+assert.match(wizardSource, /element\("article", `personal-wizard-card/);
+assert.match(wizardSource, /element\("button", "personal-wizard-card__select"\)/);
+assert.match(wizardSource, /element\("a", "personal-wizard-card__title", title\)/);
 
 console.log("Public navigation tests passed.");

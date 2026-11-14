@@ -33,6 +33,11 @@ assert.match(wizardSource, /aria-haspopup/);
 assert.match(wizardSource, /arrow-left-right/);
 assert.match(wizardSource, /calendar-x/);
 assert.match(wizardSource, /lock-keyhole/);
+assert.match(wizardSource, /personal-wizard-card__title/);
+assert.match(wizardSource, /persistDraftForDetail/);
+assert.match(wizardSource, /resumePending/);
+assert.match(wizardSource, /draftStorage/);
+assert.match(wizardSource, /manualSelectedCourseIds/);
 assert.equal(wizardSource.includes("PersonalTimetableMock"), false);
 assert.equal(wizardSource.includes("localStorage"), false);
 

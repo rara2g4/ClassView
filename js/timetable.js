@@ -13,6 +13,8 @@
   // 開発・検証用Pagesではtrue。学生向け正式公開へ切り替える際はfalseにする。
   const DEMO_DEFAULT_ENABLED = true;
   const DEMO_PROFILE_STORAGE_KEY = "classview.demo.personalTimetable.profile";
+  const PERSONAL_DRAFT_STORAGE_KEY = "classview.personalTimetable.wizardDraft.v1";
+  const DEMO_PERSONAL_DRAFT_STORAGE_KEY = "classview.demo.personalTimetable.wizardDraft.v1";
   const DEMO_DEFAULT_DATE = "2026-11-02";
 
   const pad = (value) => String(value).padStart(2, "0");
@@ -184,6 +186,22 @@
   if (typeof document === "undefined") return;
 
   const demoMode = isDemoMode(window.location.search);
+  const courseDetailUrlForMode = (courseId, returnTo = "") => {
+    const detailUrl = courseDetailUrl(courseId);
+    if (!detailUrl) return "";
+    const url = new URL(detailUrl, document.baseURI);
+    url.searchParams.set("demo", demoMode ? "1" : "0");
+    if (returnTo) {
+      url.searchParams.set("from", "personal");
+      url.searchParams.set("return", returnTo);
+    }
+    return url.href;
+  };
+  const personalReturnUrl = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("resumePersonal", "1");
+    return `${url.pathname}${url.search}${url.hash}`;
+  };
   const DATA_ROOT = new URL(demoMode ? "./data/demo/timetable/" : "./data/timetable/", document.baseURI);
   const manifestUrl = new URL("manifest.json", DATA_ROOT);
   const periodsUrl = new URL("periods.json", DATA_ROOT);
@@ -250,6 +268,18 @@
     const response = await fetch(url, { cache: "no-cache" });
     if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`);
     return response.json();
+  };
+
+  const resolveSessionStorage = () => {
+    try {
+      const storage = global.sessionStorage;
+      const probeKey = "classview.personalTimetable.sessionProbe";
+      storage.setItem(probeKey, "1");
+      storage.removeItem(probeKey);
+      return storage;
+    } catch (_error) {
+      return null;
+    }
   };
 
   const validateBaseData = (manifest, periods) => {
@@ -323,7 +353,7 @@
     if (labels.childElementCount) item.append(labels);
 
     const title = element(compact ? "p" : "h4", "timetable-entry__title");
-    const detailUrl = state.demoMode ? "" : courseDetailUrl(entry.courseId);
+    const detailUrl = courseDetailUrlForMode(entry.courseId);
     if (detailUrl) {
       const link = element("a", "timetable-entry__link", entry.subjectName || "授業");
       link.href = detailUrl;
@@ -354,7 +384,7 @@
   const createMobileWeekEntry = (entry) => {
     const data = compactEntryData(entry);
     const item = element("article", "timetable-mobile-entry");
-    const detailUrl = state.demoMode ? "" : courseDetailUrl(data.courseId);
+    const detailUrl = courseDetailUrlForMode(data.courseId);
     const compact = element(
       detailUrl ? "a" : "div",
       `timetable-mobile-entry__compact${detailUrl ? " timetable-mobile-entry__compact--link" : ""}`,
@@ -835,6 +865,9 @@
           dataVersion: currentDataVersion(),
         }),
         getSavedProfile: () => state.personalModel?.profile || state.profileLoad.profile,
+        getCourseDetailUrl: (courseId) => courseDetailUrlForMode(courseId, personalReturnUrl()),
+        draftStorage: resolveSessionStorage(),
+        draftKey: demoMode ? DEMO_PERSONAL_DRAFT_STORAGE_KEY : PERSONAL_DRAFT_STORAGE_KEY,
         saveProfile: async (profile) => {
           const saved = personal.saveProfile(state.profileStorage, profile);
           if (!saved.saved) {
@@ -861,6 +894,12 @@
       });
       showUpdatedAt();
       await render();
+      state.personalWizard.resumePending();
+      const currentUrl = new URL(window.location.href);
+      if (currentUrl.searchParams.has("resumePersonal")) {
+        currentUrl.searchParams.delete("resumePersonal");
+        window.history.replaceState({}, "", currentUrl);
+      }
     } catch (error) {
       console.error("時間割データの読み込みに失敗しました。", error);
       renderError();

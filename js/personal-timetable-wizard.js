@@ -54,7 +54,15 @@
     return svg;
   };
 
-  const createController = ({ getContext, getSavedProfile, saveProfile, onClose } = {}) => {
+  const createController = ({
+    getContext,
+    getSavedProfile,
+    saveProfile,
+    onClose,
+    getCourseDetailUrl,
+    draftStorage,
+    draftKey = "classview.personalTimetable.wizardDraft.v1",
+  } = {}) => {
     if (!personal || !personalUi || typeof getContext !== "function") {
       throw new Error("Personal timetable wizard dependencies are unavailable.");
     }
@@ -104,6 +112,32 @@
       pendingCourseId: "",
       returnFocus: null,
       message: "",
+    };
+
+    const currentPageKey = () => {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("resumePersonal");
+      return `${url.pathname}${url.search}${url.hash}`;
+    };
+
+    const clearDraft = () => {
+      try {
+        draftStorage?.removeItem?.(draftKey);
+      } catch (_error) {
+        // sessionStorageを利用できない環境でも、通常の設定操作は継続します。
+      }
+    };
+
+    const readDraft = () => {
+      try {
+        const raw = draftStorage?.getItem?.(draftKey);
+        if (!raw) return null;
+        const value = JSON.parse(raw);
+        return value && typeof value === "object" ? value : null;
+      } catch (_error) {
+        clearDraft();
+        return null;
+      }
     };
 
     const courseFor = (courseId) => state.context.courses.find((course) => course.id === courseId) || {};
@@ -195,6 +229,72 @@
       });
       if (!draft.ok) return false;
       return rebuildDraft(draft.profile.manualSelectedCourseIds);
+    };
+
+    const persistDraftForDetail = (returnCourseId) => {
+      if (!state.draftProfile || !state.model?.active) return false;
+      const draft = {
+        schemaVersion: 1,
+        pageKey: currentPageKey(),
+        step: state.step,
+        grade: state.grade,
+        homeroomId: state.homeroomId,
+        weekday: state.weekday,
+        period: state.period,
+        manualSelectedCourseIds: [...state.draftProfile.manualSelectedCourseIds],
+        academicYear: state.draftProfile.academicYear,
+        term: state.draftProfile.term,
+        dataVersion: state.draftProfile.dataVersion,
+        returnCourseId,
+        dialogScrollTop: dom.dialog.scrollTop,
+        windowScrollY: window.scrollY,
+      };
+      try {
+        draftStorage?.setItem?.(draftKey, JSON.stringify(draft));
+        return Boolean(draftStorage?.getItem?.(draftKey));
+      } catch (_error) {
+        clearDraft();
+        return false;
+      }
+    };
+
+    const restoreDraft = () => {
+      const draft = readDraft();
+      if (!draft) return null;
+      const validIdentity = draft.schemaVersion === 1 &&
+        draft.pageKey === currentPageKey() &&
+        draft.academicYear === state.context.manifest.academicYear &&
+        draft.term === state.periodContext?.currentPeriod?.term &&
+        JSON.stringify(draft.dataVersion) === JSON.stringify(state.context.dataVersion) &&
+        Number.isInteger(draft.grade) &&
+        typeof draft.homeroomId === "string" &&
+        (state.context.manifest.homerooms || []).some(
+          (item) => item.id === draft.homeroomId && item.grade === draft.grade,
+        ) &&
+        Array.isArray(draft.manualSelectedCourseIds) &&
+        draft.manualSelectedCourseIds.every((courseId) => typeof courseId === "string");
+      if (!validIdentity) {
+        clearDraft();
+        return null;
+      }
+      state.step = Math.min(4, Math.max(1, Number(draft.step) || 1));
+      state.grade = draft.grade;
+      state.homeroomId = draft.homeroomId;
+      state.weekday = Number.isInteger(draft.weekday) && draft.weekday >= 1 && draft.weekday <= 5
+        ? draft.weekday
+        : 1;
+      state.period = Number.isInteger(draft.period) ? draft.period : 1;
+      state.message = "授業詳細を開く前の選択内容を復元しました。";
+      if (!rebuildDraft(unique(draft.manualSelectedCourseIds))) {
+        clearDraft();
+        return null;
+      }
+      clearDraft();
+      return {
+        dialogScrollTop: Math.max(0, Number(draft.dialogScrollTop) || 0),
+        windowScrollY: Math.max(0, Number(draft.windowScrollY) || 0),
+        returnCourseId: typeof draft.returnCourseId === "string" ? draft.returnCourseId : "",
+      };
     };
 
     const renderChoice = (target, name, value, label, checked, onChange) => {
@@ -366,14 +466,27 @@
       const iconName = required ? "lock-keyhole" : selected ? "check-circle" : blocked ? "calendar-x" : "circle";
       const stateLabel = required ? "必修" : selected ? "選択済み" : blocked ? "時間競合" : "未選択";
       const title = course.title || entry.subjectName || courseId;
-      const button = element("button", `personal-wizard-card is-${stateName}`);
-      button.type = "button";
-      button.dataset.courseId = courseId;
-      button.setAttribute("aria-pressed", String(selected));
-      if (required) button.setAttribute("aria-disabled", "true");
-      if (blocked) button.setAttribute("aria-haspopup", "dialog");
+      const card = element("article", `personal-wizard-card is-${stateName}`);
+      card.dataset.courseId = courseId;
+      const selectButton = element("button", "personal-wizard-card__select");
+      selectButton.type = "button";
+      selectButton.setAttribute("aria-pressed", String(selected));
+      if (required) selectButton.setAttribute("aria-disabled", "true");
+      if (blocked) selectButton.setAttribute("aria-haspopup", "dialog");
+      const content = element("div", "personal-wizard-card__content");
       const titleRow = element("span", "personal-wizard-card__title-row");
-      titleRow.append(element("strong", "personal-wizard-card__title", title));
+      const titleLink = element("a", "personal-wizard-card__title", title);
+      titleLink.href = typeof getCourseDetailUrl === "function"
+        ? getCourseDetailUrl(courseId)
+        : `course.html?id=${encodeURIComponent(courseId)}`;
+      titleLink.setAttribute("aria-label", `${title}の授業詳細を見る`);
+      titleLink.addEventListener("click", (event) => {
+        if (persistDraftForDetail(courseId)) return;
+        event.preventDefault();
+        state.message = "授業詳細を開くための選択内容を一時保存できませんでした。この画面で設定を続けてください。";
+        render();
+      });
+      titleRow.append(titleLink);
       const mark = element("span", "personal-wizard-card__state");
       mark.append(createIcon(iconName));
       if (required) mark.append(element("span", "personal-wizard-card__state-label", "必修"));
@@ -384,11 +497,12 @@
       const instructors = unique((entry.instructors || []).filter(Boolean));
       if (instructors.length) details.push(`講師: ${instructors.join("・")}`);
       if (Number.isFinite(course.credits)) details.push(`${course.credits}単位`);
-      button.append(titleRow, element("span", "personal-wizard-card__details", details.join(" / ")));
+      content.append(titleRow, element("span", "personal-wizard-card__details", details.join(" / ")));
       const conflictLabel = blocked ? `。${candidate.conflicts.map(conflictDescription).join("、")}と時間が重複しています` : "";
-      button.setAttribute("aria-label", `${title}。${details.join("。")}。${stateLabel}${conflictLabel}`);
-      button.addEventListener("click", () => updateCourse(courseId, button));
-      return button;
+      selectButton.setAttribute("aria-label", `${title}。${details.join("。")}。${stateLabel}${conflictLabel}。カード本体で履修状態を変更`);
+      selectButton.addEventListener("click", () => updateCourse(courseId, selectButton));
+      card.append(selectButton, content);
+      return card;
     };
 
     const renderCandidates = () => {
@@ -495,25 +609,39 @@
       dom.error.hidden = true;
     };
 
-    const open = () => {
+    const open = ({ restorePending = false } = {}) => {
       state.context = getContext();
       state.periodContext = personal.periodContextForDate(state.context.dateKey, state.context.manifest);
+      const restoredScroll = restorePending ? restoreDraft() : null;
+      if (restorePending && !restoredScroll) return false;
       const saved = getSavedProfile?.() || null;
-      state.step = 1;
-      state.grade = saved?.grade || null;
-      state.homeroomId = saved?.homeroomId || "";
-      state.weekday = 1;
-      state.period = Number(Object.keys(state.context.periods.periods)[0] || 1);
-      state.message = "";
+      if (!restoredScroll) {
+        clearDraft();
+        state.step = 1;
+        state.grade = saved?.grade || null;
+        state.homeroomId = saved?.homeroomId || "";
+        state.weekday = 1;
+        state.period = Number(Object.keys(state.context.periods.periods)[0] || 1);
+        state.message = "";
+      }
       state.pendingCourseId = "";
-      if (state.periodContext.valid && state.grade && state.homeroomId) syncDraftIdentity();
-      else {
+      if (!restoredScroll && state.periodContext.valid && state.grade && state.homeroomId) syncDraftIdentity();
+      else if (!restoredScroll) {
         state.draftProfile = null;
         state.model = null;
       }
       render();
       dialog.showModal();
-      dom.gradeChoices.querySelector("input:checked")?.focus() || dom.gradeChoices.querySelector("input")?.focus();
+      if (restoredScroll) {
+        requestAnimationFrame(() => {
+          dialog.scrollTop = restoredScroll.dialogScrollTop;
+          window.scrollTo(0, restoredScroll.windowScrollY);
+          dialog.querySelector(`[data-course-id="${CSS.escape(restoredScroll.returnCourseId)}"] .personal-wizard-card__title`)?.focus({ preventScroll: true });
+        });
+      } else {
+        dom.gradeChoices.querySelector("input:checked")?.focus() || dom.gradeChoices.querySelector("input")?.focus();
+      }
+      return true;
     };
 
     dom.back.addEventListener("click", () => {
@@ -541,8 +669,14 @@
       dialog.close("saved");
     });
     dialog.querySelectorAll("[data-personal-close]").forEach((button) => button.addEventListener("click", () => dialog.close("cancel")));
-    dialog.addEventListener("close", () => onClose?.(dialog.returnValue));
+    dialog.addEventListener("close", () => {
+      clearDraft();
+      onClose?.(dialog.returnValue);
+    });
     dialog.addEventListener("cancel", () => { dialog.returnValue = "cancel"; });
+    window.addEventListener("pageshow", () => {
+      if (dialog.open) clearDraft();
+    });
 
     dom.conflictReplace.addEventListener("click", () => {
       const courseId = state.pendingCourseId;
@@ -565,7 +699,10 @@
       focus?.focus({ preventScroll: true });
     });
 
-    return Object.freeze({ open });
+    return Object.freeze({
+      open,
+      resumePending: () => open({ restorePending: true }),
+    });
   };
 
   global.ClassViewPersonalTimetableWizard = Object.freeze({ createController });
