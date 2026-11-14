@@ -1,0 +1,363 @@
+.prototype-page {
+  width: min(100% - 40px, 1180px);
+  margin: 0 auto;
+  padding: 38px 0 72px;
+}
+
+.prototype-header-label {
+  color: var(--color-subtle);
+  font-size: .78rem;
+  font-weight: 650;
+  letter-spacing: .04em;
+}
+
+.prototype-kicker {
+  margin: 0;
+  color: var(--color-accent);
+  font-size: .72rem;
+  font-weight: 750;
+  letter-spacing: .1em;
+}
+
+.prototype-intro {
+  max-width: 840px;
+}
+
+.prototype-intro h1 {
+  margin: .25rem 0 .45rem;
+  font-size: clamp(1.65rem, 3vw, 2.25rem);
+  line-height: 1.35;
+}
+
+.prototype-intro > p:not(.prototype-kicker) {
+  margin: 0;
+  color: var(--color-subtle);
+}
+
+.prototype-note {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 10px 13px;
+  border-left: 3px solid var(--color-warning-line);
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+  font-size: .8rem;
+}
+
+.prototype-switcher {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: end;
+  gap: 12px 28px;
+  margin: 38px 0 18px;
+}
+
+.prototype-switcher h2 {
+  margin: .1rem 0 0;
+  font-size: 1.15rem;
+}
+
+.prototype-variant-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid var(--color-control-line);
+}
+
+.prototype-variant-tabs button {
+  min-height: 46px;
+  padding: 8px 12px;
+  border: 0;
+  border-right: 1px solid var(--color-line);
+  border-radius: 0;
+  background: var(--color-panel);
+  color: var(--color-subtle);
+  font-weight: 600;
+}
+
+.prototype-variant-tabs button:last-child { border-right: 0; }
+.prototype-variant-tabs button[aria-selected="true"] {
+  background: var(--color-accent-soft);
+  color: var(--color-text);
+  box-shadow: inset 0 -3px var(--color-accent);
+}
+
+.prototype-variant-description {
+  grid-column: 2;
+  min-height: 1.5em;
+  margin: 0;
+  color: var(--color-subtle);
+  font-size: .8rem;
+}
+
+.prototype-frame {
+  overflow: hidden;
+  border: 1px solid var(--color-control-line);
+  background: var(--color-panel);
+  box-shadow: 0 16px 44px rgb(32 40 44 / 10%);
+}
+
+.prototype-frame__header { border-bottom: 1px solid var(--color-line); }
+.prototype-frame__header h2 { margin: .15rem 0 .2rem; }
+.prototype-frame__header p:last-child { margin: 0; color: var(--color-subtle); }
+.prototype-badge {
+  align-self: start;
+  padding: 5px 8px;
+  border: 1px solid var(--color-warning-line);
+  color: var(--color-warning);
+  font-size: .7rem;
+  font-weight: 700;
+}
+
+.prototype-frame .personal-wizard-step { min-height: 610px; }
+.prototype-frame .personal-wizard-slot-heading h3 { margin: 0; font-size: 1.08rem; }
+.prototype-frame .personal-wizard-tab { cursor: pointer; }
+
+.prototype-interaction-status {
+  min-height: 34px;
+  margin: 0 0 10px;
+  padding: 7px 10px;
+  border-left: 3px solid var(--color-accent);
+  background: var(--color-accent-soft);
+  font-size: .8rem;
+}
+
+.prototype-course-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.prototype-course-card__select {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.prototype-course-card__select:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: -4px;
+}
+
+.prototype-course-card__content {
+  display: grid;
+  min-height: calc(50 * var(--space-unit));
+  gap: calc(5 * var(--space-unit));
+  pointer-events: none;
+}
+
+.prototype-course-card__actions {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  pointer-events: auto;
+}
+
+.prototype-course-card__detail {
+  display: inline-grid;
+  min-width: 44px;
+  min-height: 44px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-accent);
+  cursor: pointer;
+}
+
+.prototype-course-card__detail:hover { background: var(--color-accent-soft); }
+.prototype-course-card__detail:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: -3px;
+}
+
+.prototype-course-card__detail svg {
+  width: 20px;
+  height: 20px;
+}
+
+.prototype-course-card--b .prototype-course-card__detail {
+  min-width: 52px;
+  min-height: 44px;
+  padding: 5px 9px;
+  border: 1px solid var(--color-control-line);
+  color: var(--color-text);
+  font-size: .75rem;
+  font-weight: 650;
+}
+
+.prototype-course-card__title-button {
+  position: relative;
+  z-index: 2;
+  display: inline;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 45%, transparent);
+  text-underline-offset: 3px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.prototype-course-card__title-button:hover { color: var(--color-accent); }
+.prototype-course-card__title-button:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.prototype-course-card .personal-wizard-card__state {
+  min-width: 20px;
+  justify-content: flex-end;
+}
+
+.prototype-course-card.is-required .prototype-course-card__select { cursor: not-allowed; }
+.prototype-course-card.is-blocked .prototype-course-card__select { cursor: help; }
+
+.prototype-compare-grid {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.prototype-compare-column {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+}
+
+.prototype-compare-column h4 {
+  margin: 0 0 2px;
+  font-size: .82rem;
+}
+
+.prototype-compare-column > p {
+  min-height: 3em;
+  margin: 0 0 5px;
+  color: var(--color-subtle);
+  font-size: .7rem;
+  line-height: 1.45;
+}
+
+.prototype-frame__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 28px;
+  border-top: 1px solid var(--color-line);
+  background: var(--color-surface);
+  color: var(--color-subtle);
+  font-size: .76rem;
+}
+
+.prototype-frame__footer button,
+.prototype-detail-dialog__actions button {
+  min-height: 42px;
+  padding: 8px 14px;
+  border: 1px solid var(--color-control-line);
+  border-radius: 2px;
+  background: var(--color-panel);
+  color: var(--color-text);
+}
+
+.prototype-help {
+  margin-top: 28px;
+  padding: 20px 22px;
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+}
+
+.prototype-help h2 { margin: 0; font-size: 1rem; }
+.prototype-help ul { margin: 9px 0 0; padding-left: 1.25rem; color: var(--color-subtle); font-size: .82rem; }
+
+.prototype-detail-dialog {
+  width: min(620px, calc(100% - 32px));
+  max-height: min(760px, calc(100dvh - 32px));
+  padding: 0;
+  border: 1px solid var(--color-control-line);
+  border-radius: 3px;
+  background: var(--color-panel);
+  color: var(--color-text);
+  box-shadow: 0 20px 64px rgb(32 40 44 / 26%);
+}
+
+.prototype-detail-dialog::backdrop { background: rgb(32 40 44 / 46%); }
+.prototype-detail-dialog__heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 24px 15px;
+  border-bottom: 1px solid var(--color-line);
+}
+.prototype-detail-dialog__heading h2 { margin: .15rem 0 0; font-size: 1.35rem; }
+.prototype-detail-dialog__close {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--color-control-line);
+  border-radius: 0;
+  background: var(--color-panel);
+  color: var(--color-text);
+  font-size: 1.25rem;
+}
+.prototype-detail-dialog__notice { margin: 16px 24px 0; color: var(--color-subtle); font-size: .76rem; }
+.prototype-detail-list { display: grid; grid-template-columns: 7rem minmax(0, 1fr); margin: 12px 24px 20px; }
+.prototype-detail-list dt,
+.prototype-detail-list dd { margin: 0; padding: 10px 0; border-bottom: 1px solid var(--color-line); }
+.prototype-detail-list dt { color: var(--color-subtle); font-size: .78rem; font-weight: 650; }
+.prototype-detail-list dd { font-size: .84rem; }
+.prototype-detail-dialog__actions { display: flex; justify-content: flex-end; padding: 14px 24px; border-top: 1px solid var(--color-line); background: var(--color-surface); }
+
+@media (max-width: 900px) {
+  .prototype-switcher { grid-template-columns: 1fr; align-items: stretch; }
+  .prototype-variant-description { grid-column: 1; }
+  .prototype-compare-grid { grid-template-columns: 1fr; }
+  .prototype-compare-column > p { min-height: 0; }
+}
+
+@media (max-width: 760px) {
+  .prototype-page { width: 100%; padding: 26px 0 48px; }
+  .prototype-intro,
+  .prototype-switcher,
+  .prototype-help { margin-inline: 16px; }
+  .prototype-note { align-items: flex-start; flex-direction: column; gap: 2px; }
+  .prototype-variant-tabs { grid-template-columns: 1fr 1fr; }
+  .prototype-variant-tabs button:nth-child(2) { border-right: 0; }
+  .prototype-variant-tabs button:nth-child(-n + 2) { border-bottom: 1px solid var(--color-line); }
+  .prototype-frame { border-inline: 0; }
+  .prototype-frame .personal-wizard-step { min-height: 0; }
+  .prototype-frame__header { padding-inline: 16px; }
+  .prototype-frame__header .prototype-badge { display: none; }
+  .prototype-frame .personal-wizard-progress { overflow: hidden; }
+  .prototype-frame__footer { align-items: stretch; flex-direction: column; padding: 12px 16px; }
+  .prototype-frame__footer button { width: 100%; }
+  .prototype-course-card--b .personal-wizard-card__title-row { gap: 5px; }
+  .prototype-course-card--b .prototype-course-card__detail { min-width: 50px; }
+  .prototype-detail-dialog { width: calc(100% - 20px); max-height: calc(100dvh - 20px); }
+  .prototype-detail-dialog__heading { padding: 18px 16px 13px; }
+  .prototype-detail-dialog__notice { margin-inline: 16px; }
+  .prototype-detail-list { grid-template-columns: 1fr; margin-inline: 16px; }
+  .prototype-detail-list dt { padding-bottom: 2px; border-bottom: 0; }
+  .prototype-detail-list dd { padding-top: 0; }
+  .prototype-detail-dialog__actions { padding: 12px 16px; }
+  .prototype-detail-dialog__actions button { width: 100%; }
+}

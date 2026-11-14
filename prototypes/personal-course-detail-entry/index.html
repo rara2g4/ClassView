@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ClassView 個人時間割 授業詳細導線の比較プロトタイプ">
+    <title>授業詳細導線の比較 | ClassView Prototype</title>
+    <link rel="stylesheet" href="../../css/style.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">本文へ移動</a>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <a class="site-name" href="../../index.html">ClassView</a>
+        <span class="prototype-header-label">UI比較プロトタイプ</span>
+      </div>
+    </header>
+
+    <main id="main-content" class="prototype-page">
+      <section class="prototype-intro" aria-labelledby="prototype-title">
+        <p class="prototype-kicker">PERSONAL TIMETABLE / HUMAN REVIEW</p>
+        <h1 id="prototype-title">授業詳細を開く操作の比較</h1>
+        <p>本番のB案に近いSTEP 3で、履修選択と授業詳細の操作を比較します。このページの操作は保存されず、本番UIにも影響しません。</p>
+        <div class="prototype-note" role="note">
+          <strong>比較用データ</strong>
+          <span>状態を同時に確認するため、デモ授業を月曜3限へ組み合わせています。</span>
+        </div>
+      </section>
+
+      <section class="prototype-switcher" aria-labelledby="switcher-title">
+        <div>
+          <p class="prototype-kicker">VARIATION</p>
+          <h2 id="switcher-title">表示する案</h2>
+        </div>
+        <div id="variant-tabs" class="prototype-variant-tabs" role="tablist" aria-label="詳細導線の案">
+          <button type="button" role="tab" aria-selected="true" data-variant="a">A 情報アイコン</button>
+          <button type="button" role="tab" aria-selected="false" data-variant="b">B 「詳細」</button>
+          <button type="button" role="tab" aria-selected="false" data-variant="c">C 授業名リンク</button>
+          <button type="button" role="tab" aria-selected="false" data-variant="compare">3案を並べる</button>
+        </div>
+        <p id="variant-description" class="prototype-variant-description" aria-live="polite"></p>
+      </section>
+
+      <section class="prototype-frame" aria-label="個人時間割 STEP 3 比較プレビュー">
+        <header class="personal-wizard-header prototype-frame__header">
+          <div>
+            <p class="personal-timetable-controls__eyebrow">Personal timetable</p>
+            <h2>自分の時間割を設定</h2>
+            <p>詳細を開いても履修状態と曜日・時限は変わりません。</p>
+          </div>
+          <span class="prototype-badge">比較専用</span>
+        </header>
+
+        <ol class="personal-wizard-progress" aria-label="設定手順">
+          <li class="is-complete"><span>1</span>学年</li>
+          <li class="is-complete"><span>2</span>所属組</li>
+          <li class="is-current"><span>3</span>授業選択</li>
+          <li><span>4</span>確認・保存</li>
+        </ol>
+
+        <div class="personal-wizard-step personal-wizard-step--courses">
+          <div class="personal-wizard-workspace">
+            <div class="personal-wizard-browser">
+              <div id="day-tabs" class="personal-wizard-tabs" role="tablist" aria-label="曜日">
+                <button class="personal-wizard-tab" type="button" role="tab" aria-selected="true" data-day="月">月</button>
+                <button class="personal-wizard-tab" type="button" role="tab" aria-selected="false" data-day="火">火</button>
+                <button class="personal-wizard-tab" type="button" role="tab" aria-selected="false" data-day="水">水</button>
+                <button class="personal-wizard-tab" type="button" role="tab" aria-selected="false" data-day="木">木</button>
+                <button class="personal-wizard-tab" type="button" role="tab" aria-selected="false" data-day="金">金</button>
+              </div>
+              <div id="period-tabs" class="personal-wizard-tabs personal-wizard-tabs--period" role="tablist" aria-label="時限">
+                <button class="personal-wizard-tab" type="button" role="tab" aria-selected="false" data-period="1">1限</button>
+                <button class="personal-wizard-tab" type="button" role="tab" aria-selected="false" data-period="2">2限</button>
+                <button class="personal-wizard-tab" type="button" role="tab" aria-selected="true" data-period="3">3限</button>
+                <button class="personal-wizard-tab" type="button" role="tab" aria-selected="false" data-period="4">4限</button>
+              </div>
+              <div class="personal-wizard-slot-heading">
+                <h3 id="slot-heading">月曜日・3限</h3>
+                <span id="candidate-count">8件の候補</span>
+              </div>
+              <p id="interaction-status" class="prototype-interaction-status" role="status" aria-live="polite">A案を表示しています。</p>
+              <div id="candidate-area" class="personal-wizard-candidates" aria-live="polite"></div>
+            </div>
+
+            <aside class="personal-weekly-summary" aria-labelledby="weekly-heading">
+              <div class="personal-weekly-summary__heading">
+                <h3 id="weekly-heading">選択中の1週間</h3>
+                <span id="selected-summary">3科目・5コマ</span>
+              </div>
+              <div id="weekly-summary"></div>
+            </aside>
+          </div>
+        </div>
+
+        <footer class="prototype-frame__footer">
+          <span>履修状態は試作ページ内だけで変化します。</span>
+          <button id="reset-selection" type="button">選択を初期状態へ戻す</button>
+        </footer>
+      </section>
+
+      <section class="prototype-help" aria-labelledby="help-title">
+        <h2 id="help-title">操作確認</h2>
+        <ul>
+          <li>カード本体で選択・解除します。</li>
+          <li>各案の詳細操作で共通モーダルを開きます。</li>
+          <li>Tab / Shift+Tabで移動し、EnterまたはSpaceで操作できます。モーダルはEscで閉じられます。</li>
+        </ul>
+      </section>
+    </main>
+
+    <dialog id="course-detail-dialog" class="prototype-detail-dialog" aria-labelledby="detail-title">
+      <div class="prototype-detail-dialog__heading">
+        <div>
+          <p class="prototype-kicker">COURSE DETAIL / PROTOTYPE</p>
+          <h2 id="detail-title">授業詳細</h2>
+        </div>
+        <button id="detail-close-icon" class="prototype-detail-dialog__close" type="button" aria-label="授業詳細を閉じる">×</button>
+      </div>
+      <p class="prototype-detail-dialog__notice">比較用の簡易表示です。正式な授業詳細ページではありません。</p>
+      <dl id="detail-content" class="prototype-detail-list"></dl>
+      <div class="prototype-detail-dialog__actions">
+        <button id="detail-close" type="button">閉じる</button>
+      </div>
+    </dialog>
+  </body>
+</html>
