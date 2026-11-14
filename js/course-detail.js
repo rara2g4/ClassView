@@ -1,12 +1,31 @@
 (() => {
   "use strict";
 
+  const searchParams = new URLSearchParams(window.location.search);
+  const demoMode = searchParams.get("demo") === "1";
   // 現在のHTMLファイルを基準に解決するため、GitHub Pagesの
   // リポジトリ名付きURL（/ClassView/）でも正しい場所を参照します。
-  const COURSES_DATA_URL = new URL("./data/courses.json", document.baseURI);
+  const COURSES_DATA_URL = new URL(
+    demoMode ? "./data/demo/courses.json" : "./data/courses.json",
+    document.baseURI,
+  );
   const root = document.querySelector("#course");
-  const courseListUrl =
+  const personalReturnUrl = (() => {
+    if (searchParams.get("from") !== "personal") return "";
+    const value = searchParams.get("return");
+    if (!value) return "";
+    try {
+      const url = new URL(value, window.location.href);
+      const validPage = /\/(?:index|timetable)\.html$/.test(url.pathname) || url.pathname.endsWith("/");
+      if (url.origin !== window.location.origin || !validPage) return "";
+      return `${url.pathname}${url.search}${url.hash}`;
+    } catch (_error) {
+      return "";
+    }
+  })();
+  const courseListUrl = personalReturnUrl ||
     document.querySelector(".back-link")?.getAttribute("href") || "courses.html";
+  const returnLabel = personalReturnUrl ? "履修選択へ戻る" : "授業一覧へ戻る";
 
   const hasText = (value) =>
     typeof value === "string" && value.trim().length > 0;
@@ -20,7 +39,11 @@
 
   const createCourseHeader = (course) => {
     const header = element("header", "course-header");
-    header.append(element("p", "course-header__eyebrow", "Course details"));
+    header.append(element(
+      "p",
+      "course-header__eyebrow",
+      demoMode ? "Course details / デモデータ" : "Course details",
+    ));
     header.append(element("h1", "", course.title || "授業詳細"));
 
     if (hasText(course.summary)) {
@@ -216,13 +239,14 @@
   const createReturnLink = (withArrow = false) => {
     const link = element("a", "text-link");
     link.href = courseListUrl;
+    link.dataset.courseReturn = personalReturnUrl ? "personal" : "catalog";
 
     if (withArrow) {
       const arrow = element("span", "", "←");
       arrow.setAttribute("aria-hidden", "true");
-      link.append(arrow, document.createTextNode("授業一覧へ戻る"));
+      link.append(arrow, document.createTextNode(returnLabel));
     } else {
-      link.textContent = "授業一覧へ戻る";
+      link.textContent = returnLabel;
     }
 
     return link;
@@ -236,6 +260,7 @@
   };
 
   const createFeedbackSection = (course) => {
+    if (demoMode) return null;
     const feedback = globalThis.ClassViewFeedback;
     if (!feedback?.config?.enabled) return null;
 
@@ -325,7 +350,7 @@
   };
 
   const loadCourse = async () => {
-    const courseId = new URLSearchParams(window.location.search).get("id");
+    const courseId = searchParams.get("id");
 
     try {
       const response = await fetch(COURSES_DATA_URL, { cache: "no-cache" });
@@ -349,5 +374,6 @@
     }
   };
 
+  document.body.classList.toggle("is-demo-mode", demoMode);
   loadCourse();
 })();

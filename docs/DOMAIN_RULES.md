@@ -198,6 +198,7 @@ parser は `試験:`、休暇系 keyword、行事系 keyword を限定的に認�
 - Desktop / Mobile とも曜日tabと時限tabから1コマへ集中するlayoutを使う。Desktopは候補を原則2列、Mobileは1列とし、選択中の週間サマリーを表示する。必修・選択済み・時間競合は色だけでなくlock-keyhole、check-circle、calendar-xでも識別できる。
 - conflictは選択前から制約状態を示し、押すと相手courseと曜日・時限を説明する。競合元がmanual selectionだけの場合は、明示確認後に全競合元の解除とcandidate選択を一括で行える。required conflictでは入れ替えを提案せず、required-requiredは自動解決せず学校側data errorとして示す。
 - STEP 1〜3の変更は編集中のdraftとして保持し、STEP 4の明示確定時だけ既存profile keyへ保存する。キャンセルや保存失敗では保存済みprofileを変更しない。
+- STEP 3の授業名linkから既存の`course.html`へ移動できる。遷移時の編集中draftはmode別の`sessionStorage`へ一時保存し、同じtabで戻った場合だけ復元する。通常版とデモ版の一時keyを分離し、復元・キャンセル・保存時に正式profile keyへ暗黙保存しない。
 - current termが`unresolved`の場合は旧履修を適用せず、仮の学期境界を入力させない。設定完了を制限して理由を表示し、学校全体表示は利用可能にする。
 - stale manual course IDは保存profileから自動削除・置換せず、件数を表示する。`homeroomIds: null`等は本人向けentryやslotへ採用せず、未確認として示す。
 - 開発・検証用Pagesの初期modeと `?demo=1` は架空の `data/demo/` だけを読み、同じ4段階UI・履修・競合・入れ替え・保存logicを使う。`?demo=0` は通常modeとする。保存keyは `classview.demo.personalTimetable.profile` とし、通常版の `classview.personalTimetable.profile` から分離する。デモの明示 `termPeriods` はfixtureの検証用であり、学校の正式学期境界を示さない。学生向け正式公開時は初期modeを明示的に通常へ戻す。

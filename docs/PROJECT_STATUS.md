@@ -34,6 +34,7 @@
 - non-class entry visibility、`grades` と正式10 categoryのcandidate filter
 - profile未設定、破損・schemaVersion欠落/型不正、validな未対応future schema version、storage利用不能/read/write failureの状態分離
 - production pageのdata loading、profile setup、個人/学校全体切替、人間review済みB案の4段階wizard、曜日・時限focus候補、週間summary、manual授業の確認付き一括入れ替えへ接続済み
+- STEP 3の授業名から既存`course.html`へ移動し、通常版・デモ版を分離した`sessionStorage` draftにより、詳細確認後もSTEP、identity、選択内容、曜日・時限、scroll位置を復元。確定前のprofileは変更しない
 
 ### Course and syllabus management
 
