@@ -1,0 +1,73 @@
+.theme-canvas {
+  --b-bg: #fbfbfa;
+  --b-surface: #ffffff;
+  --b-text: #1d1d1b;
+  --b-muted: #74736e;
+  --b-line: #deddd8;
+  --b-strong: #272724;
+  --b-accent: #265f74;
+  min-height: 760px;
+  background: var(--b-bg);
+  color: var(--b-text);
+  font-family: Inter, "Noto Sans JP", "Yu Gothic UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.65;
+}
+[data-color-mode="dark"] .theme-canvas {
+  --b-bg: #161615;
+  --b-surface: #1d1d1b;
+  --b-text: #f3f2ee;
+  --b-muted: #aaa9a3;
+  --b-line: #3a3935;
+  --b-strong: #f0efeb;
+  --b-accent: #81b7c7;
+}
+.theme-canvas .site-header { background: var(--b-bg); }
+.theme-canvas .site-brand { color: var(--b-text); font-weight: 650; letter-spacing: -.02em; }
+.theme-canvas .site-brand__mark { border: 1px solid var(--b-strong); color: var(--b-text); font-size: .62rem; }
+.theme-canvas .site-nav a { color: var(--b-muted); font-size: .78rem; }
+.theme-canvas .site-nav a[aria-current="page"] { color: var(--b-text); text-decoration: underline; text-underline-offset: 6px; }
+.theme-canvas .appearance-button { border: 0; border-bottom: 1px solid var(--b-strong); background: transparent; }
+.theme-canvas .page-shell { padding-top: 52px; }
+.theme-canvas .page-intro { max-width: 760px; margin-bottom: 34px; }
+.theme-canvas .page-intro__eyebrow,
+.theme-canvas .personal-panel__eyebrow { color: var(--b-muted); font-size: .64rem; letter-spacing: .18em; }
+.theme-canvas .page-intro h2 { margin-block: 8px 10px; font-size: 2.35rem; font-weight: 520; letter-spacing: -.045em; }
+.theme-canvas .page-intro p,
+.theme-canvas .personal-panel p { color: var(--b-muted); font-size: .86rem; }
+.theme-canvas .personal-panel { padding-inline: 0; border-block: 1px solid var(--b-line); }
+.theme-canvas .personal-panel h3 { font-size: 1rem; font-weight: 600; }
+.theme-canvas .display-toolbar { margin-top: 0; padding-inline: 0; border-bottom: 1px solid var(--b-line); }
+.theme-canvas .mode-switch button,
+.theme-canvas .view-switch button,
+.theme-canvas .date-navigation button { border: 0; background: transparent; color: var(--b-muted); }
+.theme-canvas button[aria-pressed="true"] { color: var(--b-text); box-shadow: inset 0 -2px var(--b-strong); }
+.theme-canvas .timetable-section { margin-top: 32px; }
+.theme-canvas .timetable-heading-row { padding-inline: 0; border-bottom: 1px solid var(--b-strong); }
+.theme-canvas .timetable-heading-row h3 { font-size: 1.1rem; font-weight: 550; }
+.theme-canvas .timetable-heading-row span { color: var(--b-muted); font-size: .68rem; }
+.theme-canvas .week-table { gap: 0 14px; }
+.theme-canvas .week-corner,
+.theme-canvas .week-day,
+.theme-canvas .period-label { border-bottom: 1px solid var(--b-line); background: transparent; }
+.theme-canvas .week-day strong,
+.theme-canvas .period-label strong { font-size: .78rem; font-weight: 620; }
+.theme-canvas .week-day span,
+.theme-canvas .period-label span { color: var(--b-muted); font-size: .62rem; }
+.theme-canvas .week-cell,
+.theme-canvas .period-entries { border-bottom: 1px solid var(--b-line); }
+.theme-canvas .lesson-card { padding-inline: 2px; border: 0; border-bottom: 1px solid var(--b-line); background: transparent; }
+.theme-canvas .lesson-card:last-child { border-bottom: 0; }
+.theme-canvas .lesson-card__title { color: var(--b-text); font-size: .8rem; font-weight: 620; text-decoration-color: transparent; }
+.theme-canvas .lesson-card__title:hover { text-decoration-color: var(--b-accent); }
+.theme-canvas .lesson-card__type { color: var(--b-muted); font-size: .56rem; letter-spacing: .04em; }
+.theme-canvas .lesson-card--required .lesson-card__type { color: #916c1d; }
+.theme-canvas .lesson-card--select-required .lesson-card__type { color: #6a5388; }
+[data-color-mode="dark"] .theme-canvas .lesson-card--required .lesson-card__type { color: #d5b566; }
+[data-color-mode="dark"] .theme-canvas .lesson-card--select-required .lesson-card__type { color: #bea4dd; }
+.theme-canvas .lesson-card__meta,
+.theme-canvas .lesson-card__room { color: var(--b-muted); font-size: .64rem; }
+.theme-canvas .empty-slot { color: var(--b-muted); font-size: .68rem; }
+.theme-canvas .prototype-note { padding-inline: 0; border-top: 1px solid var(--b-line); color: var(--b-muted); font-size: .7rem; }
+.theme-canvas .prototype-note strong { color: var(--b-text); }
+.theme-canvas .site-footer { border-top: 1px solid var(--b-line); color: var(--b-muted); font-size: .68rem; }

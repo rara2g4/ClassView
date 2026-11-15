@@ -1,0 +1,86 @@
+.theme-canvas {
+  --e-bg: #f5f7ff;
+  --e-surface: #ffffff;
+  --e-text: #31354d;
+  --e-muted: #747993;
+  --e-line: #dfe3f3;
+  --e-blue: #5d7bc7;
+  --e-blue-soft: #e8efff;
+  --e-lavender: #8a72bd;
+  --e-lavender-soft: #f0ebfb;
+  --e-gold: #a07929;
+  --e-gold-soft: #fff5d8;
+  --e-green: #4e8e7b;
+  --e-green-soft: #e5f5ef;
+  min-height: 760px;
+  background: linear-gradient(180deg, #f2f5ff, #fbfbff 42%, #f5f7ff);
+  color: var(--e-text);
+  font-family: "BIZ UDPGothic", "Yu Gothic UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
+[data-color-mode="dark"] .theme-canvas {
+  --e-bg: #202132;
+  --e-surface: #292b3d;
+  --e-text: #f2f2fb;
+  --e-muted: #b6b9d0;
+  --e-line: #44475f;
+  --e-blue: #9db6ff;
+  --e-blue-soft: #343b58;
+  --e-lavender: #c2adeb;
+  --e-lavender-soft: #3b334f;
+  --e-gold: #e0bd6b;
+  --e-gold-soft: #443b27;
+  --e-green: #8bc8b6;
+  --e-green-soft: #29423b;
+  background: linear-gradient(180deg, #202132, #252638);
+}
+.theme-canvas .site-header { background: color-mix(in srgb, var(--e-surface) 92%, transparent); box-shadow: 0 6px 22px rgba(67, 76, 123, .09); }
+.theme-canvas .site-brand { color: var(--e-text); font-weight: 740; }
+.theme-canvas .site-brand__mark { border-radius: 11px; background: linear-gradient(135deg, var(--e-blue), var(--e-lavender)); color: #fff; font-size: .62rem; font-weight: 800; box-shadow: 0 5px 12px color-mix(in srgb, var(--e-blue) 28%, transparent); }
+.theme-canvas .site-nav a { padding: 6px 9px; border-radius: 999px; color: var(--e-muted); font-size: .78rem; }
+.theme-canvas .site-nav a[aria-current="page"] { background: var(--e-blue-soft); color: var(--e-blue); }
+.theme-canvas .appearance-button { border: 1px solid var(--e-line); border-radius: 999px; background: var(--e-surface); }
+.theme-canvas .page-intro__eyebrow,
+.theme-canvas .personal-panel__eyebrow { color: var(--e-blue); font-size: .67rem; font-weight: 750; letter-spacing: .12em; }
+.theme-canvas .page-intro h2 { font-size: 2.1rem; font-weight: 720; letter-spacing: -.035em; }
+.theme-canvas .page-intro p,
+.theme-canvas .personal-panel p { color: var(--e-muted); font-size: .84rem; }
+.theme-canvas .personal-panel,
+.theme-canvas .display-toolbar,
+.theme-canvas .timetable-section { border: 1px solid var(--e-line); border-radius: 18px; background: var(--e-surface); box-shadow: 0 10px 26px rgba(64, 71, 110, .08); }
+.theme-canvas .mode-switch,
+.theme-canvas .view-switch,
+.theme-canvas .date-navigation { padding: 3px; border-radius: 12px; background: var(--e-bg); }
+.theme-canvas .mode-switch button,
+.theme-canvas .view-switch button,
+.theme-canvas .date-navigation button { border: 0; border-radius: 9px; background: transparent; color: var(--e-muted); }
+.theme-canvas button[aria-pressed="true"] { background: var(--e-surface); color: var(--e-blue); box-shadow: 0 3px 9px rgba(66, 76, 120, .12); }
+.theme-canvas .timetable-heading-row { border-bottom: 1px solid var(--e-line); }
+.theme-canvas .timetable-heading-row > div > span,
+.theme-canvas .entry-count { color: var(--e-muted); font-size: .7rem; }
+.theme-canvas .week-table > *,
+.theme-canvas .day-period { border-right: 1px solid var(--e-line); border-bottom: 1px solid var(--e-line); }
+.theme-canvas .week-day,
+.theme-canvas .week-corner,
+.theme-canvas .period-label { background: color-mix(in srgb, var(--e-blue-soft) 55%, var(--e-surface)); }
+.theme-canvas .week-day strong,
+.theme-canvas .period-label strong { color: var(--e-blue); font-size: .8rem; }
+.theme-canvas .week-day span,
+.theme-canvas .period-label span { color: var(--e-muted); font-size: .63rem; }
+.theme-canvas .week-cell { padding: 8px; }
+.theme-canvas .lesson-card { border: 1px solid var(--e-line); border-radius: 12px; background: var(--e-surface); box-shadow: 0 4px 12px rgba(67, 75, 116, .07); }
+.theme-canvas .lesson-card--required { background: var(--e-gold-soft); }
+.theme-canvas .lesson-card--select-required { background: var(--e-lavender-soft); }
+.theme-canvas .lesson-card--event { background: var(--e-green-soft); }
+.theme-canvas .lesson-card__title { color: var(--e-text); font-size: .81rem; font-weight: 700; text-decoration-color: transparent; }
+.theme-canvas .lesson-card__title:hover { color: var(--e-blue); text-decoration-color: currentColor; }
+.theme-canvas .lesson-card__type { padding: 2px 6px; border-radius: 999px; background: var(--e-blue-soft); color: var(--e-blue); font-size: .55rem; }
+.theme-canvas .lesson-card--required .lesson-card__type { background: color-mix(in srgb, var(--e-gold) 15%, transparent); color: var(--e-gold); }
+.theme-canvas .lesson-card--select-required .lesson-card__type { background: color-mix(in srgb, var(--e-lavender) 15%, transparent); color: var(--e-lavender); }
+.theme-canvas .lesson-card__meta,
+.theme-canvas .lesson-card__room { color: var(--e-muted); font-size: .65rem; }
+.theme-canvas .empty-slot { border: 1px dashed var(--e-line); border-radius: 10px; color: var(--e-muted); font-size: .68rem; }
+.theme-canvas .prototype-note { border-radius: 12px; background: var(--e-blue-soft); color: var(--e-muted); font-size: .71rem; }
+.theme-canvas .prototype-note strong { color: var(--e-blue); }
+.theme-canvas .site-footer { color: var(--e-muted); font-size: .7rem; text-align: center; }

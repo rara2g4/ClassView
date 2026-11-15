@@ -1,0 +1,84 @@
+.theme-canvas {
+  --h-bg: #f4f1e9;
+  --h-surface: #ffffff;
+  --h-text: #111111;
+  --h-muted: #55524d;
+  --h-line: #111111;
+  --h-blue: #1647d8;
+  --h-coral: #f05b43;
+  --h-yellow: #f5cb33;
+  --h-mint: #a8e4d1;
+  min-height: 760px;
+  background: var(--h-bg);
+  color: var(--h-text);
+  font-family: "Arial Black", "Yu Gothic UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.45;
+}
+[data-color-mode="dark"] .theme-canvas {
+  --h-bg: #111111;
+  --h-surface: #1d1d1d;
+  --h-text: #f7f3e9;
+  --h-muted: #bbb6ad;
+  --h-line: #f7f3e9;
+  --h-blue: #7594ff;
+  --h-coral: #ff836e;
+  --h-yellow: #f5d65e;
+  --h-mint: #5aa995;
+}
+.theme-canvas .site-header { border-bottom: 4px solid var(--h-line); background: var(--h-yellow); color: #111; }
+[data-color-mode="dark"] .theme-canvas .site-header { background: var(--h-surface); color: var(--h-text); }
+.theme-canvas .site-brand { color: inherit; font-size: 1.06rem; font-weight: 900; text-transform: uppercase; letter-spacing: -.03em; }
+.theme-canvas .site-brand__mark { background: var(--h-blue); color: #fff; font-family: Arial, sans-serif; font-size: .62rem; font-weight: 900; rotate: -4deg; }
+.theme-canvas .site-nav a { color: inherit; font-family: Arial, "Yu Gothic UI", sans-serif; font-size: .72rem; font-weight: 800; text-transform: uppercase; }
+.theme-canvas .site-nav a[aria-current="page"] { box-shadow: inset 0 -5px var(--h-coral); }
+.theme-canvas .appearance-button { border: 3px solid currentColor; background: transparent; font-weight: 900; text-transform: uppercase; }
+.theme-canvas .page-intro { position: relative; padding: 20px; border: 4px solid var(--h-line); background: var(--h-surface); box-shadow: 8px 8px 0 var(--h-blue); }
+.theme-canvas .page-intro::after { position: absolute; right: 18px; bottom: -12px; width: 90px; height: 22px; background: var(--h-coral); content: ""; }
+.theme-canvas .page-intro__eyebrow,
+.theme-canvas .personal-panel__eyebrow { color: var(--h-blue); font-family: Arial, sans-serif; font-size: .64rem; font-weight: 900; letter-spacing: .12em; }
+.theme-canvas .page-intro h2 { font-size: 2.5rem; font-weight: 900; letter-spacing: -.08em; text-transform: uppercase; }
+.theme-canvas .page-intro p,
+.theme-canvas .personal-panel p { color: var(--h-muted); font-family: Arial, "Yu Gothic UI", sans-serif; font-size: .8rem; font-weight: 500; }
+.theme-canvas .personal-panel { margin-top: 34px; border: 4px solid var(--h-line); background: var(--h-surface); }
+.theme-canvas .personal-panel h3 { font-size: 1.1rem; font-weight: 900; }
+.theme-canvas .display-toolbar { border: 4px solid var(--h-line); background: var(--h-surface); }
+.theme-canvas .mode-switch button,
+.theme-canvas .view-switch button,
+.theme-canvas .date-navigation button { border: 3px solid var(--h-line); background: var(--h-surface); font-family: Arial, "Yu Gothic UI", sans-serif; font-weight: 800; }
+.theme-canvas button[aria-pressed="true"] { background: var(--h-blue); color: #fff; box-shadow: 4px 4px 0 var(--h-line); translate: -2px -2px; }
+.theme-canvas .timetable-section { border: 4px solid var(--h-line); background: var(--h-surface); }
+.theme-canvas .timetable-heading-row { border-bottom: 4px solid var(--h-line); background: var(--h-mint); color: #111; }
+.theme-canvas .timetable-heading-row h3 { font-size: 1.15rem; font-weight: 900; letter-spacing: -.04em; }
+.theme-canvas .timetable-heading-row > div > span,
+.theme-canvas .entry-count { font-family: Arial, sans-serif; font-size: .62rem; font-weight: 900; text-transform: uppercase; }
+.theme-canvas .week-table > *,
+.theme-canvas .day-period { border-right: 2px solid var(--h-line); border-bottom: 2px solid var(--h-line); }
+.theme-canvas .week-corner,
+.theme-canvas .week-day,
+.theme-canvas .period-label { background: var(--h-yellow); color: #111; }
+.theme-canvas .week-day strong,
+.theme-canvas .period-label strong { font-size: .8rem; font-weight: 900; }
+.theme-canvas .week-day span,
+.theme-canvas .period-label span { font-family: Arial, sans-serif; font-size: .59rem; font-weight: 700; }
+.theme-canvas .lesson-card { border: 3px solid var(--h-line); background: var(--h-surface); }
+.theme-canvas .lesson-card:nth-child(even) { box-shadow: 3px 3px 0 var(--h-blue); }
+.theme-canvas .lesson-card--required { box-shadow: 4px 4px 0 var(--h-yellow); }
+.theme-canvas .lesson-card--select-required { box-shadow: 4px 4px 0 var(--h-coral); }
+.theme-canvas .lesson-card__title { color: var(--h-text); font-size: .78rem; font-weight: 900; line-height: 1.25; text-decoration-thickness: 2px; }
+.theme-canvas .lesson-card__title:hover { color: var(--h-blue); }
+.theme-canvas .lesson-card__type { padding: 2px 5px; background: var(--h-coral); color: #111; font-family: Arial, sans-serif; font-size: .5rem; font-weight: 900; text-transform: uppercase; }
+.theme-canvas .lesson-card--required .lesson-card__type { background: var(--h-yellow); }
+.theme-canvas .lesson-card--select-required .lesson-card__type { background: var(--h-mint); }
+.theme-canvas .lesson-card__meta,
+.theme-canvas .lesson-card__room { color: var(--h-muted); font-family: Arial, "Yu Gothic UI", sans-serif; font-size: .6rem; font-weight: 600; }
+.theme-canvas .empty-slot { border: 2px dashed var(--h-line); color: var(--h-muted); font-family: Arial, sans-serif; font-size: .64rem; font-weight: 700; text-transform: uppercase; }
+.theme-canvas .prototype-note { border: 3px solid var(--h-line); background: var(--h-yellow); color: #111; font-family: Arial, "Yu Gothic UI", sans-serif; font-size: .68rem; }
+.theme-canvas .prototype-note strong { font-weight: 900; text-transform: uppercase; }
+.theme-canvas .site-footer { border-top: 4px solid var(--h-line); background: var(--h-blue); color: #fff; font-family: Arial, sans-serif; font-size: .64rem; font-weight: 800; text-transform: uppercase; }
+
+@media (max-width: 760px) {
+  .theme-canvas .page-intro { box-shadow: 5px 5px 0 var(--h-blue); }
+  .theme-canvas .page-intro h2 { font-size: 2rem; }
+  .theme-canvas .lesson-card:nth-child(even) { box-shadow: 2px 2px 0 var(--h-blue); }
+}

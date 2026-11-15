@@ -1,0 +1,76 @@
+.theme-canvas {
+  --d-bg: #08111c;
+  --d-panel: #0e1b29;
+  --d-panel-2: #132536;
+  --d-text: #e9f7ff;
+  --d-muted: #8fa8ba;
+  --d-line: #29445a;
+  --d-cyan: #39d5ff;
+  --d-blue: #3c83ff;
+  --d-amber: #ffcb5c;
+  --d-violet: #b499ff;
+  min-height: 760px;
+  background: radial-gradient(circle at 85% 0, #15324a 0, transparent 34%), var(--d-bg);
+  color: var(--d-text);
+  font-family: "Segoe UI Variable", "Yu Gothic UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+[data-color-mode="light"] .theme-canvas {
+  --d-bg: #eaf2f7;
+  --d-panel: #f8fbfd;
+  --d-panel-2: #e1edf4;
+  --d-text: #102333;
+  --d-muted: #526c7d;
+  --d-line: #8ba8b9;
+  --d-cyan: #007e9f;
+  --d-blue: #155be0;
+  --d-amber: #916200;
+  --d-violet: #6548a7;
+  background: linear-gradient(135deg, #f7fbfd 0, #e5f0f5 60%, #dbeaf1 100%);
+}
+.theme-canvas .site-header { border-bottom: 1px solid var(--d-cyan); background: color-mix(in srgb, var(--d-panel) 92%, transparent); box-shadow: 0 0 22px color-mix(in srgb, var(--d-cyan) 20%, transparent); }
+.theme-canvas .site-brand { color: var(--d-text); font-weight: 760; letter-spacing: .03em; }
+.theme-canvas .site-brand__mark { clip-path: polygon(12% 0, 100% 0, 100% 76%, 86% 100%, 0 100%, 0 22%); background: var(--d-cyan); color: var(--d-bg); font-family: Consolas, monospace; font-size: .64rem; font-weight: 800; }
+.theme-canvas .site-nav a { color: var(--d-muted); font-size: .76rem; text-transform: uppercase; letter-spacing: .08em; }
+.theme-canvas .site-nav a[aria-current="page"] { color: var(--d-cyan); }
+.theme-canvas .appearance-button { border: 1px solid var(--d-line); clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); background: var(--d-panel); color: var(--d-text); }
+.theme-canvas .page-intro__eyebrow,
+.theme-canvas .personal-panel__eyebrow { color: var(--d-cyan); font-family: Consolas, monospace; font-size: .66rem; letter-spacing: .14em; }
+.theme-canvas .page-intro h2 { font-size: 2.25rem; font-weight: 720; letter-spacing: -.04em; }
+.theme-canvas .page-intro p,
+.theme-canvas .personal-panel p { color: var(--d-muted); font-size: .82rem; }
+.theme-canvas .personal-panel,
+.theme-canvas .display-toolbar,
+.theme-canvas .timetable-section { border: 1px solid var(--d-line); clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); background: color-mix(in srgb, var(--d-panel) 96%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--d-cyan) 8%, transparent); }
+.theme-canvas .mode-switch button,
+.theme-canvas .view-switch button,
+.theme-canvas .date-navigation button { border: 1px solid var(--d-line); background: var(--d-panel-2); color: var(--d-muted); }
+.theme-canvas button[aria-pressed="true"] { border-color: var(--d-cyan); background: color-mix(in srgb, var(--d-cyan) 18%, var(--d-panel)); color: var(--d-cyan); box-shadow: inset 0 -2px var(--d-cyan); }
+.theme-canvas .timetable-heading-row { border-bottom: 1px solid var(--d-cyan); }
+.theme-canvas .timetable-heading-row > div > span,
+.theme-canvas .entry-count { color: var(--d-cyan); font-family: Consolas, monospace; font-size: .65rem; letter-spacing: .08em; }
+.theme-canvas .week-table > *,
+.theme-canvas .day-period { border-right: 1px solid var(--d-line); border-bottom: 1px solid var(--d-line); }
+.theme-canvas .week-day,
+.theme-canvas .week-corner,
+.theme-canvas .period-label { background: var(--d-panel-2); }
+.theme-canvas .week-day strong,
+.theme-canvas .period-label strong { color: var(--d-cyan); font-family: Consolas, monospace; font-size: .78rem; }
+.theme-canvas .week-day span,
+.theme-canvas .period-label span { color: var(--d-muted); font-family: Consolas, monospace; font-size: .61rem; }
+.theme-canvas .lesson-card { position: relative; border: 1px solid var(--d-line); clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); background: var(--d-panel-2); }
+.theme-canvas .lesson-card::before { position: absolute; top: 0; left: 0; width: 34px; height: 2px; background: var(--d-blue); content: ""; }
+.theme-canvas .lesson-card--required::before { background: var(--d-amber); }
+.theme-canvas .lesson-card--select-required::before { background: var(--d-violet); }
+.theme-canvas .lesson-card__title { color: var(--d-text); font-size: .78rem; font-weight: 680; text-decoration-color: transparent; }
+.theme-canvas .lesson-card__title:hover { color: var(--d-cyan); text-decoration-color: currentColor; }
+.theme-canvas .lesson-card__type { color: var(--d-cyan); font-family: Consolas, monospace; font-size: .54rem; }
+.theme-canvas .lesson-card--required .lesson-card__type { color: var(--d-amber); }
+.theme-canvas .lesson-card--select-required .lesson-card__type { color: var(--d-violet); }
+.theme-canvas .lesson-card__meta,
+.theme-canvas .lesson-card__room { color: var(--d-muted); font-family: Consolas, monospace; font-size: .6rem; }
+.theme-canvas .empty-slot { border: 1px dashed var(--d-line); color: var(--d-muted); font-family: Consolas, monospace; font-size: .64rem; }
+.theme-canvas .prototype-note { border-left: 3px solid var(--d-cyan); background: var(--d-panel); color: var(--d-muted); font-family: Consolas, monospace; font-size: .66rem; }
+.theme-canvas .prototype-note strong { color: var(--d-cyan); }
+.theme-canvas .site-footer { border-top: 1px solid var(--d-line); color: var(--d-muted); font-family: Consolas, monospace; font-size: .64rem; }
