@@ -1,0 +1,89 @@
+.theme-canvas {
+  --a-bg: #f3f5f7;
+  --a-surface: #ffffff;
+  --a-surface-2: #eaf0f6;
+  --a-text: #17212b;
+  --a-muted: #637180;
+  --a-line: #c9d2dc;
+  --a-line-strong: #93a2b2;
+  --a-accent: #1763aa;
+  --a-accent-soft: #e4eff9;
+  --a-required: #8a641b;
+  --a-required-bg: #f8f1dc;
+  --a-select-required: #63518a;
+  --a-select-required-bg: #eeeaf7;
+  --a-event: #2f6a5a;
+  --a-event-bg: #e6f2ee;
+  min-height: 760px;
+  background: var(--a-bg);
+  color: var(--a-text);
+  font-family: "Yu Gothic UI", "Hiragino Sans", Meiryo, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+}
+[data-color-mode="dark"] .theme-canvas {
+  --a-bg: #151a20;
+  --a-surface: #20262d;
+  --a-surface-2: #273442;
+  --a-text: #edf2f7;
+  --a-muted: #abb7c3;
+  --a-line: #46515d;
+  --a-line-strong: #657484;
+  --a-accent: #74b8f0;
+  --a-accent-soft: #203c53;
+  --a-required: #e3bd62;
+  --a-required-bg: #3b3322;
+  --a-select-required: #b7a4e5;
+  --a-select-required-bg: #342e45;
+  --a-event: #7bc0ad;
+  --a-event-bg: #233c36;
+}
+.theme-canvas .site-header { border-bottom: 1px solid var(--a-line); background: var(--a-surface); }
+.theme-canvas .site-brand { color: var(--a-text); font-weight: 760; }
+.theme-canvas .site-brand__mark { background: #173b5f; color: #fff; font-size: .7rem; font-weight: 800; }
+.theme-canvas .site-nav a { color: var(--a-muted); font-size: .82rem; font-weight: 650; }
+.theme-canvas .site-nav a[aria-current="page"] { color: var(--a-accent); }
+.theme-canvas .appearance-button { border: 1px solid var(--a-line-strong); background: var(--a-surface); }
+.theme-canvas .page-intro__eyebrow,
+.theme-canvas .personal-panel__eyebrow { color: var(--a-accent); font-size: .68rem; font-weight: 750; letter-spacing: .12em; }
+.theme-canvas .page-intro h2 { font-size: 2rem; letter-spacing: -.03em; }
+.theme-canvas .page-intro p,
+.theme-canvas .personal-panel p { color: var(--a-muted); font-size: .84rem; }
+.theme-canvas .personal-panel,
+.theme-canvas .display-toolbar,
+.theme-canvas .timetable-section { border: 1px solid var(--a-line); background: var(--a-surface); }
+.theme-canvas .mode-switch button,
+.theme-canvas .view-switch button,
+.theme-canvas .date-navigation button { border: 1px solid var(--a-line-strong); background: var(--a-surface); }
+.theme-canvas .mode-switch button + button,
+.theme-canvas .view-switch button + button,
+.theme-canvas .date-navigation button + button { border-left: 0; }
+.theme-canvas button[aria-pressed="true"] { border-color: #19344f; background: #19344f; color: #fff; }
+.theme-canvas .timetable-heading-row { border-bottom: 1px solid var(--a-line); }
+.theme-canvas .timetable-heading-row > div > span,
+.theme-canvas .entry-count { color: var(--a-muted); font-size: .72rem; font-weight: 650; }
+.theme-canvas .day-period,
+.theme-canvas .week-table > * { border-right: 1px solid var(--a-line); border-bottom: 1px solid var(--a-line); }
+.theme-canvas .day-period { border-bottom: 1px solid var(--a-line); }
+.theme-canvas .period-label,
+.theme-canvas .week-corner,
+.theme-canvas .week-day { background: var(--a-surface-2); }
+.theme-canvas .period-label strong,
+.theme-canvas .week-day strong { font-size: .8rem; }
+.theme-canvas .period-label span,
+.theme-canvas .week-day span { color: var(--a-muted); font-size: .65rem; }
+.theme-canvas .lesson-card { border: 1px solid var(--a-line); border-left: 3px solid var(--a-accent); background: var(--a-surface); }
+.theme-canvas .lesson-card--required { border-left-color: var(--a-required); background: var(--a-required-bg); }
+.theme-canvas .lesson-card--select-required { border-left-color: var(--a-select-required); background: var(--a-select-required-bg); }
+.theme-canvas .lesson-card--event { border-left-color: var(--a-event); background: var(--a-event-bg); }
+.theme-canvas .lesson-card__title { color: var(--a-text); font-size: .82rem; font-weight: 720; text-decoration-color: transparent; }
+.theme-canvas .lesson-card__title:hover { color: var(--a-accent); text-decoration-color: currentColor; }
+.theme-canvas .lesson-card__type { padding: 1px 5px; border: 1px solid currentColor; color: var(--a-accent); font-size: .58rem; }
+.theme-canvas .lesson-card--required .lesson-card__type { color: var(--a-required); }
+.theme-canvas .lesson-card--select-required .lesson-card__type { color: var(--a-select-required); }
+.theme-canvas .lesson-card__meta,
+.theme-canvas .lesson-card__room { color: var(--a-muted); font-size: .66rem; }
+.theme-canvas .empty-slot { border: 1px dashed var(--a-line); color: var(--a-muted); font-size: .7rem; }
+.theme-canvas .prototype-note { border: 1px solid var(--a-line); background: var(--a-accent-soft); color: var(--a-muted); font-size: .72rem; }
+.theme-canvas .prototype-note strong { color: var(--a-accent); }
+.theme-canvas .site-footer { border-top: 1px solid var(--a-line); background: var(--a-surface); color: var(--a-muted); font-size: .72rem; }

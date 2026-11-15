@@ -1,0 +1,73 @@
+.theme-canvas {
+  --g-bg: #eef3ef;
+  --g-surface: #ffffff;
+  --g-text: #18251f;
+  --g-muted: #52645b;
+  --g-line: #789187;
+  --g-green: #1f6652;
+  --g-green-2: #d8e9e1;
+  --g-blue: #28577b;
+  --g-yellow: #fff3bf;
+  min-height: 760px;
+  background: var(--g-bg);
+  color: var(--g-text);
+  font-family: Meiryo, "Yu Gothic UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+[data-color-mode="dark"] .theme-canvas {
+  --g-bg: #18221e;
+  --g-surface: #222e29;
+  --g-text: #edf4f0;
+  --g-muted: #b3c1ba;
+  --g-line: #667b71;
+  --g-green: #80c4ad;
+  --g-green-2: #2d463c;
+  --g-blue: #8cb8d8;
+  --g-yellow: #453f29;
+}
+.theme-canvas .site-header { border-bottom: 4px solid var(--g-green); background: var(--g-surface); }
+.theme-canvas .site-brand { color: var(--g-green); font-weight: 800; }
+.theme-canvas .site-brand__mark { border: 2px solid var(--g-green); background: var(--g-green-2); font-size: .6rem; font-weight: 800; }
+.theme-canvas .site-nav a { padding: 5px 8px; border: 1px solid transparent; color: var(--g-muted); font-size: .76rem; }
+.theme-canvas .site-nav a[aria-current="page"] { border-color: var(--g-green); background: var(--g-green-2); color: var(--g-green); }
+.theme-canvas .appearance-button { border: 2px solid var(--g-green); background: var(--g-surface); font-weight: 700; }
+.theme-canvas .page-intro { padding: 12px 16px; border-left: 8px solid var(--g-green); background: var(--g-surface); }
+.theme-canvas .page-intro__eyebrow,
+.theme-canvas .personal-panel__eyebrow { color: var(--g-green); font-size: .62rem; font-weight: 800; letter-spacing: .08em; }
+.theme-canvas .page-intro h2 { font-size: 1.8rem; }
+.theme-canvas .page-intro p,
+.theme-canvas .personal-panel p { color: var(--g-muted); font-size: .78rem; }
+.theme-canvas .personal-panel { border: 2px solid var(--g-line); background: var(--g-surface); }
+.theme-canvas .personal-panel h3 { color: var(--g-green); font-size: 1rem; }
+.theme-canvas .display-toolbar { border: 2px solid var(--g-line); background: var(--g-surface); }
+.theme-canvas .mode-switch button,
+.theme-canvas .view-switch button,
+.theme-canvas .date-navigation button { border: 1px solid var(--g-line); background: var(--g-surface); font-weight: 650; }
+.theme-canvas button[aria-pressed="true"] { background: var(--g-green); color: #fff; }
+[data-color-mode="dark"] .theme-canvas button[aria-pressed="true"] { color: #14231d; }
+.theme-canvas .timetable-section { border: 2px solid var(--g-line); background: var(--g-surface); }
+.theme-canvas .timetable-heading-row { border-bottom: 2px solid var(--g-line); background: var(--g-green-2); }
+.theme-canvas .timetable-heading-row > div > span,
+.theme-canvas .entry-count { color: var(--g-green); font-size: .66rem; font-weight: 800; }
+.theme-canvas .week-table > *,
+.theme-canvas .day-period { border-right: 1px solid var(--g-line); border-bottom: 1px solid var(--g-line); }
+.theme-canvas .week-corner,
+.theme-canvas .week-day,
+.theme-canvas .period-label { background: var(--g-green-2); text-align: center; }
+.theme-canvas .week-day strong,
+.theme-canvas .period-label strong { color: var(--g-green); font-size: .78rem; }
+.theme-canvas .week-day span,
+.theme-canvas .period-label span { color: var(--g-muted); font-size: .6rem; }
+.theme-canvas .lesson-card { border: 1px solid var(--g-line); background: var(--g-surface); }
+.theme-canvas .lesson-card--required { background: var(--g-yellow); }
+.theme-canvas .lesson-card--select-required { border: 2px solid var(--g-blue); }
+.theme-canvas .lesson-card__title { color: var(--g-blue); font-size: .76rem; font-weight: 700; }
+.theme-canvas .lesson-card__title:hover { color: var(--g-green); }
+.theme-canvas .lesson-card__type { padding: 1px 4px; border: 1px solid var(--g-line); background: var(--g-green-2); color: var(--g-green); font-size: .52rem; }
+.theme-canvas .lesson-card__meta,
+.theme-canvas .lesson-card__room { color: var(--g-muted); font-size: .61rem; }
+.theme-canvas .empty-slot { border: 1px solid var(--g-line); background-image: repeating-linear-gradient(-45deg, transparent, transparent 5px, color-mix(in srgb, var(--g-line) 11%, transparent) 5px, color-mix(in srgb, var(--g-line) 11%, transparent) 10px); color: var(--g-muted); font-size: .64rem; }
+.theme-canvas .prototype-note { border: 2px solid var(--g-line); background: var(--g-yellow); color: var(--g-muted); font-size: .68rem; }
+.theme-canvas .prototype-note strong { color: var(--g-green); }
+.theme-canvas .site-footer { border-top: 4px solid var(--g-green); background: var(--g-surface); color: var(--g-muted); font-size: .65rem; }
