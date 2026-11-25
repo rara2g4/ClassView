@@ -66,7 +66,9 @@
 
   const createCourseCard = (course) => {
     const card = element("article", "course-card");
-    card.append(element("p", "course-card__category", course.category));
+    if (hasText(course.category)) {
+      card.append(element("p", "course-card__category", course.category));
+    }
     const titleText = course.title || "名称未設定の授業";
     const heading = element("h3");
     const titleLink = element("a", "course-card__title-link", titleText);
@@ -94,7 +96,7 @@
   };
 
   const renderCourses = (filteredCourses) => {
-    resultCount.textContent = `${filteredCourses.length}件の授業を表示しています`;
+    resultCount.textContent = `${filteredCourses.length}件の授業`;
     listRoot.setAttribute("aria-busy", "false");
 
     if (!filteredCourses.length) {

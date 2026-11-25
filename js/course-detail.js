@@ -39,11 +39,7 @@
 
   const createCourseHeader = (course) => {
     const header = element("header", "course-header");
-    header.append(element(
-      "p",
-      "course-header__eyebrow",
-      demoMode ? "Course details / デモデータ" : "Course details",
-    ));
+    if (demoMode) header.append(element("p", "course-demo-label", "デモデータ"));
     header.append(element("h1", "", course.title || "授業詳細"));
 
     if (hasText(course.summary)) {
@@ -85,19 +81,18 @@
 
   const createPrimaryInfo = (course) => {
     const items = [
-      ["01", "授業概要・到達目標", course.learningGoals],
-      ["02", "授業の進め方", course.classFlow],
-      ["03", "身につく知識・できるようになること", course.outcomes],
-    ].filter(([, , value]) => hasText(value));
+      ["到達目標", course.learningGoals],
+      ["授業の進め方", course.classFlow],
+      ["身につく知識・できるようになること", course.outcomes],
+    ].filter(([, value]) => hasText(value));
 
     if (!items.length) return null;
 
     const section = element("section", "primary-info");
     section.setAttribute("aria-label", "授業の主要情報");
 
-    items.forEach(([number, heading, body]) => {
+    items.forEach(([heading, body]) => {
       const item = element("article", "primary-info__item");
-      item.append(element("span", "primary-info__number", number));
       item.append(element("h2", "", heading));
       item.append(element("p", "", body));
       section.append(item);
@@ -224,7 +219,7 @@
     if (!shortSections.length && !fullWidthSections.length) return null;
 
     const wrapper = element("div", "supplementary");
-    wrapper.append(element("h2", "supplementary__heading", "授業について詳しく"));
+    wrapper.append(element("h2", "visually-hidden", "授業について詳しく"));
 
     if (shortSections.length) {
       const grid = element("div", "supplementary__short-grid");
@@ -327,7 +322,6 @@
 
   const renderNotFound = () => {
     const section = element("section", "not-found");
-    section.append(element("p", "page-eyebrow", "Course not found"));
     section.append(element("h1", "", "授業が見つかりません"));
     section.append(
       element("p", "", "指定された授業は存在しないか、URLが正しくありません。")

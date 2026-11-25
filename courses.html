@@ -9,7 +9,7 @@
     <script src="js/display-preferences.js?v=1"></script>
     <link
       rel="stylesheet"
-      href="css/style.css?v=20261111T052112164437Z"
+      href="css/style.css?v=20261125T0610133834372Z"
       data-site-stylesheet
       data-site-href="css/style.css"
     >
@@ -30,13 +30,7 @@
     </header>
 
     <main id="main-content" class="page-shell catalog-page">
-      <header class="catalog-header">
-        <p class="page-eyebrow">Course catalog</p>
-        <h1>授業を探す</h1>
-        <p class="catalog-intro">
-          興味のある言葉や分野から授業を絞り込み、学ぶ内容や授業の進め方を確認できます。
-        </p>
-      </header>
+      <h1 class="visually-hidden">授業を探す</h1>
 
       <section class="search-panel" aria-labelledby="search-heading">
         <h2 id="search-heading" class="visually-hidden">授業の検索と絞り込み</h2>
@@ -66,7 +60,7 @@
 
       <section class="results" aria-labelledby="results-heading">
         <div class="results-header">
-          <h2 id="results-heading">授業一覧</h2>
+          <h2 id="results-heading" class="visually-hidden">授業一覧</h2>
           <p id="result-count" class="result-count" aria-live="polite">読み込み中です</p>
         </div>
         <div id="course-list" class="course-grid" aria-live="polite" aria-busy="true">
@@ -74,9 +68,5 @@
         </div>
       </section>
     </main>
-
-    <footer class="site-footer">
-      <p>ClassView — 授業選択のための情報サイト</p>
-    </footer>
   </body>
 </html>
