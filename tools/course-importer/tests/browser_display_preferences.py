@@ -108,6 +108,71 @@ def check_calendar(page, base, width, theme, folder):
     assert parse_qs(urlsplit(page.url).query)["date"] == [today]
 
 
+def check_week_layout(browser, base):
+    context = browser.new_context(viewport={"width": 1920, "height": 900})
+    page = context.new_page()
+    url = base + "?demo=1&date=2026-11-05&view=week"
+    page.goto(url)
+    table = page.locator(".timetable-week-table")
+    days = page.locator(".timetable-mobile-day__toggle")
+    entries = table.locator(".timetable-entry")
+    expect(entries.first).to_be_visible()
+    entry_count = entries.count()
+    assert entry_count >= 100
+    expect(page.get_by_role("heading", name="時間割", exact=True, level=1)).to_have_count(1)
+    expect(page.locator("#personal-timetable-status")).to_be_empty()
+
+    for width, show_table in ((1920, True), (1440, True), (1024, True), (900, False), (390, False), (320, False)):
+        page.set_viewport_size({"width": width, "height": 900})
+        snapshot(page, None, f"week {width}px")
+        if show_table:
+            expect(table).to_be_visible()
+            expect(days.first).to_be_hidden()
+            assert table.bounding_box()["width"] <= 1184
+            assert table.locator("thead th").first.bounding_box()["width"] <= 96
+            assert entries.count() == entry_count
+            assert table.locator(".timetable-entry__title, .timetable-entry__fact dd").evaluate_all(
+                "nodes => nodes.every(node => node.scrollWidth <= node.clientWidth + 1)"
+            )
+        else:
+            expect(table).to_be_hidden()
+            expect(days).to_have_count(5)
+            for day in days.all():
+                day.click()
+            mobile_entries = page.locator(".timetable-mobile-entry:visible")
+            expect(mobile_entries).to_have_count(entry_count)
+            assert mobile_entries.locator(".timetable-mobile-entry__title").evaluate_all(
+                "nodes => nodes.every(node => node.scrollWidth <= node.clientWidth + 1)"
+            )
+            for day in days.all():
+                day.click()
+
+    page.locator(".timetable-notice summary").click()
+    expect(page.locator("#timetable-updated-at")).to_be_visible()
+
+    # Exercise a seven-day week without modifying the public demo data.
+    def add_weekend_class(route):
+        response = route.fetch()
+        data = response.json()
+        entry = data["days"]["2026-11-05"][0]
+        data["days"]["2026-11-07"] = [{**entry, "date": "2026-11-07"}]
+        route.fulfill(response=response, json=data)
+
+    page.route("**/2026-11.json*", add_weekend_class)
+    page.set_viewport_size({"width": 1024, "height": 900})
+    page.goto(url)
+    expect(days).to_have_count(7)
+    expect(days.nth(5)).to_be_visible()
+    expect(table).to_be_hidden()
+    page.set_viewport_size({"width": 1440, "height": 900})
+    expect(table.get_by_role("columnheader")).to_have_count(8)
+    expect(table).to_be_visible()
+    expect(entries).to_have_count(entry_count + 1)
+    snapshot(page, None, "week with weekend classes")
+    context.close()
+    print("Passed dense weekly layout (320-1920px, five and seven days)", flush=True)
+
+
 def check_wizard(page, width, theme, folder):
     page.locator("#personal-settings-button").click()
     page.locator("#personal-grade-choices label").first.click()
@@ -144,7 +209,7 @@ def check_wizard(page, width, theme, folder):
     first_title.click()
     expect(page.locator(".course-header h1")).to_be_visible()
     assert parse_qs(urlsplit(page.url).query)["demo"] == ["1"]
-    expect(page.locator(".course-header__eyebrow")).to_contain_text("デモデータ")
+    expect(page.locator(".course-demo-label")).to_have_text("デモデータ")
     snapshot(page, folder, f"{width}-{theme}-wizard-detail")
     assert page.evaluate("key => localStorage.getItem(key)", key) is None
     personal_return = page.locator('[data-course-return="personal"]')
@@ -275,6 +340,7 @@ if __name__ == "__main__":
         browser = pw.chromium.launch(executable_path=args.browser_path)
         base = args.url.rstrip("/") + "/"
         check_fallback(browser, base)
+        check_week_layout(browser, base)
         for width, theme in product((1440, 390), ("light", "dark")):
             check_view(browser, base, width, theme, args.screenshots)
         browser.close()

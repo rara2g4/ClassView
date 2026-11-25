@@ -9,7 +9,7 @@
     <script src="js/display-preferences.js?v=1"></script>
     <link
       rel="stylesheet"
-      href="css/style.css?v=20261111T052112164437Z"
+      href="css/style.css?v=20261125T0610133834372Z"
       data-site-stylesheet
       data-site-href="css/style.css"
     >
@@ -35,26 +35,15 @@
 
     <aside id="demo-mode-banner" class="demo-mode-banner" aria-label="デモモード" hidden>
       <div class="demo-mode-banner__inner">
-        <p><strong>デモモード</strong> — 架空の授業・時間割データを使用しています。</p>
-        <a href="?demo=0">通常版へ切り替える</a>
+        <p><strong>デモモード</strong>（架空データ）</p>
+        <a href="?demo=0">通常版へ切り替え</a>
       </div>
     </aside>
 
     <main id="main-content" class="page-shell timetable-page">
-      <header class="timetable-header">
-        <p class="page-eyebrow">School timetable</p>
-        <h1>時間割</h1>
-        <p>
-          学校全体の授業を日別・週別に確認できます。同じ時限に行われる授業はすべて表示します。
-        </p>
-      </header>
+      <h1 class="visually-hidden">時間割</h1>
 
-      <section class="personal-timetable-controls" aria-labelledby="personal-timetable-heading">
-        <div>
-          <p class="personal-timetable-controls__eyebrow">Personal timetable</p>
-          <h2 id="personal-timetable-heading">自分の時間割</h2>
-          <p id="personal-profile-summary" class="personal-profile-summary">設定を確認しています…</p>
-        </div>
+      <section class="personal-timetable-controls" aria-label="個人時間割">
         <div class="personal-timetable-controls__actions">
           <div class="personal-mode-switch" role="group" aria-label="時間割の対象">
             <button id="personal-mode-button" type="button" aria-pressed="false">自分の時間割</button>
@@ -62,6 +51,7 @@
           </div>
           <button id="personal-settings-button" class="personal-settings-button" type="button">自分の時間割を設定</button>
         </div>
+        <p id="personal-profile-summary" class="personal-profile-summary" hidden></p>
       </section>
 
       <p class="demo-mode-entry"><a id="demo-mode-link" href="?demo=1">架空データで個人時間割を試す</a></p>
@@ -108,18 +98,18 @@
         </div>
       </section>
 
-      <aside class="timetable-notice" aria-label="時間割について">
+      <details class="timetable-notice">
+        <summary>時間割データについて</summary>
         <p>最新の変更については、学校からの案内も確認してください。</p>
         <p id="timetable-updated-at" class="timetable-updated-at" hidden></p>
-      </aside>
+      </details>
 
-      <dialog id="personal-wizard-dialog" class="personal-wizard-dialog">
+      <dialog id="personal-wizard-dialog" class="personal-wizard-dialog" aria-labelledby="personal-wizard-title">
         <form id="personal-wizard-form" method="dialog">
           <header class="personal-wizard-header">
             <div>
-              <p class="personal-timetable-controls__eyebrow">Personal timetable</p>
-              <h2>自分の時間割を設定</h2>
-              <p>氏名やログインは不要です。完了時に、この端末のブラウザへ保存します。</p>
+              <h2 id="personal-wizard-title">自分の時間割を設定</h2>
+              <p>設定はこの端末のブラウザに保存されます。</p>
             </div>
             <button class="personal-dialog__close" type="button" data-personal-close aria-label="設定を閉じる">×</button>
           </header>
@@ -133,7 +123,6 @@
 
           <section class="personal-wizard-step" data-personal-step="1">
             <h3 tabindex="-1">学年を選択してください</h3>
-            <p>現在の学年に一致する授業だけを候補として表示します。</p>
             <div id="personal-grade-choices" class="personal-choice-grid"></div>
           </section>
 
@@ -200,9 +189,5 @@
         </div>
       </dialog>
     </main>
-
-    <footer class="site-footer">
-      <p>ClassView — 授業選択のための情報サイト</p>
-    </footer>
   </body>
 </html>

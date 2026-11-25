@@ -332,6 +332,13 @@
       weekday: "long",
     }).format(toLocalDate(dateParts));
 
+  const formatWeekRange = (start, end) => {
+    const startLabel = `${start.year}年${start.month}月${start.day}日`;
+    const endYear = start.year === end.year ? "" : `${end.year}年`;
+    const endMonth = endYear || start.month !== end.month ? `${end.month}月` : "";
+    return `${startLabel}〜${endYear}${endMonth}${end.day}日`;
+  };
+
   const formatShortDate = (dateParts) => {
     const date = toLocalDate(dateParts);
     return `${dateParts.month}/${dateParts.day} ${DAY_NAMES[date.getDay()]}`;
@@ -419,14 +426,13 @@
     return [...keys].sort((left, right) => Number(left) - Number(right));
   };
 
-  const periodLabel = (key) => {
+  const periodLabel = (key, separator = " - ") => {
     const period = state.periods.periods[key];
-    return period ? `${period.start} - ${period.end}` : "時刻情報なし";
+    return period ? `${period.start}${separator}${period.end}` : "時刻情報なし";
   };
 
   const createPeriodHeader = (key, headingLevel = "h3") => {
     const header = element("div", "timetable-period__heading");
-    header.append(element("span", "timetable-period__number", key.padStart(2, "0")));
     const text = element(headingLevel, "timetable-period__label", `${key}限`);
     text.append(element("span", "timetable-period__time", periodLabel(key)));
     header.append(text);
@@ -472,7 +478,8 @@
     personalSettingsButton.textContent = profile ? "設定を変更" : "自分の時間割を設定";
     personalProfileSummary.textContent = profile
       ? `${profile.grade}年 / ${homeroomLabel(profile.homeroomId)} / ${profile.term === "first" ? "前期" : "後期"}`
-      : "学年と所属組を設定すると、自分に必要な授業へ絞り込めます。";
+      : "";
+    personalProfileSummary.hidden = !profile;
 
     let statusMessage = state.interactionMessage;
     if (!statusMessage && model?.profileStatus === "unavailable") {
@@ -486,11 +493,10 @@
     } else if (!statusMessage && model?.active) {
       const stale = model.enrollment.staleManualSelectedCourseIds.length;
       const unresolved = model.conflicts.scopeDiagnostics.unknownScopedEntries.length;
-      statusMessage = `${model.enrollment.effectiveCourseIds.length}授業を表示中。` +
-        `${stale ? ` 以前選択した${stale}授業が現在のデータにありません。` : ""}` +
-        `${unresolved ? ` 対象学年・組が未確認の時間割項目が${unresolved}件あります。` : ""}`;
-    } else if (!statusMessage) {
-      statusMessage = "学校全体の時間割を表示しています。初回設定は任意です。";
+      statusMessage = [
+        stale ? `以前選択した${stale}授業が現在のデータにありません。` : "",
+        unresolved ? `対象学年・組が未確認の時間割項目が${unresolved}件あります。` : "",
+      ].filter(Boolean).join(" ");
     }
     personalStatus.textContent = statusMessage;
   };
@@ -537,13 +543,18 @@
   };
 
   const renderWeekTable = (dates, entriesByDate, periodKeys) => {
-    const wrapper = element("div", "timetable-week-desktop");
+    const wrapper = element("div", dates.length === 7
+      ? "timetable-week-desktop timetable-week-desktop--seven-days"
+      : "timetable-week-desktop");
     const tableWrapper = element("div", "timetable-week-table-wrapper");
     const table = element("table", "timetable-week-table");
-    table.append(element("caption", "visually-hidden", "学校全体の週間時間割"));
+    const caption = state.displayMode === "personal" ? "自分の週間時間割" : "学校全体の週間時間割";
+    table.append(element("caption", "visually-hidden", caption));
     const head = element("thead");
     const headRow = element("tr");
-    headRow.append(element("th", "timetable-week-table__period-heading", "時限"));
+    const periodHeading = element("th", "timetable-week-table__period-heading", "時限");
+    periodHeading.scope = "col";
+    headRow.append(periodHeading);
     dates.forEach((dateParts) => {
       const cell = element("th", "", formatShortDate(dateParts));
       cell.scope = "col";
@@ -557,7 +568,7 @@
       const row = element("tr");
       const period = element("th", "timetable-week-table__period");
       period.scope = "row";
-      period.append(element("strong", "", `${key}限`), element("span", "", periodLabel(key)));
+      period.append(element("strong", "", `${key}限`), element("span", "", periodLabel(key, "–")));
       row.append(period);
       dates.forEach((dateParts) => {
         const cell = element("td");
@@ -656,7 +667,7 @@
     const visibleDates = dates.slice(0, weekDayCount(entriesByDate, weekStart));
     const allEntries = visibleDates.flatMap((dateParts) => entriesByDate.get(formatDateKey(dateParts)) || []);
     const weekEnd = visibleDates.at(-1);
-    dateHeading.textContent = `${formatLongDate(weekStart)} 〜 ${formatLongDate(weekEnd)}`;
+    dateHeading.textContent = formatWeekRange(weekStart, weekEnd);
     document.title = `${formatDateKey(weekStart)}の週の時間割 | ClassView`;
     if (!allEntries.length) {
       contentRoot.replaceChildren(emptyState("この週の時間割は登録されていません。"));
